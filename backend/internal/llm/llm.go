@@ -42,7 +42,9 @@ var stageDescriptions = map[string]stageDesc{
 	},
 }
 
-func BuildSystemPrompt(title, description, stage string, activeStages []string, hintRequested, answerRequested bool) string {
+// BuildStableSystemPrompt returns the cacheable portion of the system prompt —
+// everything that is constant for a given problem + active stages combination.
+func BuildStableSystemPrompt(title, description string, activeStages []string) string {
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "You are a technical interviewer helping a candidate practice LeetCode-style algorithm problems.\n\nProblem Title: %s\nProblem Description:\n%s\n\n", title, description)
 
@@ -67,11 +69,18 @@ func BuildSystemPrompt(title, description, stage string, activeStages []string, 
 			i, d.label, s, d.criteria, d.guidance, successStage)
 	}
 
-	fmt.Fprintf(&sb, "The current stage is: %q\n\n", stage)
-
 	sb.WriteString("CRITICAL: Your entire response must be ONLY the following JSON object — no explanation, no text before or after, no code fences wrapping the JSON:\n")
 	sb.WriteString(`{"message": "<your response to the candidate>", "stage": "<stage_id>"}`)
 	sb.WriteString("\n\nThe \"message\" value is displayed in a markdown renderer, so you MAY use markdown formatting (bold, bullet lists, inline code, code blocks) inside the message string when it aids clarity. Any response that is not pure JSON will be rejected. Do not write anything except the JSON object.")
+
+	return sb.String()
+}
+
+// BuildVolatileSystemSuffix returns the per-turn portion of the system prompt —
+// the current stage and any hint/answer instruction.
+func BuildVolatileSystemSuffix(stage string, hintRequested, answerRequested bool) string {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "The current stage is: %q", stage)
 
 	if hintRequested {
 		sb.WriteString("\n\nThe user has clicked 'Give me a hint'. Give a targeted hint that moves them toward the answer without fully revealing it. One sentence maximum.")
@@ -80,6 +89,12 @@ func BuildSystemPrompt(title, description, stage string, activeStages []string, 
 	}
 
 	return sb.String()
+}
+
+// BuildSystemPrompt concatenates the stable and volatile parts.
+// Used by Ollama (which does not support caching) and existing tests.
+func BuildSystemPrompt(title, description, stage string, activeStages []string, hintRequested, answerRequested bool) string {
+	return BuildStableSystemPrompt(title, description, activeStages) + "\n\n" + BuildVolatileSystemSuffix(stage, hintRequested, answerRequested)
 }
 
 type ChatMessage struct {
