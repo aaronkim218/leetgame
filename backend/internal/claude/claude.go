@@ -30,20 +30,31 @@ func New(apiKey, model string) *AnthropicClient {
 }
 
 func (c *AnthropicClient) Evaluate(ctx context.Context, problem models.Problem, stage string, activeStages []string, history []llm.ChatMessage, userMessage string, hintRequested, answerRequested bool, onToken func(string)) (llm.EvaluateResponse, error) {
-	systemPrompt := llm.BuildSystemPrompt(problem.Title, problem.Description, stage, activeStages, hintRequested, answerRequested)
-
 	messages := make([]map[string]string, 0, len(history)+1)
 	for _, h := range history {
 		messages = append(messages, map[string]string{"role": h.Role, "content": h.Content})
 	}
 	messages = append(messages, map[string]string{"role": "user", "content": userMessage})
 
+	stablePrompt := llm.BuildStableSystemPrompt(problem.Title, problem.Description, activeStages)
+	volatileSuffix := llm.BuildVolatileSystemSuffix(stage, hintRequested, answerRequested)
+
 	body := map[string]any{
 		"model":      c.model,
 		"max_tokens": 1024,
 		"stream":     true,
-		"system":     systemPrompt,
-		"messages":   messages,
+		"system": []map[string]any{
+			{
+				"type":          "text",
+				"text":          stablePrompt,
+				"cache_control": map[string]string{"type": "ephemeral"},
+			},
+			{
+				"type": "text",
+				"text": volatileSuffix,
+			},
+		},
+		"messages": messages,
 	}
 
 	bodyBytes, err := json.Marshal(body)
