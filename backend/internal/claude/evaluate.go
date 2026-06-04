@@ -13,14 +13,19 @@ import (
 )
 
 func (c *AnthropicClient) EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []llm.ChatMessage) (llm.SessionEvaluation, error) {
-	prompt := llm.BuildEvaluationPrompt(problem, activeStages, history)
-
 	body := map[string]any{
 		"model":      c.model,
 		"max_tokens": 1024,
 		"stream":     false,
+		"system": []map[string]any{
+			{
+				"type":          "text",
+				"text":          llm.BuildEvaluationSystemPrompt(),
+				"cache_control": map[string]string{"type": "ephemeral"},
+			},
+		},
 		"messages": []map[string]string{
-			{"role": "user", "content": prompt},
+			{"role": "user", "content": llm.BuildEvaluationUserPrompt(problem, activeStages, history)},
 		},
 	}
 
