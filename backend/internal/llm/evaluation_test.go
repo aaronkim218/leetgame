@@ -95,3 +95,108 @@ func TestBuildEvaluationPrompt_EmptyHistory(t *testing.T) {
 		t.Error("prompt missing problem title")
 	}
 }
+
+func TestBuildEvaluationSystemPrompt_contains_rubric_anchors(t *testing.T) {
+	system := BuildEvaluationSystemPrompt()
+
+	checks := []struct {
+		name    string
+		contain string
+	}{
+		{"contains pattern rubric anchor 0.2", "Vague or surface answer with no real substance"},
+		{"contains pattern rubric anchor 1.0", "Thorough and accurate with clear reasoning"},
+		{"contains edge_cases rubric anchor 0.0", "Identified no relevant edge cases"},
+		{"contains edge_cases rubric anchor 0.4", "missed the most important one"},
+		{"contains tc_sc rubric anchor 0.5", "One correct, one wrong"},
+		{"contains tc_sc rubric anchor 0.7", "Both correct, explanation vague"},
+		{"contains reveal cap instruction", "cap that stage's score at 0.2 regardless"},
+		{"contains hint cap instruction", "nearest valid anchor"},
+		{"contains answer cap instruction", "USER REQUESTED ANSWER"},
+		{"contains calibration note", "most sessions should score in the 0.2"},
+		{"contains JSON instruction", `"scores"`},
+	}
+	for _, c := range checks {
+		t.Run(c.name, func(t *testing.T) {
+			if !strings.Contains(system, c.contain) {
+				t.Errorf("system prompt missing %q", c.contain)
+			}
+		})
+	}
+}
+
+func TestBuildEvaluationSystemPrompt_does_not_contain_problem_specific_content(t *testing.T) {
+	system := BuildEvaluationSystemPrompt()
+	if strings.Contains(system, "Two Sum") {
+		t.Error("system prompt should not contain problem-specific content")
+	}
+	if strings.Contains(system, "Array, Hash Table") {
+		t.Error("system prompt should not contain topic tags")
+	}
+}
+
+func TestBuildEvaluationUserPrompt_contains_problem_and_history(t *testing.T) {
+	problem := models.Problem{
+		Id:          uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		Title:       "Two Sum",
+		Description: "Given an array...",
+		TopicTags:   []string{"Array", "Hash Table"},
+	}
+	history := []ChatMessage{
+		{Role: "user", Content: "I think we use a hash map"},
+		{Role: "assistant", Content: "Good, can you explain why?"},
+	}
+
+	user := BuildEvaluationUserPrompt(problem, []string{"pattern", "tc_sc"}, history)
+
+	checks := []struct {
+		name    string
+		contain string
+	}{
+		{"contains problem title", "Two Sum"},
+		{"contains topic tags", "Array"},
+		{"contains active stages", "pattern"},
+		{"contains user message", "I think we use a hash map"},
+		{"contains assistant message", "Good, can you explain why?"},
+	}
+	for _, c := range checks {
+		t.Run(c.name, func(t *testing.T) {
+			if !strings.Contains(user, c.contain) {
+				t.Errorf("user prompt missing %q", c.contain)
+			}
+		})
+	}
+}
+
+func TestBuildEvaluationUserPrompt_does_not_contain_rubric(t *testing.T) {
+	problem := models.Problem{
+		Id:        uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		Title:     "Two Sum",
+		TopicTags: []string{"Array"},
+	}
+	user := BuildEvaluationUserPrompt(problem, []string{"pattern"}, nil)
+	if strings.Contains(user, "Vague or surface answer") {
+		t.Error("user prompt should not contain rubric content")
+	}
+	if strings.Contains(user, `"scores"`) {
+		t.Error("user prompt should not contain JSON instruction")
+	}
+}
+
+func TestBuildEvaluationUserPrompt_marker_injection(t *testing.T) {
+	problem := models.Problem{
+		Id:        uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		Title:     "Two Sum",
+		TopicTags: []string{"Array"},
+	}
+	history := []ChatMessage{
+		{Role: "user", Content: "I think hash map", Marker: "hint"},
+		{Role: "user", Content: "OK reveal it", Marker: "answer"},
+	}
+	user := BuildEvaluationUserPrompt(problem, []string{"pattern"}, history)
+	if !strings.Contains(user, "[USER REQUESTED HINT]\nI think hash map") {
+		t.Error("expected hint marker injected before hint message content")
+	}
+	if !strings.Contains(user, "[USER REQUESTED ANSWER]\nOK reveal it") {
+		t.Error("expected answer marker injected before answer message content")
+	}
+}

@@ -17,27 +17,13 @@ type SessionEvaluation struct {
 	Scores []TopicScore `json:"scores"`
 }
 
-func BuildEvaluationPrompt(problem models.Problem, activeStages []string, history []ChatMessage) string {
+// BuildEvaluationSystemPrompt returns the static scoring rubric used as a
+// cacheable system prompt for session evaluation. It never changes across calls.
+func BuildEvaluationSystemPrompt() string {
 	var sb strings.Builder
 
 	sb.WriteString("You are evaluating a candidate's performance on a LeetCode practice session.\n\n")
-	fmt.Fprintf(&sb, "Problem: %s\n", problem.Title)
-	fmt.Fprintf(&sb, "Problem tags: %s\n", strings.Join(problem.TopicTags, ", "))
-	fmt.Fprintf(&sb, "Active stages practiced: %s\n\n", strings.Join(activeStages, ", "))
-
-	sb.WriteString("Full conversation (note: 'assistant' turns are interviewer coaching prompts, not candidate answers — only score the candidate's own words in 'user' turns):\n")
-	for _, msg := range history {
-		content := msg.Content
-		switch msg.Marker {
-		case "hint":
-			content = "[USER REQUESTED HINT]\n" + content
-		case "answer":
-			content = "[USER REQUESTED ANSWER]\n" + content
-		}
-		fmt.Fprintf(&sb, "%s: %s\n", msg.Role, content)
-	}
-
-	sb.WriteString("\nScore the candidate's demonstrated understanding for each (topic, stage) pair that was actually tested.")
+	sb.WriteString("Score the candidate's demonstrated understanding for each (topic, stage) pair that was actually tested.")
 	sb.WriteString(" Only include pairs from the problem's tags × active stages.\n\n")
 	sb.WriteString("Use the stage-specific anchors below. Pick the anchor that best fits — do not average or interpolate.\n\n")
 	sb.WriteString("**pattern, brute_force, algorithm** — correctness and depth of explanation:\n")
@@ -69,4 +55,34 @@ func BuildEvaluationPrompt(problem models.Problem, activeStages []string, histor
 	sb.WriteString("\n\nOnly use topics from the problem's tags list. Only use stages from the active stages list.")
 
 	return sb.String()
+}
+
+// BuildEvaluationUserPrompt returns the per-session dynamic content: problem
+// metadata and the full conversation history. Passed as the user message.
+func BuildEvaluationUserPrompt(problem models.Problem, activeStages []string, history []ChatMessage) string {
+	var sb strings.Builder
+
+	fmt.Fprintf(&sb, "Problem: %s\n", problem.Title)
+	fmt.Fprintf(&sb, "Problem tags: %s\n", strings.Join(problem.TopicTags, ", "))
+	fmt.Fprintf(&sb, "Active stages practiced: %s\n\n", strings.Join(activeStages, ", "))
+
+	sb.WriteString("Full conversation (note: 'assistant' turns are interviewer coaching prompts, not candidate answers — only score the candidate's own words in 'user' turns):\n")
+	for _, msg := range history {
+		content := msg.Content
+		switch msg.Marker {
+		case "hint":
+			content = "[USER REQUESTED HINT]\n" + content
+		case "answer":
+			content = "[USER REQUESTED ANSWER]\n" + content
+		}
+		fmt.Fprintf(&sb, "%s: %s\n", msg.Role, content)
+	}
+
+	return sb.String()
+}
+
+// BuildEvaluationPrompt concatenates system + user content into a single string.
+// Used by Ollama (no caching support) and existing tests.
+func BuildEvaluationPrompt(problem models.Problem, activeStages []string, history []ChatMessage) string {
+	return BuildEvaluationSystemPrompt() + "\n\n" + BuildEvaluationUserPrompt(problem, activeStages, history)
 }
