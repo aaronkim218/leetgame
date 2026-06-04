@@ -44,10 +44,10 @@ func (c *CachedStorage) getOrLoad(ctx context.Context) ([]models.Problem, map[uu
 		return problems, byID, tags, nil
 	}
 	if populated {
-		problems, byID, tags, reloading := c.problems, c.byID, c.tags, c.reloading
+		problems, byID, tags, loadedAt, reloading := c.problems, c.byID, c.tags, c.loadedAt, c.reloading
 		c.mu.RUnlock()
 		if !reloading {
-			c.triggerReload()
+			c.triggerReload(loadedAt)
 		}
 		return problems, byID, tags, nil
 	}
@@ -62,9 +62,9 @@ func (c *CachedStorage) getOrLoad(ctx context.Context) ([]models.Problem, map[uu
 	return c.load(ctx)
 }
 
-func (c *CachedStorage) triggerReload() {
+func (c *CachedStorage) triggerReload(staleLoadedAt time.Time) {
 	c.mu.Lock()
-	if c.reloading {
+	if c.reloading || c.loadedAt != staleLoadedAt {
 		c.mu.Unlock()
 		return
 	}
