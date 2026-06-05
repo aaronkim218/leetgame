@@ -26,6 +26,7 @@ interface PracticeSnapshot {
   history: ChatMessage[]
   searchPlaylist: SearchPlaylist | null
   problemSource: ProblemSource
+  shuffle: boolean
 }
 
 interface SearchPlaylist {
@@ -97,7 +98,7 @@ export default function App() {
 
   const pushSnapshot = () => {
     if (!problem) return
-    setSessionStack(s => [...s, { problem, stage, history, searchPlaylist, problemSource }])
+    setSessionStack(s => [...s, { problem, stage, history, searchPlaylist, problemSource, shuffle }])
   }
 
   const goBack = () => {
@@ -108,6 +109,7 @@ export default function App() {
     setHistory(snap.history)
     setSearchPlaylist(snap.searchPlaylist)
     setProblemSource(snap.problemSource)
+    setShuffle(snap.shuffle)
     setPlaylistExhausted(false)
     setError(null)
     setStreamingMessage('')
@@ -458,7 +460,6 @@ export default function App() {
           key={problem.id}
           problem={problem}
           onSkip={() => void loadNextProblem()}
-          onRandom={() => void loadRandomNextProblem()}
           onBack={canGoBack ? goBack : undefined}
           onExitPlaylist={problemSource === 'search' ? exitPlaylist : problemSource === 'smart' ? exitSmartPractice : undefined}
           smartMode={problemSource === 'smart'}
