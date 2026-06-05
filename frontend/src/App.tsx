@@ -4,7 +4,7 @@ import { defaultSearchState } from './types'
 import { getRandomProblem, getRandomProblemFiltered, searchProblems, streamChat, getSmartPracticeProblem } from './api'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
-import { useSearch } from './hooks/useSearch'
+import { useSearch, SEARCH_PAGE_SIZE } from './hooks/useSearch'
 import { useTags } from './hooks/useTags'
 import { useSaved } from './hooks/useSaved'
 import { NavBar } from './components/NavBar'
@@ -74,6 +74,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [playlistExhausted, setPlaylistExhausted] = useState(false)
+  const [shuffle, setShuffle] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState('')
   const [sessionActiveStages, setSessionActiveStages] = useState<ActiveStage[]>(activeStages)
   const [stageBannerDismissed, setStageBannerDismissed] = useState(false)
@@ -194,7 +195,11 @@ export default function App() {
 
   const loadNextProblem = async () => {
     if (problemSource === 'search') {
-      await loadNextSearchProblem()
+      if (shuffle) {
+        await loadRandomNextProblem()
+      } else {
+        await loadNextSearchProblem()
+      }
       return
     }
     if (problemSource === 'smart') {
@@ -244,9 +249,38 @@ export default function App() {
     }
   }
 
+  const enterPlaylistFromSearch = async () => {
+    const { q, difficulty, tags, tagMatch } = searchState
+    try {
+      pushSnapshot()
+      setError(null)
+      setPlaylistExhausted(false)
+      setShuffle(true)
+      playlistEntryDepthRef.current = sessionStack.length + (problem ? 1 : 0)
+      const p = await getRandomProblemFiltered(q, difficulty, tags, tagMatch)
+      setProblem(p)
+      setProblemSource('search')
+      setSearchPlaylist({
+        q,
+        difficulty,
+        tags,
+        tagMatch,
+        page: 0,
+        pageSize: SEARCH_PAGE_SIZE,
+        results: [],
+        selectedIndex: -1,
+      })
+      resetPracticeState()
+      setView('practice')
+    } catch {
+      setError('Failed to load a problem with those filters. Is the backend running?')
+    }
+  }
+
   const selectProblem = (p: Problem, context: SearchSelectionContext) => {
     pushSnapshot()
     playlistEntryDepthRef.current = sessionStack.length + (problem ? 1 : 0)
+    setShuffle(false)
     setProblem(p)
     setProblemSource('search')
     setPlaylistExhausted(false)
@@ -433,6 +467,8 @@ export default function App() {
           isSaved={isSaved(problem.id)}
           onToggleSave={session ? () => { if (isSaved(problem.id)) { void unsave(problem.id) } else { void save(problem) } } : undefined}
           onSmartPractice={session ? () => void loadSmartPracticeProblem() : undefined}
+          shuffle={problemSource === 'search' ? shuffle : undefined}
+          onToggleShuffle={problemSource === 'search' ? () => setShuffle(s => !s) : undefined}
         />
         <ChatView
           history={history}
@@ -444,7 +480,6 @@ export default function App() {
           streamingMessage={streamingMessage}
           onNext={stage === 'complete' ? () => void loadNextProblem() : undefined}
           onSmartPractice={stage === 'complete' && !!session ? () => void loadSmartPracticeProblem() : undefined}
-          onRandom={stage === 'complete' && problemSource === 'search' ? () => void loadRandomNextProblem() : undefined}
           onBack={stage === 'complete' && canGoBack ? goBack : undefined}
           onHint={stage !== 'complete' ? () => void handleSubmit('Give me a hint', true, false) : undefined}
           onAnswer={stage !== 'complete' ? () => void handleSubmit('Give me the answer', false, true) : undefined}
@@ -477,6 +512,7 @@ export default function App() {
       {view === 'search'
         ? <SearchPage
             onSelectProblem={selectProblem}
+            onEnterPlaylist={() => void enterPlaylistFromSearch()}
             searchState={searchState}
             onSearchStateChange={setSearchState}
             loading={searchLoading}
