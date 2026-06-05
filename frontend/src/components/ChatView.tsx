@@ -59,13 +59,12 @@ interface Props {
   streamingMessage: string
   onNext?: () => void
   onSmartPractice?: () => void
-  onRandom?: () => void
   onBack?: () => void
   onHint?: () => void
   onAnswer?: () => void
 }
 
-export function ChatView({ history, stage, sessionActiveStages, loading, error, onSubmit, streamingMessage, onNext, onSmartPractice, onRandom, onBack, onHint, onAnswer }: Props) {
+export function ChatView({ history, stage, sessionActiveStages, loading, error, onSubmit, streamingMessage, onNext, onSmartPractice, onBack, onHint, onAnswer }: Props) {
   const [input, setInput] = useState('')
   const [queue, setQueue] = useState<string[]>([])
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -158,9 +157,6 @@ export function ChatView({ history, stage, sessionActiveStages, loading, error, 
           )}
           {onSmartPractice && (
             <Button variant="outline" onClick={onSmartPractice}>Smart Practice</Button>
-          )}
-          {onRandom && (
-            <Button variant="outline" onClick={onRandom}>Random</Button>
           )}
         </div>
       ) : (

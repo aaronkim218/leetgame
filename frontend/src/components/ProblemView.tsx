@@ -5,6 +5,7 @@ import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { Shuffle } from 'lucide-react'
 
 const difficultyColor: Record<string, string> = {
   Easy: 'text-easy',
@@ -22,7 +23,6 @@ interface SearchPlaylistSummary {
 export function ProblemView({
   problem,
   onSkip,
-  onRandom,
   onBack,
   onExitPlaylist,
   playlistSummary,
@@ -31,10 +31,11 @@ export function ProblemView({
   onToggleSave,
   onSmartPractice,
   smartMode = false,
+  shuffle,
+  onToggleShuffle,
 }: {
   problem: Problem
   onSkip: () => void
-  onRandom: () => void
   onBack?: () => void
   onExitPlaylist?: () => void
   onSmartPractice?: () => void
@@ -43,6 +44,8 @@ export function ProblemView({
   hideTitle?: boolean
   isSaved?: boolean
   onToggleSave?: () => void
+  shuffle?: boolean
+  onToggleShuffle?: () => void
 }) {
   const [tagsOpen, setTagsOpen] = useState(false)
   const [titleOpen, setTitleOpen] = useState(!hideTitle)
@@ -66,7 +69,7 @@ export function ProblemView({
     return () => document.removeEventListener('mousedown', handle)
   }, [overflowOpen])
 
-  const hasOverflow = !!(onRandom || onExitPlaylist || onSmartPractice)
+  const hasOverflow = !!(onExitPlaylist || onSmartPractice)
 
   return (
     <div data-tour="problem-panel" className={cn(
@@ -127,6 +130,17 @@ export function ProblemView({
               ))}
             </div>
           </div>
+        ) : !onToggleShuffle ? (
+          <div className="mb-4 rounded-md border border-border bg-muted px-3.5 py-2.5">
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
+                Random
+              </span>
+              <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
+                {problem.difficulty}
+              </span>
+            </div>
+          </div>
         ) : (
           <div className="mb-3">
             <span className={cn("text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-muted-foreground')}>
@@ -171,6 +185,19 @@ export function ProblemView({
               ←
             </Button>
           )}
+          {onToggleShuffle && (
+            <button
+              onClick={onToggleShuffle}
+              className={cn(
+                "shrink-0 p-1 rounded transition-colors",
+                shuffle ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+              title={shuffle ? "Shuffle on — click to go sequential" : "Shuffle off — click to shuffle"}
+              aria-label={shuffle ? "Shuffle on" : "Shuffle off"}
+            >
+              <Shuffle size={16} />
+            </button>
+          )}
           <Button variant="outline" size="sm" onClick={onSkip} className="shrink-0 text-muted-foreground">
             Next →
           </Button>
@@ -192,14 +219,6 @@ export function ProblemView({
                       className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
                     >
                       Smart Practice
-                    </button>
-                  )}
-                  {onRandom && (
-                    <button
-                      onClick={() => { onRandom(); setOverflowOpen(false) }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
-                    >
-                      Random problem
                     </button>
                   )}
                   {onExitPlaylist && (
