@@ -146,7 +146,7 @@ export async function recordStreak(): Promise<{ streak: number; last_practiced_a
   return res.json()
 }
 
-export async function getSettings(): Promise<{ active_stages: ActiveStage[]; hide_title: boolean; active_topics: string[]; tour_done: boolean }> {
+export async function getSettings(): Promise<{ active_stages: ActiveStage[]; hide_title: boolean; hide_difficulty: boolean; active_topics: string[]; tour_done: boolean }> {
   const res = await fetch(`${API_URL}/api/settings`, {
     headers: await authHeaders(),
   })
@@ -154,11 +154,11 @@ export async function getSettings(): Promise<{ active_stages: ActiveStage[]; hid
   return res.json()
 }
 
-export async function updateSettings(activeStages: ActiveStage[], hideTitle: boolean, activeTopics: string[], tourDone: boolean): Promise<void> {
+export async function updateSettings(activeStages: ActiveStage[], hideTitle: boolean, hideDifficulty: boolean, activeTopics: string[], tourDone: boolean): Promise<void> {
   const res = await fetch(`${API_URL}/api/settings`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-    body: JSON.stringify({ active_stages: activeStages, hide_title: hideTitle, active_topics: activeTopics, tour_done: tourDone }),
+    body: JSON.stringify({ active_stages: activeStages, hide_title: hideTitle, hide_difficulty: hideDifficulty, active_topics: activeTopics, tour_done: tourDone }),
   })
   if (!res.ok) throw new Error(`Failed to update settings: ${res.status}`)
 }
