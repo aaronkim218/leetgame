@@ -57,6 +57,7 @@ export interface SearchSelectionContext {
 
 interface Props {
   onSelectProblem: (p: Problem, context: SearchSelectionContext) => void
+  onEnterPlaylist?: () => void
   searchState: SearchState
   onSearchStateChange: (s: SearchState) => void
   loading: boolean
@@ -70,7 +71,7 @@ interface Props {
   showSave: boolean
 }
 
-export function SearchPage({ onSelectProblem, searchState, onSearchStateChange, loading, error, availableTags, tagsLoading, tagsError, savedIds, savedProblems, onToggleSave, showSave }: Props) {
+export function SearchPage({ onSelectProblem, onEnterPlaylist, searchState, onSearchStateChange, loading, error, availableTags, tagsLoading, tagsError, savedIds, savedProblems, onToggleSave, showSave }: Props) {
   const [tagQuery, setTagQuery] = useState('')
   const [showSaved, setShowSaved] = useState(false)
 
@@ -80,6 +81,7 @@ export function SearchPage({ onSelectProblem, searchState, onSearchStateChange, 
   }, [showSave])
 
   const { q, difficulty, tags, tagMatch, results, page, total, hasSearched } = searchState
+  const hasActiveFilters = q !== '' || difficulty !== '' || tags.length > 0
 
   const setQ = (v: string) => onSearchStateChange({ ...searchState, q: v, page: 1 })
   const setDifficulty = (v: string) => onSearchStateChange({ ...searchState, difficulty: v, page: 1 })
@@ -233,6 +235,20 @@ export function SearchPage({ onSelectProblem, searchState, onSearchStateChange, 
           )}
         </div>
       </div>
+
+      {onEnterPlaylist && hasActiveFilters && !showSaved && (
+        <div className="mb-6">
+          <Button
+            onClick={onEnterPlaylist}
+            className="w-full"
+          >
+            Enter Playlist
+            {hasSearched && total > 0 && (
+              <span className="ml-2 opacity-70 font-normal">· {total} problem{total !== 1 ? 's' : ''}</span>
+            )}
+          </Button>
+        </div>
+      )}
 
       {error && !showSaved && <p className="text-sm text-destructive">{error}</p>}
       {!showSaved && !error && hasSearched && total > 0 && (
