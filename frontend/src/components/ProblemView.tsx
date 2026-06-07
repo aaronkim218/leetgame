@@ -228,12 +228,14 @@ export function ProblemView({
           </Button>
         </div>
 
-        <div className="relative inline-block mb-3">
+        <div className="relative mb-3">
           <span
+            onClick={() => hideDifficulty && setDifficultyOpen(o => !o)}
             className={cn(
               "text-xs font-semibold transition-all duration-200 block",
               difficultyColor[problem.difficulty] ?? 'text-muted-foreground',
-              hideDifficulty && !difficultyOpen ? "opacity-0 blur-[5px]" : ""
+              hideDifficulty && !difficultyOpen ? "opacity-0 blur-[5px]" : "",
+              hideDifficulty ? "cursor-pointer select-none" : ""
             )}
           >
             {problem.difficulty}
