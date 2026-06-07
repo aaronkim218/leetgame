@@ -33,6 +33,7 @@ export function useAuth() {
     const storedHideTitle = localStorage.getItem('leetgame_hide_title')
     setActiveStages(stages)
     setHideTitle(storedHideTitle === null ? true : storedHideTitle === 'true')
+    setHideDifficulty(true)
   }
 
   useEffect(() => {
