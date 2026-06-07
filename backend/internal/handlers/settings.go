@@ -20,16 +20,18 @@ func (hs *HandlerService) GetSettings(c *fiber.Ctx) error {
 	}
 
 	type response struct {
-		ActiveStages []string `json:"active_stages"`
-		HideTitle    bool     `json:"hide_title"`
-		ActiveTopics []string `json:"active_topics"`
-		TourDone     bool     `json:"tour_done"`
+		ActiveStages   []string `json:"active_stages"`
+		HideTitle      bool     `json:"hide_title"`
+		HideDifficulty bool     `json:"hide_difficulty"`
+		ActiveTopics   []string `json:"active_topics"`
+		TourDone       bool     `json:"tour_done"`
 	}
 	return c.JSON(response{
-		ActiveStages: settings.ActiveStages,
-		HideTitle:    settings.HideTitle,
-		ActiveTopics: settings.ActiveTopics,
-		TourDone:     settings.TourDone,
+		ActiveStages:   settings.ActiveStages,
+		HideTitle:      settings.HideTitle,
+		HideDifficulty: settings.HideDifficulty,
+		ActiveTopics:   settings.ActiveTopics,
+		TourDone:       settings.TourDone,
 	})
 }
 
@@ -40,10 +42,11 @@ func (hs *HandlerService) UpdateSettings(c *fiber.Ctx) error {
 	}
 
 	type request struct {
-		ActiveStages []string `json:"active_stages"`
-		HideTitle    bool     `json:"hide_title"`
-		ActiveTopics []string `json:"active_topics"`
-		TourDone     bool     `json:"tour_done"`
+		ActiveStages   []string `json:"active_stages"`
+		HideTitle      bool     `json:"hide_title"`
+		HideDifficulty bool     `json:"hide_difficulty"`
+		ActiveTopics   []string `json:"active_topics"`
+		TourDone       bool     `json:"tour_done"`
 	}
 	var req request
 	if err := c.BodyParser(&req); err != nil {
@@ -59,7 +62,7 @@ func (hs *HandlerService) UpdateSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := hs.storage.UpsertUserSettings(c.Context(), uid, req.ActiveStages, req.HideTitle, req.ActiveTopics, req.TourDone); err != nil {
+	if err := hs.storage.UpsertUserSettings(c.Context(), uid, req.ActiveStages, req.HideTitle, req.HideDifficulty, req.ActiveTopics, req.TourDone); err != nil {
 		return err
 	}
 

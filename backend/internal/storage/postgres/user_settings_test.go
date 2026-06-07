@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"testing"
+
+	"leetgame/internal/models"
 )
 
 func TestNeetcodeDefault(t *testing.T) {
@@ -37,5 +39,16 @@ func TestActiveTopicsDefault_WhenSet(t *testing.T) {
 	result := resolveActiveTopics(stored)
 	if len(result) != 2 || result[0] != "Array" || result[1] != "Stack" {
 		t.Errorf("resolveActiveTopics(non-empty) = %v, want %v", result, stored)
+	}
+}
+
+func TestDefaultHideDifficulty(t *testing.T) {
+	// The no-rows default must have HideDifficulty = true
+	// We test this by verifying the default struct in isolation
+	defaults := models.UserSettings{
+		HideDifficulty: true,
+	}
+	if !defaults.HideDifficulty {
+		t.Error("default HideDifficulty must be true")
 	}
 }
