@@ -56,7 +56,7 @@ function getPlaylistSummary(searchPlaylist: SearchPlaylist | null) {
 }
 
 export default function App() {
-  const { session, authLoading, streak, streakStatus, activeStages, hideTitle, activeTopics, tourDone, settingsReady, persistStages, persistHideTitle, persistTopics, persistTourDone, recordAndUpdateStreak } = useAuth()
+  const { session, authLoading, streak, streakStatus, activeStages, hideTitle, hideDifficulty, activeTopics, tourDone, settingsReady, persistStages, persistHideTitle, persistHideDifficulty, persistTopics, persistTourDone, recordAndUpdateStreak } = useAuth()
   const { showBanner, dismiss: dismissTour, markDone: markTourDone } = useTour(!!session, settingsReady, tourDone, persistTourDone)
 
   const handleStartTour = () => {
@@ -123,6 +123,10 @@ export default function App() {
 
   const handleHideTitleChange = (value: boolean) => {
     persistHideTitle(value)
+  }
+
+  const handleHideDifficultyChange = (value: boolean) => {
+    persistHideDifficulty(value)
   }
 
   const loadRandomProblem = async () => {
@@ -465,6 +469,7 @@ export default function App() {
           smartMode={problemSource === 'smart'}
           playlistSummary={problemSource === 'search' ? getPlaylistSummary(searchPlaylist) : null}
           hideTitle={hideTitle}
+          hideDifficulty={hideDifficulty}
           isSaved={isSaved(problem.id)}
           onToggleSave={session ? () => { if (isSaved(problem.id)) { void unsave(problem.id) } else { void save(problem) } } : undefined}
           onSmartPractice={session ? () => void loadSmartPracticeProblem() : undefined}
@@ -503,6 +508,8 @@ export default function App() {
         onStagesChange={handleStagesChange}
         hideTitle={hideTitle}
         onHideTitleChange={handleHideTitleChange}
+        hideDifficulty={hideDifficulty}
+        onHideDifficultyChange={handleHideDifficultyChange}
         onTakeTour={handleStartTour}
         theme={theme}
         onThemeChange={setTheme}

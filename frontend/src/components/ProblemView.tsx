@@ -33,6 +33,7 @@ export function ProblemView({
   smartMode = false,
   shuffle,
   onToggleShuffle,
+  hideDifficulty = false,
 }: {
   problem: Problem
   onSkip: () => void
@@ -46,9 +47,11 @@ export function ProblemView({
   onToggleSave?: () => void
   shuffle?: boolean
   onToggleShuffle?: () => void
+  hideDifficulty?: boolean
 }) {
   const [tagsOpen, setTagsOpen] = useState(false)
   const [titleOpen, setTitleOpen] = useState(!hideTitle)
+  const [difficultyOpen, setDifficultyOpen] = useState(false)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -58,7 +61,7 @@ export function ProblemView({
 
   return (
     <div data-tour="problem-panel" className={cn(
-      "border-b md:border-b-0 md:border-r border-border md:w-1/2 md:overflow-y-auto",
+      "border-b md:border-b-0 md:border-r border-border md:w-1/2 md:overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
       problemOpen ? "flex-1 overflow-y-auto" : "shrink-0"
     )}>
       {/* mobile toggle bar */}
@@ -110,9 +113,11 @@ export function ProblemView({
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
                 Playlist
               </span>
-              <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
-                {problem.difficulty}
-              </span>
+              {playlistSummary.difficulty && (
+                <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[playlistSummary.difficulty] ?? 'text-foreground')}>
+                  {playlistSummary.difficulty}
+                </span>
+              )}
               {playlistSummary.q && (
                 <span className="rounded-sm bg-background px-2 py-0.5 text-xs text-foreground">
                   {playlistSummary.q}
@@ -159,9 +164,6 @@ export function ProblemView({
             <div className="flex flex-wrap gap-1.5 items-center">
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
                 Random
-              </span>
-              <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
-                {problem.difficulty}
               </span>
             </div>
           </div>
@@ -234,6 +236,26 @@ export function ProblemView({
           <Button variant="outline" size="sm" onClick={onSkip} className="shrink-0 text-muted-foreground">
             Next →
           </Button>
+        </div>
+
+        <div className="relative inline-block mb-3">
+          <span
+            className={cn(
+              "text-xs font-semibold transition-all duration-200 block",
+              difficultyColor[problem.difficulty] ?? 'text-muted-foreground',
+              hideDifficulty && !difficultyOpen ? "opacity-0 blur-[5px]" : ""
+            )}
+          >
+            {problem.difficulty}
+          </span>
+          {hideDifficulty && !difficultyOpen && (
+            <span
+              className="absolute inset-0 flex items-center text-muted-foreground text-xs italic cursor-pointer select-none whitespace-nowrap"
+              onClick={() => setDifficultyOpen(true)}
+            >
+              Reveal difficulty
+            </span>
+          )}
         </div>
 
         <div className="mb-5">

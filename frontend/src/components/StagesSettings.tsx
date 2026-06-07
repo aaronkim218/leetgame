@@ -16,12 +16,14 @@ interface Props {
   onChange: (stages: ActiveStage[]) => void
   hideTitle: boolean
   onHideTitleChange: (value: boolean) => void
+  hideDifficulty: boolean
+  onHideDifficultyChange: (value: boolean) => void
   onTakeTour?: () => void
   theme: Theme
   onThemeChange: (t: Theme) => void
 }
 
-export function StagesSettings({ activeStages, onChange, hideTitle, onHideTitleChange, onTakeTour, theme, onThemeChange }: Props) {
+export function StagesSettings({ activeStages, onChange, hideTitle, onHideTitleChange, hideDifficulty, onHideDifficultyChange, onTakeTour, theme, onThemeChange }: Props) {
   const toggle = (stage: ActiveStage) => {
     const isActive = activeStages.includes(stage)
     if (isActive && activeStages.length === 1) return
@@ -63,6 +65,16 @@ export function StagesSettings({ activeStages, onChange, hideTitle, onHideTitleC
         <Checkbox checked={hideTitle} onCheckedChange={v => onHideTitleChange(v === true)} />
         <div>
           <p className="text-sm font-medium">Hide problem title</p>
+          <p className="text-xs text-muted-foreground">Reveal on click to test recall</p>
+        </div>
+      </button>
+      <button
+        onClick={() => onHideDifficultyChange(!hideDifficulty)}
+        className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted cursor-pointer transition-colors"
+      >
+        <Checkbox checked={hideDifficulty} onCheckedChange={v => onHideDifficultyChange(v === true)} />
+        <div>
+          <p className="text-sm font-medium">Hide difficulty</p>
           <p className="text-xs text-muted-foreground">Reveal on click to test recall</p>
         </div>
       </button>
