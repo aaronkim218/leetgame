@@ -4,12 +4,12 @@ import 'driver.js/dist/driver.css'
 export function startTour(onDone: () => void, isAuth = false) {
   const authOnlySteps = isAuth ? [
     {
-      element: '[data-tour="overflow-menu"]',
+      element: '[data-tour="smart-practice-link"]',
       popover: {
         title: 'Smart Practice',
-        description: 'Use the ··· menu to start Smart Practice — the app picks the problem topic based on your weakest proficiency areas.',
+        description: 'Use Smart Practice to let the app pick a problem based on your weakest proficiency areas.',
         side: 'bottom' as const,
-        align: 'end' as const,
+        align: 'start' as const,
       },
     },
     {

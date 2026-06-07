@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import type { Problem } from '../types'
 import { cn } from '../lib/utils'
 import { Button } from './ui/button'
@@ -55,21 +55,6 @@ export function ProblemView({
     setTitleOpen(!hideTitle)
   }, [hideTitle])
   const [problemOpen, setProblemOpen] = useState(true)
-  const [overflowOpen, setOverflowOpen] = useState(false)
-  const overflowRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!overflowOpen) return
-    const handle = (e: MouseEvent) => {
-      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) {
-        setOverflowOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handle)
-    return () => document.removeEventListener('mousedown', handle)
-  }, [overflowOpen])
-
-  const hasOverflow = !!(onExitPlaylist || onSmartPractice)
 
   return (
     <div data-tour="problem-panel" className={cn(
@@ -99,7 +84,7 @@ export function ProblemView({
       {/* content: always visible on desktop, toggled on mobile */}
       <div className={cn("p-6", !problemOpen && "hidden md:block")}>
         {smartMode ? (
-          <div className="mb-4 rounded-md border border-border bg-muted px-3.5 py-2.5">
+          <div className="mb-2 rounded-md border border-border bg-muted px-3.5 py-2.5">
             <div className="flex flex-wrap gap-1.5 items-center">
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
                 Smart Practice
@@ -107,10 +92,20 @@ export function ProblemView({
               <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
                 {problem.difficulty}
               </span>
+              {onExitPlaylist && (
+                <button
+                  onClick={onExitPlaylist}
+                  className="ml-auto text-muted-foreground hover:text-foreground transition-colors text-sm leading-none px-1"
+                  aria-label="Exit Smart Practice"
+                  title="Exit Smart Practice"
+                >
+                  ×
+                </button>
+              )}
             </div>
           </div>
         ) : playlistSummary ? (
-          <div className="mb-4 rounded-md border border-border bg-muted px-3.5 py-2.5">
+          <div className="mb-2 rounded-md border border-border bg-muted px-3.5 py-2.5">
             <div className="flex flex-wrap gap-1.5 items-center">
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
                 Playlist
@@ -128,6 +123,35 @@ export function ProblemView({
                   {tag}
                 </span>
               ))}
+              {onExitPlaylist && (
+                <button
+                  onClick={onExitPlaylist}
+                  className="ml-auto text-muted-foreground hover:text-foreground transition-colors text-sm leading-none px-1"
+                  aria-label="Exit playlist"
+                  title="Exit playlist"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+          </div>
+        ) : onExitPlaylist ? (
+          <div className="mb-2 rounded-md border border-border bg-muted px-3.5 py-2.5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
+                Playlist
+              </span>
+              <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
+                {problem.difficulty}
+              </span>
+              <button
+                onClick={onExitPlaylist}
+                className="ml-auto text-muted-foreground hover:text-foreground transition-colors text-sm leading-none px-1"
+                aria-label="Exit playlist"
+                title="Exit playlist"
+              >
+                ×
+              </button>
             </div>
           </div>
         ) : !onToggleShuffle ? (
@@ -147,6 +171,15 @@ export function ProblemView({
               {problem.difficulty}
             </span>
           </div>
+        )}
+        {!smartMode && onSmartPractice && (
+          <button
+            data-tour="smart-practice-link"
+            onClick={onSmartPractice}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors mb-3 block"
+          >
+            ↗ Smart Practice
+          </button>
         )}
 
         <div className="flex items-start gap-2 mb-3">
@@ -190,7 +223,7 @@ export function ProblemView({
               onClick={onToggleShuffle}
               className={cn(
                 "shrink-0 p-1 rounded transition-colors",
-                shuffle ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                shuffle ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
               title={shuffle ? "Shuffle on — click to go sequential" : "Shuffle off — click to shuffle"}
               aria-label={shuffle ? "Shuffle on" : "Shuffle off"}
@@ -201,38 +234,6 @@ export function ProblemView({
           <Button variant="outline" size="sm" onClick={onSkip} className="shrink-0 text-muted-foreground">
             Next →
           </Button>
-          {hasOverflow && (
-            <div data-tour="overflow-menu" className="relative shrink-0" ref={overflowRef}>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setOverflowOpen(o => !o)}
-                className="text-muted-foreground px-2"
-              >
-                ···
-              </Button>
-              {overflowOpen && (
-                <div className="absolute right-0 top-full mt-1 z-20 min-w-[160px] rounded-md border border-border bg-background shadow-md py-1">
-                  {onSmartPractice && (
-                    <button
-                      onClick={() => { onSmartPractice(); setOverflowOpen(false) }}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors"
-                    >
-                      Smart Practice
-                    </button>
-                  )}
-                  {onExitPlaylist && (
-                    <button
-                      onClick={() => { onExitPlaylist(); setOverflowOpen(false) }}
-                      className="w-full text-left px-3 py-2 text-sm text-destructive hover:bg-muted transition-colors"
-                    >
-                      {smartMode ? 'Exit Smart Practice' : 'Exit playlist'}
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         <div className="mb-5">
