@@ -163,13 +163,7 @@ export function ProblemView({
               </span>
             </div>
           </div>
-        ) : (
-          <div className="mb-3">
-            <span className={cn("text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-muted-foreground')}>
-              {problem.difficulty}
-            </span>
-          </div>
-        )}
+        ) : null}
         {!smartMode && onSmartPractice && (
           <button
             data-tour="smart-practice-link"
