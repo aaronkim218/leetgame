@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-const (
-	msgPrefix = `{"message": "`
-	endMarker = `", "stage"`
-)
+// minEndMarkerLen is the length of the shortest possible end-marker sequence:
+// closing quote + comma + "stage" key = `","stage"` (8 chars).
+// The pending buffer is kept at this length - 1 so we never emit a partial marker.
+const minEndMarkerLen = 8
 
 type extractState int
 
@@ -19,7 +19,8 @@ const (
 )
 
 // Extractor pulls the clean message value out of a streaming JSON response.
-// The LLM emits {"message": "CONTENT", "stage": "VALUE"} token by token.
+// The LLM emits some form of {"message": "CONTENT", "stage": "VALUE"} token
+// by token — possibly compact, pretty-printed, or wrapped in a code fence.
 // It calls onToken only with characters that belong to CONTENT.
 type Extractor struct {
 	accumulated string
@@ -32,6 +33,60 @@ func NewExtractor(onToken func(string)) *Extractor {
 	return &Extractor{onToken: onToken}
 }
 
+// findMsgValueStart searches s for the "message" key and returns the index
+// of the first character of the message value (i.e. the char after the
+// opening `"` of the string value). Returns -1 if not yet found.
+func findMsgValueStart(s string) int {
+	idx := strings.Index(s, `"message"`)
+	if idx < 0 {
+		return -1
+	}
+	rest := s[idx+9:] // skip `"message"` (9 chars)
+	// skip whitespace
+	i := 0
+	for i < len(rest) && isWS(rest[i]) {
+		i++
+	}
+	if i >= len(rest) || rest[i] != ':' {
+		return -1
+	}
+	i++ // skip colon
+	for i < len(rest) && isWS(rest[i]) {
+		i++
+	}
+	if i >= len(rest) || rest[i] != '"' {
+		return -1
+	}
+	return idx + 9 + i + 1 // position right after the opening quote
+}
+
+func isWS(b byte) bool {
+	return b == ' ' || b == '\t' || b == '\n' || b == '\r'
+}
+
+// findEndMarker returns the index of the closing `"` that ends the message
+// value (i.e. the quote followed by `,` then optional whitespace then `"stage"`).
+// Returns -1 if not found.
+func findEndMarker(s string) int {
+	for i := 0; i+8 <= len(s); i++ {
+		if s[i] != '"' {
+			continue
+		}
+		j := i + 1
+		if j >= len(s) || s[j] != ',' {
+			continue
+		}
+		j++
+		for j < len(s) && isWS(s[j]) {
+			j++
+		}
+		if j+7 <= len(s) && s[j:j+7] == `"stage"` {
+			return i
+		}
+	}
+	return -1
+}
+
 // Add feeds the next token into the extractor.
 func (e *Extractor) Add(tok string) {
 	e.accumulated += tok
@@ -39,16 +94,17 @@ func (e *Extractor) Add(tok string) {
 		return
 	}
 	if e.state == stateBefore {
-		// skip leading code fence (```json\n or ```\n) before looking for JSON prefix
+		// Strip leading code fence (```json\n or ```\n) before scanning.
 		content := e.accumulated
 		if strings.HasPrefix(content, "```") {
 			if idx := strings.Index(content, "\n"); idx >= 0 {
 				content = content[idx+1:]
 			}
 		}
-		if strings.HasPrefix(content, msgPrefix) {
+		start := findMsgValueStart(content)
+		if start >= 0 {
 			e.state = stateMessage
-			after := content[len(msgPrefix):]
+			after := content[start:]
 			if after != "" {
 				e.forward(after)
 			}
@@ -70,7 +126,7 @@ func (e *Extractor) Flush(ctx context.Context) {
 // detected before any part of it is forwarded to onToken.
 func (e *Extractor) forward(tok string) {
 	combined := e.pending + tok
-	if idx := strings.Index(combined, endMarker); idx >= 0 {
+	if idx := findEndMarker(combined); idx >= 0 {
 		if e.onToken != nil && idx > 0 {
 			e.onToken(combined[:idx])
 		}
@@ -78,7 +134,7 @@ func (e *Extractor) forward(tok string) {
 		e.pending = ""
 		return
 	}
-	safeLen := len(combined) - len(endMarker) + 1
+	safeLen := len(combined) - minEndMarkerLen + 1
 	if safeLen > 0 {
 		if e.onToken != nil {
 			e.onToken(combined[:safeLen])

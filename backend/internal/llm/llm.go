@@ -85,7 +85,7 @@ func BuildVolatileSystemSuffix(stage string, hintRequested, answerRequested bool
 	if hintRequested {
 		sb.WriteString("\n\nThe user has clicked 'Give me a hint'. Give a targeted hint that moves them toward the answer without fully revealing it. One sentence maximum.")
 	} else if answerRequested {
-		sb.WriteString("\n\nThe user has clicked 'Give me the answer'. Reveal the correct answer for the current stage clearly and completely. Use markdown formatting — bullet points, bold, and inline code — to make the answer easy to read.")
+		sb.WriteString("\n\nThe user has clicked 'Give me the answer'. Reveal the correct answer for the current stage clearly and completely. You may use markdown inside the \"message\" value (bold, bullet lists, inline code). CRITICAL: your response must still be the exact same JSON format — no code fences, no pretty-printing, no extra fields.")
 	}
 
 	return sb.String()
