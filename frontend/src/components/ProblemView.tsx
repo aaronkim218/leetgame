@@ -69,12 +69,14 @@ export function ProblemView({
         <span className="flex-1 text-sm font-medium truncate text-muted-foreground">
           {titleOpen ? problem.title : 'Problem'}
         </span>
-        <span className={cn(
-          "text-xs font-semibold",
-          difficultyColor[problem.difficulty] ?? 'text-muted-foreground'
-        )}>
-          {problem.difficulty}
-        </span>
+        {(!hideDifficulty || difficultyOpen) && (
+          <span className={cn(
+            "text-xs font-semibold",
+            difficultyColor[problem.difficulty] ?? 'text-muted-foreground'
+          )}>
+            {problem.difficulty}
+          </span>
+        )}
         <button
           onClick={() => setProblemOpen(o => !o)}
           aria-expanded={problemOpen}
@@ -89,11 +91,8 @@ export function ProblemView({
         {smartMode ? (
           <div className="mb-2 rounded-md border border-border bg-muted px-3.5 py-2.5">
             <div className="flex flex-wrap gap-1.5 items-center">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mr-1">
                 Smart Practice
-              </span>
-              <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
-                {problem.difficulty}
               </span>
               {onExitPlaylist && (
                 <button
@@ -143,11 +142,8 @@ export function ProblemView({
         ) : onExitPlaylist ? (
           <div className="mb-2 rounded-md border border-border bg-muted px-3.5 py-2.5">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mr-1">
                 Playlist
-              </span>
-              <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[problem.difficulty] ?? 'text-foreground')}>
-                {problem.difficulty}
               </span>
               <button
                 onClick={onExitPlaylist}

@@ -31,9 +31,10 @@ export function useAuth() {
       try { stages = JSON.parse(stored) as ActiveStage[] } catch { /* use default */ }
     }
     const storedHideTitle = localStorage.getItem('leetgame_hide_title')
+    const storedHideDifficulty = localStorage.getItem('leetgame_hide_difficulty')
     setActiveStages(stages)
     setHideTitle(storedHideTitle === null ? true : storedHideTitle === 'true')
-    setHideDifficulty(true)
+    setHideDifficulty(storedHideDifficulty === null ? true : storedHideDifficulty === 'true')
   }
 
   useEffect(() => {
@@ -100,6 +101,10 @@ export function useAuth() {
     setHideDifficulty(value)
     if (session) {
       updateSettings(activeStages, hideTitle, value, activeTopics, tourDone).catch(() => {})
+    } else {
+      try {
+        localStorage.setItem('leetgame_hide_difficulty', String(value))
+      } catch { /* ignore */ }
     }
   }
 
