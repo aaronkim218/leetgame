@@ -16,14 +16,14 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func applyProblemSearchFilters(sb squirrel.SelectBuilder, q, difficulty string, tags []string, tagMatch, excludeID string) squirrel.SelectBuilder {
+func applyProblemSearchFilters(sb squirrel.SelectBuilder, q string, difficulties []string, tags []string, tagMatch, excludeID string) squirrel.SelectBuilder {
 	sb = sb.From("problems").PlaceholderFormat(squirrel.Dollar)
 
 	if q != "" {
 		sb = sb.Where(squirrel.ILike{"title": "%" + q + "%"})
 	}
-	if difficulty != "" {
-		sb = sb.Where(squirrel.Eq{"difficulty": difficulty})
+	if len(difficulties) > 0 {
+		sb = sb.Where(squirrel.Eq{"difficulty": difficulties})
 	}
 	if excludeID != "" {
 		sb = sb.Where(squirrel.NotEq{"id": excludeID})
@@ -79,12 +79,12 @@ func (p *Postgres) GetRandomProblem(ctx context.Context) (models.Problem, error)
 	})
 }
 
-func (p *Postgres) GetRandomProblemFiltered(ctx context.Context, q, difficulty string, tags []string, tagMatch, excludeID string) (models.Problem, error) {
+func (p *Postgres) GetRandomProblemFiltered(ctx context.Context, q string, difficulties []string, tags []string, tagMatch, excludeID string) (models.Problem, error) {
 	return utils.Retry(ctx, func(ctx context.Context) (models.Problem, error) {
 		sql, args, err := applyProblemSearchFilters(
 			squirrel.Select("id, slug, title, description, difficulty, topic_tags, leetcode_id, created_at"),
 			q,
-			difficulty,
+			difficulties,
 			tags,
 			tagMatch,
 			excludeID,
@@ -139,12 +139,12 @@ func (p *Postgres) GetProblemByID(ctx context.Context, id uuid.UUID) (models.Pro
 	})
 }
 
-func (p *Postgres) SearchProblems(ctx context.Context, q, difficulty string, tags []string, tagMatch string, page, pageSize int) (types.ProblemSearchResponse, error) {
+func (p *Postgres) SearchProblems(ctx context.Context, q string, difficulties []string, tags []string, tagMatch string, page, pageSize int) (types.ProblemSearchResponse, error) {
 	return utils.Retry(ctx, func(ctx context.Context) (types.ProblemSearchResponse, error) {
 		countSQL, countArgs, err := applyProblemSearchFilters(
 			squirrel.Select("COUNT(*)"),
 			q,
-			difficulty,
+			difficulties,
 			tags,
 			tagMatch,
 			"",
@@ -162,7 +162,7 @@ func (p *Postgres) SearchProblems(ctx context.Context, q, difficulty string, tag
 		sql, args, err := applyProblemSearchFilters(
 			squirrel.Select("id, slug, title, description, difficulty, topic_tags, leetcode_id, created_at"),
 			q,
-			difficulty,
+			difficulties,
 			tags,
 			tagMatch,
 			"",
