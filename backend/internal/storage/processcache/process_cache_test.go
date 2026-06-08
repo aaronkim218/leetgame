@@ -430,13 +430,11 @@ func TestConcurrentExpiry_OnlyOneReload(t *testing.T) {
 	// only one background reload should be started
 	var wg sync.WaitGroup
 	for range 10 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			if _, err := c.GetRandomProblem(context.Background()); err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
-		}()
+		})
 	}
 	wg.Wait()
 

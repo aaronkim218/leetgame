@@ -25,7 +25,7 @@ func makeTestKeyfunc(t *testing.T) (*rsa.PrivateKey, jwt.Keyfunc) {
 	t.Helper()
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
-	kf := func(token *jwt.Token) (interface{}, error) {
+	kf := func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}

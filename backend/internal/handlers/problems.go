@@ -24,7 +24,7 @@ func parseProblemSearchFilters(q types.SearchQuery) (tags []string, tagMatch str
 	}
 
 	if q.Tags != "" {
-		for _, t := range strings.Split(q.Tags, ",") {
+		for t := range strings.SplitSeq(q.Tags, ",") {
 			if t = strings.TrimSpace(t); t != "" {
 				tags = append(tags, t)
 			}
@@ -32,7 +32,7 @@ func parseProblemSearchFilters(q types.SearchQuery) (tags []string, tagMatch str
 	}
 
 	if q.Difficulty != "" {
-		for _, d := range strings.Split(q.Difficulty, ",") {
+		for d := range strings.SplitSeq(q.Difficulty, ",") {
 			if d = strings.TrimSpace(d); d != "" {
 				difficulties = append(difficulties, d)
 			}
