@@ -7,8 +7,8 @@ import { Input } from './ui/input'
 import { Badge } from './ui/badge'
 import { Skeleton } from './ui/skeleton'
 
-const difficulties = ['Easy', 'Medium', 'Hard'] as const
-type Difficulty = typeof difficulties[number]
+const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const
+type Difficulty = typeof DIFFICULTIES[number]
 
 const difficultyTextClass: Record<Difficulty, string> = {
   Easy: 'text-easy',
@@ -46,7 +46,7 @@ function SearchResultSkeleton() {
 
 export interface SearchSelectionContext {
   q: string
-  difficulty: string
+  difficulties: string[]
   tags: string[]
   tagMatch: 'and' | 'or'
   page: number
@@ -80,11 +80,15 @@ export function SearchPage({ onSelectProblem, onEnterPlaylist, searchState, onSe
     if (!showSave) setShowSaved(false)
   }, [showSave])
 
-  const { q, difficulty, tags, tagMatch, results, page, total, hasSearched } = searchState
-  const hasActiveFilters = q !== '' || difficulty !== '' || tags.length > 0
+  const { q, difficulties, tags, tagMatch, results, page, total, hasSearched } = searchState
+  const hasActiveFilters = q !== '' || difficulties.length > 0 || tags.length > 0
 
   const setQ = (v: string) => onSearchStateChange({ ...searchState, q: v, page: 1 })
-  const setDifficulty = (v: string) => onSearchStateChange({ ...searchState, difficulty: v, page: 1 })
+  const toggleDifficulty = (d: string) => {
+    const next = difficulties.includes(d) ? difficulties.filter(x => x !== d) : [...difficulties, d]
+    onSearchStateChange({ ...searchState, difficulties: next, page: 1 })
+  }
+  const clearDifficulties = () => onSearchStateChange({ ...searchState, difficulties: [], page: 1 })
   const setTags = (v: string[]) => onSearchStateChange({ ...searchState, tags: v, page: 1 })
   const setTagMatch = (v: 'and' | 'or') => onSearchStateChange({ ...searchState, tagMatch: v, page: 1 })
   const setPage = (v: number) => onSearchStateChange({ ...searchState, page: v })
@@ -124,23 +128,23 @@ export function SearchPage({ onSelectProblem, onEnterPlaylist, searchState, onSe
 
       <div className="flex gap-2 mb-4">
         <button
-          onClick={() => setDifficulty('')}
+          onClick={clearDifficulties}
           className={cn(
             'px-3.5 py-1.5 text-sm rounded-md border cursor-pointer transition-colors',
-            difficulty === ''
+            difficulties.length === 0
               ? 'border-foreground bg-foreground text-background'
               : 'border-border text-muted-foreground hover:text-foreground'
           )}
         >
           All
         </button>
-        {difficulties.map(d => (
+        {DIFFICULTIES.map(d => (
           <button
             key={d}
-            onClick={() => setDifficulty(difficulty === d ? '' : d)}
+            onClick={() => toggleDifficulty(d)}
             className={cn(
               'px-3.5 py-1.5 text-sm rounded-md border cursor-pointer transition-colors',
-              difficulty === d
+              difficulties.includes(d)
                 ? difficultyActiveClass[d]
                 : 'border-border text-muted-foreground hover:text-foreground'
             )}
@@ -274,7 +278,7 @@ export function SearchPage({ onSelectProblem, onEnterPlaylist, searchState, onSe
           key={p.id}
           onClick={() => onSelectProblem(p, {
             q: showSaved ? '' : q,
-            difficulty: showSaved ? '' : difficulty,
+            difficulties: showSaved ? [] : difficulties,
             tags: showSaved ? [] : tags,
             tagMatch: showSaved ? 'and' : tagMatch,
             page: showSaved ? 1 : page,

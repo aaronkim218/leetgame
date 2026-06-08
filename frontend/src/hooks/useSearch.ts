@@ -16,7 +16,7 @@ export function useSearch(
   // eslint-disable-next-line react-hooks/refs
   searchStateRef.current = searchState
 
-  const { q, difficulty, tags, tagMatch, page } = searchState
+  const { q, difficulties, tags, tagMatch, page } = searchState
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -27,7 +27,7 @@ export function useSearch(
       setLoading(true)
       setError(null)
       try {
-        const { q: sq, difficulty: sd, tags: st, tagMatch: sm, page: sp } = searchStateRef.current
+        const { q: sq, difficulties: sd, tags: st, tagMatch: sm, page: sp } = searchStateRef.current
         const res = await searchProblems(sq, sd, st, sm, sp, SEARCH_PAGE_SIZE, controller.signal)
         // only writes results/total/hasSearched — none of which are in the effect deps, so no loop
         onSearchStateChange({ ...searchStateRef.current, results: res.problems, total: res.total, hasSearched: true })
@@ -43,8 +43,8 @@ export function useSearch(
       if (debounceRef.current) clearTimeout(debounceRef.current)
       abortRef.current?.abort()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- tags.join(',') replaces array ref; others are primitives; onSearchStateChange is a stable useState setter
-  }, [q, difficulty, tags.join(','), tagMatch, page])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- difficulties.join(',') replaces array ref; others are primitives; onSearchStateChange is a stable useState setter
+  }, [q, difficulties.join(','), tags.join(','), tagMatch, page])
 
   return { loading, error }
 }
