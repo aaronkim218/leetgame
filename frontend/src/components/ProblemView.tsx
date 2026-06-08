@@ -15,7 +15,7 @@ const difficultyColor: Record<string, string> = {
 
 interface SearchPlaylistSummary {
   q: string
-  difficulty: string
+  difficulties: string[]
   tags: string[]
   tagMatch: 'and' | 'or'
 }
@@ -112,11 +112,11 @@ export function ProblemView({
               <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground mr-1">
                 Playlist
               </span>
-              {playlistSummary.difficulty && (
-                <span className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[playlistSummary.difficulty] ?? 'text-foreground')}>
-                  {playlistSummary.difficulty}
+              {playlistSummary.difficulties.map(d => (
+                <span key={d} className={cn("rounded-sm bg-background px-2 py-0.5 text-xs font-semibold", difficultyColor[d] ?? 'text-foreground')}>
+                  {d}
                 </span>
-              )}
+              ))}
               {playlistSummary.q && (
                 <span className="rounded-sm bg-background px-2 py-0.5 text-xs text-foreground">
                   {playlistSummary.q}
@@ -211,17 +211,16 @@ export function ProblemView({
             </Button>
           )}
           {onToggleShuffle && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onToggleShuffle}
-              className={cn(
-                "shrink-0 p-1 rounded transition-colors",
-                shuffle ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              )}
+              className={cn("shrink-0", shuffle ? "text-primary" : "text-muted-foreground")}
               title={shuffle ? "Shuffle on — click to go sequential" : "Shuffle off — click to shuffle"}
               aria-label={shuffle ? "Shuffle on" : "Shuffle off"}
             >
               <Shuffle size={16} />
-            </button>
+            </Button>
           )}
           <Button variant="outline" size="sm" onClick={onSkip} className="shrink-0 text-muted-foreground">
             Next →
