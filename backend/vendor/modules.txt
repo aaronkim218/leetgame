@@ -9,13 +9,13 @@ github.com/MicahParks/keyfunc/v2
 github.com/andybalholm/brotli
 github.com/andybalholm/brotli/flate
 github.com/andybalholm/brotli/matchfinder
-# github.com/caarlos0/env/v11 v11.3.1
+# github.com/caarlos0/env/v11 v11.4.1
 ## explicit; go 1.18
 github.com/caarlos0/env/v11
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/goccy/go-json v0.10.5
+# github.com/goccy/go-json v0.10.6
 ## explicit; go 1.19
 github.com/goccy/go-json
 github.com/goccy/go-json/internal/decoder
@@ -38,11 +38,11 @@ github.com/gofiber/fiber/v3/middleware/cors
 github.com/gofiber/fiber/v3/middleware/limiter
 github.com/gofiber/fiber/v3/middleware/logger
 github.com/gofiber/fiber/v3/middleware/recover
-# github.com/gofiber/schema v1.7.1
-## explicit; go 1.25
+# github.com/gofiber/schema v1.7.2
+## explicit; go 1.25.0
 github.com/gofiber/schema
-# github.com/gofiber/utils/v2 v2.0.6
-## explicit; go 1.24.0
+# github.com/gofiber/utils/v2 v2.1.0
+## explicit; go 1.25.0
 github.com/gofiber/utils/v2
 github.com/gofiber/utils/v2/bytes
 github.com/gofiber/utils/v2/internal/caseconv
@@ -54,7 +54,7 @@ github.com/golang-jwt/jwt/v5
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
-# github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
+# github.com/jackc/pgerrcode v0.0.0-20250907135507-afb5586c32a6
 ## explicit; go 1.12
 github.com/jackc/pgerrcode
 # github.com/jackc/pgpassfile v1.0.0
@@ -63,8 +63,8 @@ github.com/jackc/pgpassfile
 # github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
-# github.com/jackc/pgx/v5 v5.7.5
-## explicit; go 1.23.0
+# github.com/jackc/pgx/v5 v5.10.0
+## explicit; go 1.25.0
 github.com/jackc/pgx/v5
 github.com/jackc/pgx/v5/internal/iobufpool
 github.com/jackc/pgx/v5/internal/pgio
@@ -107,7 +107,7 @@ github.com/lann/builder
 # github.com/lann/ps v0.0.0-20150810152359-62de8c46ede0
 ## explicit
 github.com/lann/ps
-# github.com/mattn/go-colorable v0.1.14
+# github.com/mattn/go-colorable v0.1.15
 ## explicit; go 1.18
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.22
@@ -116,8 +116,8 @@ github.com/mattn/go-isatty
 # github.com/philhofer/fwd v1.2.0
 ## explicit; go 1.20
 github.com/philhofer/fwd
-# github.com/pierrec/lz4/v4 v4.1.15
-## explicit; go 1.14
+# github.com/pierrec/lz4/v4 v4.1.27
+## explicit; go 1.17
 github.com/pierrec/lz4/v4
 github.com/pierrec/lz4/v4/internal/lz4block
 github.com/pierrec/lz4/v4/internal/lz4errors
@@ -203,28 +203,27 @@ github.com/valyala/fasthttp/tcplisten
 # github.com/xdg-go/pbkdf2 v1.0.0
 ## explicit; go 1.9
 github.com/xdg-go/pbkdf2
-# github.com/xdg-go/scram v1.1.2
-## explicit; go 1.11
+# github.com/xdg-go/scram v1.2.0
+## explicit; go 1.18
 github.com/xdg-go/scram
 # github.com/xdg-go/stringprep v1.0.4
 ## explicit; go 1.11
 github.com/xdg-go/stringprep
-# golang.org/x/crypto v0.51.0
+# golang.org/x/crypto v0.53.0
 ## explicit; go 1.25.0
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
-golang.org/x/crypto/pbkdf2
-# golang.org/x/net v0.54.0
+# golang.org/x/net v0.55.0
 ## explicit; go 1.25.0
 golang.org/x/net/idna
-# golang.org/x/sync v0.20.0
+# golang.org/x/sync v0.21.0
 ## explicit; go 1.25.0
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.44.0
+# golang.org/x/sys v0.46.0
 ## explicit; go 1.25.0
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.37.0
+# golang.org/x/text v0.38.0
 ## explicit; go 1.25.0
 golang.org/x/text/cases
 golang.org/x/text/internal
