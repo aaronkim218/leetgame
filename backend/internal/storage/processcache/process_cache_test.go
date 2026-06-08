@@ -367,6 +367,42 @@ func TestCacheExpiry_ServesStaleDataImmediately(t *testing.T) {
 	}
 }
 
+func TestGetRandomProblemFiltered_ByMultipleDifficulties(t *testing.T) {
+	c := newCache(testProblems)
+	// Easy (id1) + Medium (id2, id3) — Hard excluded
+	seen := map[uuid.UUID]bool{}
+	for range 50 {
+		p, err := c.GetRandomProblemFiltered(context.Background(), "", []string{"Easy", "Medium"}, nil, "and", "")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if p.Id != id1 && p.Id != id2 && p.Id != id3 {
+			t.Errorf("unexpected problem %s returned for Easy+Medium filter", p.Id)
+		}
+		seen[p.Id] = true
+	}
+	if !seen[id1] {
+		t.Error("expected id1 (Easy) to appear in 50 samples")
+	}
+}
+
+func TestSearchProblems_FilterByMultipleDifficulties(t *testing.T) {
+	c := newCache(testProblems)
+	// Easy (id1) + Medium (id2, id3) = 3 total
+	resp, err := c.SearchProblems(context.Background(), "", []string{"Easy", "Medium"}, nil, "and", 1, 10)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resp.Total != 3 {
+		t.Errorf("total: got %d, want 3", resp.Total)
+	}
+	for _, p := range resp.Problems {
+		if p.Difficulty != "Easy" && p.Difficulty != "Medium" {
+			t.Errorf("got unexpected difficulty %s", p.Difficulty)
+		}
+	}
+}
+
 func TestConcurrentExpiry_OnlyOneReload(t *testing.T) {
 	stub := &stubStorage{problems: testProblems}
 	c := New(stub, time.Millisecond)

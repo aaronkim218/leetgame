@@ -128,14 +128,14 @@ func deriveTags(problems []models.Problem) []types.ProblemTag {
 	return tags
 }
 
-func matchesProblem(p models.Problem, q, difficulty string, tags []string, tagMatch, excludeID string) bool {
+func matchesProblem(p models.Problem, q string, difficulties []string, tags []string, tagMatch, excludeID string) bool {
 	if excludeID != "" && p.Id.String() == excludeID {
 		return false
 	}
 	if q != "" && !strings.Contains(strings.ToLower(p.Title), strings.ToLower(q)) {
 		return false
 	}
-	if difficulty != "" && p.Difficulty != difficulty {
+	if len(difficulties) > 0 && !slices.Contains(difficulties, p.Difficulty) {
 		return false
 	}
 	if len(tags) == 0 {
@@ -177,21 +177,21 @@ func (c *CachedStorage) GetRandomProblem(ctx context.Context) (models.Problem, e
 	return problems[rand.Intn(len(problems))], nil
 }
 
-func (c *CachedStorage) GetRandomProblemFiltered(ctx context.Context, q, difficulty string, tags []string, tagMatch, excludeID string) (models.Problem, error) {
+func (c *CachedStorage) GetRandomProblemFiltered(ctx context.Context, q string, difficulties []string, tags []string, tagMatch, excludeID string) (models.Problem, error) {
 	problems, _, _, err := c.getOrLoad(ctx)
 	if err != nil {
 		return models.Problem{}, err
 	}
-	filtered := make([]models.Problem, 0)
+	var matches []models.Problem
 	for _, p := range problems {
-		if matchesProblem(p, q, difficulty, tags, tagMatch, excludeID) {
-			filtered = append(filtered, p)
+		if matchesProblem(p, q, difficulties, tags, tagMatch, excludeID) {
+			matches = append(matches, p)
 		}
 	}
-	if len(filtered) == 0 {
+	if len(matches) == 0 {
 		return models.Problem{}, utils.CreateNonRetryableError(xerrors.NotFoundError("problem", map[string]string{}))
 	}
-	return filtered[rand.Intn(len(filtered))], nil
+	return matches[rand.Intn(len(matches))], nil
 }
 
 func (c *CachedStorage) GetProblemByID(ctx context.Context, id uuid.UUID) (models.Problem, error) {
@@ -206,7 +206,7 @@ func (c *CachedStorage) GetProblemByID(ctx context.Context, id uuid.UUID) (model
 	return p, nil
 }
 
-func (c *CachedStorage) SearchProblems(ctx context.Context, q, difficulty string, tags []string, tagMatch string, page, pageSize int) (types.ProblemSearchResponse, error) {
+func (c *CachedStorage) SearchProblems(ctx context.Context, q string, difficulties []string, tags []string, tagMatch string, page, pageSize int) (types.ProblemSearchResponse, error) {
 	problems, _, _, err := c.getOrLoad(ctx)
 	if err != nil {
 		return types.ProblemSearchResponse{}, err
@@ -219,7 +219,7 @@ func (c *CachedStorage) SearchProblems(ctx context.Context, q, difficulty string
 	}
 	filtered := make([]models.Problem, 0)
 	for _, p := range problems {
-		if matchesProblem(p, q, difficulty, tags, tagMatch, "") {
+		if matchesProblem(p, q, difficulties, tags, tagMatch, "") {
 			filtered = append(filtered, p)
 		}
 	}
