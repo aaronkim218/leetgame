@@ -76,7 +76,8 @@ func ErrorHandler(c fiber.Ctx, err error) error {
 		httpErr = InternalServerError()
 	}
 
-	slog.Error("error handling request",
+	slog.Error(
+		"error handling request",
 		slog.String("method", c.Method()),
 		slog.String("path", c.Path()),
 		slog.String("error", err.Error()),

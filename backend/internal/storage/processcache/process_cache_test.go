@@ -47,7 +47,9 @@ func (s *stubStorage) SearchProblems(_ context.Context, _ string, _ []string, _ 
 func (s *stubStorage) GetProblemTags(_ context.Context) ([]types.ProblemTag, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) UpsertPracticeDay(_ context.Context, _ uuid.UUID) error { panic("unexpected") }
+
 func (s *stubStorage) GetStreak(_ context.Context, _ uuid.UUID) (types.StreakInfo, error) {
 	panic("unexpected")
 }

@@ -70,7 +70,8 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
 
-	slog.Info("evaluator starting",
+	slog.Info(
+		"evaluator starting",
 		"broker", cfg.Kafka.BrokerURL,
 		"topic", cfg.Kafka.Topic,
 		"group_id", cfg.Kafka.GroupID,

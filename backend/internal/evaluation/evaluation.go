@@ -21,7 +21,8 @@ type EvaluationDispatcher interface {
 // RunSession runs session evaluation and logs any error. Used by GoroutineDispatcher.
 func RunSession(ctx context.Context, store storage.Storage, llmClient llm.Client, logger *slog.Logger, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) {
 	if err := RunSessionWithError(ctx, store, llmClient, logger, userID, problem, activeStages, history); err != nil {
-		logger.Error("session evaluation failed",
+		logger.Error(
+			"session evaluation failed",
 			"error", err,
 			"user_id", userID,
 			"problem_id", problem.Id,
@@ -33,7 +34,8 @@ func RunSession(ctx context.Context, store storage.Storage, llmClient llm.Client
 // RunSessionWithError runs session evaluation and returns the first error encountered.
 // Used by the Kafka consumer so it can decide whether to retry.
 func RunSessionWithError(ctx context.Context, store storage.Storage, llmClient llm.Client, logger *slog.Logger, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) error {
-	logger.Info("starting session evaluation",
+	logger.Info(
+		"starting session evaluation",
 		"user_id", userID,
 		"problem_id", problem.Id,
 		"problem_title", problem.Title,
@@ -58,7 +60,8 @@ func RunSessionWithError(ctx context.Context, store storage.Storage, llmClient l
 	var updated int
 	for _, score := range eval.Scores {
 		if score.Score < 0 || score.Score > 1 {
-			logger.Warn("skipping out-of-range score from LLM",
+			logger.Warn(
+				"skipping out-of-range score from LLM",
 				"topic", score.Topic,
 				"stage", score.Stage,
 				"score", score.Score,
@@ -71,7 +74,8 @@ func RunSessionWithError(ctx context.Context, store storage.Storage, llmClient l
 		updated++
 	}
 
-	logger.Info("session evaluation complete",
+	logger.Info(
+		"session evaluation complete",
 		"user_id", userID,
 		"problem_title", problem.Title,
 		"topics_updated", updated,
