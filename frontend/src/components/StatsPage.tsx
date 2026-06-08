@@ -75,7 +75,7 @@ export function StatsPage({
   const toggleLine = (key: string) =>
     setHiddenLines(prev => {
       const next = new Set(prev)
-      next.has(key) ? next.delete(key) : next.add(key)
+      if (next.has(key)) { next.delete(key) } else { next.add(key) }
       return next
     })
 
