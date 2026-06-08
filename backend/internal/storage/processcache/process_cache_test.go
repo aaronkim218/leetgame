@@ -384,6 +384,9 @@ func TestGetRandomProblemFiltered_ByMultipleDifficulties(t *testing.T) {
 	if !seen[id1] {
 		t.Error("expected id1 (Easy) to appear in 50 samples")
 	}
+	if !seen[id2] || !seen[id3] {
+		t.Error("expected id2 and id3 (Medium) to appear in 50 samples")
+	}
 }
 
 func TestSearchProblems_FilterByMultipleDifficulties(t *testing.T) {
