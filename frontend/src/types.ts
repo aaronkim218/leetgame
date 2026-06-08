@@ -61,7 +61,7 @@ export interface ChatResponse {
 
 export interface SearchState {
   q: string
-  difficulty: string
+  difficulties: string[]
   tags: string[]
   tagMatch: 'and' | 'or'
   results: Problem[]
@@ -72,7 +72,7 @@ export interface SearchState {
 
 export const defaultSearchState: SearchState = {
   q: '',
-  difficulty: '',
+  difficulties: [],
   tags: [],
   tagMatch: 'and',
   results: [],

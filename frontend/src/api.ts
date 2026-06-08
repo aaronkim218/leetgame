@@ -19,14 +19,14 @@ export async function getRandomProblem(): Promise<Problem> {
 
 export async function getRandomProblemFiltered(
   q: string,
-  difficulty: string,
+  difficulties: string[],
   tags: string[],
   tagMatch: 'and' | 'or',
   excludeId?: string,
 ): Promise<Problem> {
   const params = new URLSearchParams()
   if (q) params.set('q', q)
-  if (difficulty) params.set('difficulty', difficulty)
+  if (difficulties.length) params.set('difficulty', difficulties.join(','))
   if (tags.length) params.set('tags', tags.join(','))
   if (tags.length) params.set('tag_match', tagMatch)
   if (excludeId) params.set('exclude_id', excludeId)
@@ -39,7 +39,7 @@ export async function getRandomProblemFiltered(
 
 export async function searchProblems(
   q: string,
-  difficulty: string,
+  difficulties: string[],
   tags: string[],
   tagMatch: 'and' | 'or',
   page: number,
@@ -48,7 +48,7 @@ export async function searchProblems(
 ): Promise<ProblemSearchResponse> {
   const params = new URLSearchParams()
   if (q) params.set('q', q)
-  if (difficulty) params.set('difficulty', difficulty)
+  if (difficulties.length) params.set('difficulty', difficulties.join(','))
   if (tags.length) params.set('tags', tags.join(','))
   if (tags.length) params.set('tag_match', tagMatch)
   params.set('page', String(page))
