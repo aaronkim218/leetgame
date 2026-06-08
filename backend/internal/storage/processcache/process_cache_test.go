@@ -30,13 +30,13 @@ func (s *stubStorage) Ping(_ context.Context) error                        { pan
 func (s *stubStorage) GetRandomProblem(_ context.Context) (models.Problem, error) {
 	panic("unexpected")
 }
-func (s *stubStorage) GetRandomProblemFiltered(_ context.Context, _, _ string, _ []string, _, _ string) (models.Problem, error) {
+func (s *stubStorage) GetRandomProblemFiltered(_ context.Context, _ string, _ []string, _ []string, _, _ string) (models.Problem, error) {
 	panic("unexpected")
 }
 func (s *stubStorage) GetProblemByID(_ context.Context, _ uuid.UUID) (models.Problem, error) {
 	panic("unexpected")
 }
-func (s *stubStorage) SearchProblems(_ context.Context, _, _ string, _ []string, _ string, _, _ int) (types.ProblemSearchResponse, error) {
+func (s *stubStorage) SearchProblems(_ context.Context, _ string, _ []string, _ []string, _ string, _, _ int) (types.ProblemSearchResponse, error) {
 	panic("unexpected")
 }
 func (s *stubStorage) GetProblemTags(_ context.Context) ([]types.ProblemTag, error) {
@@ -133,7 +133,7 @@ func TestGetRandomProblem_EmptyProblems_ReturnsNotFound(t *testing.T) {
 func TestGetRandomProblemFiltered_ByDifficulty(t *testing.T) {
 	c := newCache(testProblems)
 	for range 20 {
-		p, err := c.GetRandomProblemFiltered(context.Background(), "", "Easy", nil, "and", "")
+		p, err := c.GetRandomProblemFiltered(context.Background(), "", []string{"Easy"}, nil, "and", "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -147,7 +147,7 @@ func TestGetRandomProblemFiltered_ByTagAnd(t *testing.T) {
 	c := newCache(testProblems)
 	// only id3 has both "string" AND "hash-table"
 	for range 10 {
-		p, err := c.GetRandomProblemFiltered(context.Background(), "", "", []string{"hash-table", "string"}, "and", "")
+		p, err := c.GetRandomProblemFiltered(context.Background(), "", nil, []string{"hash-table", "string"}, "and", "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -162,7 +162,7 @@ func TestGetRandomProblemFiltered_ByTagOr(t *testing.T) {
 	// "math" OR "array" matches id1 and id2
 	seen := map[uuid.UUID]bool{}
 	for range 50 {
-		p, err := c.GetRandomProblemFiltered(context.Background(), "", "", []string{"math", "array"}, "or", "")
+		p, err := c.GetRandomProblemFiltered(context.Background(), "", nil, []string{"math", "array"}, "or", "")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -179,7 +179,7 @@ func TestGetRandomProblemFiltered_ByTagOr(t *testing.T) {
 func TestGetRandomProblemFiltered_ExcludeID(t *testing.T) {
 	c := newCache(testProblems)
 	for range 20 {
-		p, err := c.GetRandomProblemFiltered(context.Background(), "", "", nil, "and", id1.String())
+		p, err := c.GetRandomProblemFiltered(context.Background(), "", nil, nil, "and", id1.String())
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -191,7 +191,7 @@ func TestGetRandomProblemFiltered_ExcludeID(t *testing.T) {
 
 func TestGetRandomProblemFiltered_NoMatch_ReturnsNotFound(t *testing.T) {
 	c := newCache(testProblems)
-	_, err := c.GetRandomProblemFiltered(context.Background(), "", "Hard", nil, "and", "")
+	_, err := c.GetRandomProblemFiltered(context.Background(), "", []string{"Hard"}, nil, "and", "")
 	if err == nil {
 		t.Fatal("expected not-found error, got nil")
 	}
@@ -219,7 +219,7 @@ func TestGetProblemByID_NotFound(t *testing.T) {
 
 func TestSearchProblems_FilterByDifficulty(t *testing.T) {
 	c := newCache(testProblems)
-	resp, err := c.SearchProblems(context.Background(), "", "Medium", nil, "and", 1, 10)
+	resp, err := c.SearchProblems(context.Background(), "", []string{"Medium"}, nil, "and", 1, 10)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -235,7 +235,7 @@ func TestSearchProblems_FilterByDifficulty(t *testing.T) {
 
 func TestSearchProblems_SortedByLeetcodeID(t *testing.T) {
 	c := newCache(testProblems)
-	resp, err := c.SearchProblems(context.Background(), "", "", nil, "and", 1, 10)
+	resp, err := c.SearchProblems(context.Background(), "", nil, nil, "and", 1, 10)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -250,7 +250,7 @@ func TestSearchProblems_SortedByLeetcodeID(t *testing.T) {
 
 func TestSearchProblems_Pagination(t *testing.T) {
 	c := newCache(testProblems)
-	resp, err := c.SearchProblems(context.Background(), "", "", nil, "and", 2, 2)
+	resp, err := c.SearchProblems(context.Background(), "", nil, nil, "and", 2, 2)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -264,7 +264,7 @@ func TestSearchProblems_Pagination(t *testing.T) {
 
 func TestSearchProblems_PageBeyondEnd_ReturnsEmpty(t *testing.T) {
 	c := newCache(testProblems)
-	resp, err := c.SearchProblems(context.Background(), "", "", nil, "and", 99, 10)
+	resp, err := c.SearchProblems(context.Background(), "", nil, nil, "and", 99, 10)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -278,7 +278,7 @@ func TestSearchProblems_PageBeyondEnd_ReturnsEmpty(t *testing.T) {
 
 func TestSearchProblems_InvalidPage_DefaultsToFirstPage(t *testing.T) {
 	c := newCache(testProblems)
-	resp, err := c.SearchProblems(context.Background(), "", "", nil, "and", 0, 10)
+	resp, err := c.SearchProblems(context.Background(), "", nil, nil, "and", 0, 10)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -292,7 +292,7 @@ func TestSearchProblems_InvalidPage_DefaultsToFirstPage(t *testing.T) {
 
 func TestSearchProblems_TitleSubstringMatch(t *testing.T) {
 	c := newCache(testProblems)
-	resp, err := c.SearchProblems(context.Background(), "two sum", "", nil, "and", 1, 10)
+	resp, err := c.SearchProblems(context.Background(), "two sum", nil, nil, "and", 1, 10)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
