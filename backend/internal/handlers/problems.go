@@ -8,7 +8,7 @@ import (
 	"leetgame/internal/types"
 	"leetgame/internal/xerrors"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 const (
@@ -42,9 +42,9 @@ func parseProblemSearchFilters(q types.SearchQuery) (tags []string, tagMatch str
 	return tags, tagMatch, difficulties
 }
 
-func (hs *HandlerService) GetRandomProblem(c *fiber.Ctx) error {
+func (hs *HandlerService) GetRandomProblem(c fiber.Ctx) error {
 	var q types.SearchQuery
-	if err := c.QueryParser(&q); err != nil {
+	if err := c.Bind().Query(&q); err != nil {
 		return xerrors.BadRequestError("invalid query params")
 	}
 
@@ -56,9 +56,9 @@ func (hs *HandlerService) GetRandomProblem(c *fiber.Ctx) error {
 	)
 
 	if q.Q != "" || len(difficulties) > 0 || len(tags) > 0 {
-		problem, err = hs.storage.GetRandomProblemFiltered(c.Context(), q.Q, difficulties, tags, tagMatch, q.ExcludeID)
+		problem, err = hs.storage.GetRandomProblemFiltered(c.RequestCtx(), q.Q, difficulties, tags, tagMatch, q.ExcludeID)
 	} else {
-		problem, err = hs.storage.GetRandomProblem(c.Context())
+		problem, err = hs.storage.GetRandomProblem(c.RequestCtx())
 	}
 	if err != nil {
 		return err
@@ -66,8 +66,8 @@ func (hs *HandlerService) GetRandomProblem(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(problem)
 }
 
-func (hs *HandlerService) GetProblemTags(c *fiber.Ctx) error {
-	tags, err := hs.storage.GetProblemTags(c.Context())
+func (hs *HandlerService) GetProblemTags(c fiber.Ctx) error {
+	tags, err := hs.storage.GetProblemTags(c.RequestCtx())
 	if err != nil {
 		return err
 	}
@@ -75,9 +75,9 @@ func (hs *HandlerService) GetProblemTags(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(tags)
 }
 
-func (hs *HandlerService) GetProblems(c *fiber.Ctx) error {
+func (hs *HandlerService) GetProblems(c fiber.Ctx) error {
 	var q types.SearchQuery
-	if err := c.QueryParser(&q); err != nil {
+	if err := c.Bind().Query(&q); err != nil {
 		return xerrors.BadRequestError("invalid query params")
 	}
 
@@ -96,9 +96,11 @@ func (hs *HandlerService) GetProblems(c *fiber.Ctx) error {
 
 	tags, tagMatch, difficulties := parseProblemSearchFilters(q)
 
-	problems, err := hs.storage.SearchProblems(c.Context(), q.Q, difficulties, tags, tagMatch, page, pageSize)
+	problems, err := hs.storage.SearchProblems(c.RequestCtx(), q.Q, difficulties, tags, tagMatch, page, pageSize)
 	if err != nil {
 		return err
 	}
 	return c.Status(http.StatusOK).JSON(problems)
 }
+
+// fiber:context-methods migrated

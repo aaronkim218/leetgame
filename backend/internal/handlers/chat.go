@@ -8,23 +8,23 @@ import (
 
 	"leetgame/internal/llm"
 	"leetgame/internal/types"
-	"leetgame/internal/xerrors"
 	"leetgame/internal/xcontext"
+	"leetgame/internal/xerrors"
 
+	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
-	"github.com/gofiber/fiber/v2"
 )
 
-func (hs *HandlerService) Chat(c *fiber.Ctx) error {
+func (hs *HandlerService) Chat(c fiber.Ctx) error {
 	var req types.ChatRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.Bind().Body(&req); err != nil {
 		return xerrors.InvalidJSON()
 	}
 	if errs := req.Validate(); len(errs) > 0 {
 		return xerrors.UnprocessableEntityError(errs)
 	}
 
-	problem, err := hs.storage.GetProblemByID(c.Context(), req.ProblemID)
+	problem, err := hs.storage.GetProblemByID(c.RequestCtx(), req.ProblemID)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (hs *HandlerService) Chat(c *fiber.Ctx) error {
 	c.Set("Cache-Control", "no-cache")
 	c.Set("Connection", "keep-alive")
 
-	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
+	c.RequestCtx().SetBodyStreamWriter(func(w *bufio.Writer) {
 		defer cancelStream()
 
 		onToken := func(token string) {
@@ -80,7 +80,7 @@ func (hs *HandlerService) Chat(c *fiber.Ctx) error {
 		if err != nil {
 			hs.logger.Error("llm evaluate failed", "error", err)
 			fmt.Fprintf(w, "event: error\ndata: {}\n\n") //nolint:errcheck
-			w.Flush()                                     //nolint:errcheck
+			w.Flush()                                    //nolint:errcheck
 			return
 		}
 
@@ -90,7 +90,7 @@ func (hs *HandlerService) Chat(c *fiber.Ctx) error {
 
 		done, _ := json.Marshal(map[string]string{"stage": result.Stage, "message": result.Message})
 		fmt.Fprintf(w, "event: done\ndata: %s\n\n", done) //nolint:errcheck
-		w.Flush()                                          //nolint:errcheck
+		w.Flush()                                         //nolint:errcheck
 
 		if evalEnabled && result.Stage == "complete" {
 			fullHistory := append(baseHistory[:len(baseHistory):len(baseHistory)], llm.ChatMessage{Role: "assistant", Content: result.Message})
@@ -109,3 +109,5 @@ func nextStage(current string, activeStages []string) string {
 	}
 	return "complete"
 }
+
+// fiber:context-methods migrated

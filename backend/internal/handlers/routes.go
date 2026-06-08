@@ -5,8 +5,8 @@ import (
 
 	"leetgame/internal/middleware"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/limiter"
 )
 
 func (hs *HandlerService) RegisterRoutes(app *fiber.App) {
@@ -15,8 +15,8 @@ func (hs *HandlerService) RegisterRoutes(app *fiber.App) {
 			Max: 300,
 		}))
 
-		api.Get("/healthcheck", func(c *fiber.Ctx) error {
-			if err := hs.storage.Ping(c.Context()); err != nil {
+		api.Get("/healthcheck", func(c fiber.Ctx) error {
+			if err := hs.storage.Ping(c.RequestCtx()); err != nil {
 				return c.Status(http.StatusInternalServerError).SendString("failed to ping database")
 			}
 			return c.SendStatus(http.StatusOK)
@@ -61,3 +61,5 @@ func (hs *HandlerService) RegisterRoutes(app *fiber.App) {
 		})
 	})
 }
+
+// fiber:context-methods migrated

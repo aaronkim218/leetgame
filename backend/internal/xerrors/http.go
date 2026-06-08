@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type HTTPError struct {
@@ -64,7 +64,7 @@ func UnprocessableEntityError(errors map[string]string) HTTPError {
 	}
 }
 
-func ErrorHandler(c *fiber.Ctx, err error) error {
+func ErrorHandler(c fiber.Ctx, err error) error {
 	var httpErr HTTPError
 
 	switch e := err.(type) {

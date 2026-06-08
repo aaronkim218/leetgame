@@ -6,13 +6,13 @@ import (
 	"leetgame/internal/xcontext"
 	"leetgame/internal/xerrors"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
 func RequireAuth(kf jwt.Keyfunc) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
 			return xerrors.UnauthorizedError()
@@ -45,7 +45,7 @@ func RequireAuth(kf jwt.Keyfunc) fiber.Handler {
 // OptionalAuth sets the user ID in context if a valid JWT is present, but does not
 // block unauthenticated requests. A nil keyfunc disables verification entirely (passthrough).
 func OptionalAuth(kf jwt.Keyfunc) fiber.Handler {
-	return func(c *fiber.Ctx) error {
+	return func(c fiber.Ctx) error {
 		if kf == nil {
 			return c.Next()
 		}

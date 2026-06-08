@@ -3,16 +3,16 @@ package handlers
 import (
 	"leetgame/internal/xcontext"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func (hs *HandlerService) GetProficiencyHistory(c *fiber.Ctx) error {
+func (hs *HandlerService) GetProficiencyHistory(c fiber.Ctx) error {
 	uid, err := xcontext.GetUserID(c)
 	if err != nil {
 		return err
 	}
 
-	snapshots, err := hs.storage.GetProficiencyHistory(c.Context(), uid)
+	snapshots, err := hs.storage.GetProficiencyHistory(c.RequestCtx(), uid)
 	if err != nil {
 		return err
 	}
@@ -39,3 +39,5 @@ func (hs *HandlerService) GetProficiencyHistory(c *fiber.Ctx) error {
 	}
 	return c.JSON(response{History: resp})
 }
+
+// fiber:context-methods migrated

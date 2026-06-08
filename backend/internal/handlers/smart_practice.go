@@ -11,7 +11,7 @@ import (
 	"leetgame/internal/xcontext"
 	"leetgame/internal/xerrors"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 type topicWeight struct {
@@ -90,7 +90,7 @@ func sampleTopic(weights []topicWeight) string {
 	return weights[len(weights)-1].Topic
 }
 
-func (hs *HandlerService) GetSmartPracticeProblem(c *fiber.Ctx) error {
+func (hs *HandlerService) GetSmartPracticeProblem(c fiber.Ctx) error {
 	uid, err := xcontext.GetUserID(c)
 	if err != nil {
 		return err
@@ -119,20 +119,20 @@ func (hs *HandlerService) GetSmartPracticeProblem(c *fiber.Ctx) error {
 		}
 	}
 
-	allTags, err := hs.storage.GetProblemTags(c.Context())
+	allTags, err := hs.storage.GetProblemTags(c.RequestCtx())
 	if err != nil {
 		return err
 	}
 	allTags = filterTagsByActiveTopics(allTags, activeTopics)
 
-	proficiencies, err := hs.storage.GetTopicProficiencies(c.Context(), uid)
+	proficiencies, err := hs.storage.GetTopicProficiencies(c.RequestCtx(), uid)
 	if err != nil {
 		return err
 	}
 
 	weights := computeTopicWeights(proficiencies, allTags, activeStages)
 	if len(weights) == 0 {
-		problem, err := hs.storage.GetRandomProblem(c.Context())
+		problem, err := hs.storage.GetRandomProblem(c.RequestCtx())
 		if err != nil {
 			return err
 		}
@@ -140,11 +140,11 @@ func (hs *HandlerService) GetSmartPracticeProblem(c *fiber.Ctx) error {
 	}
 	sampledTopic := sampleTopic(weights)
 
-	problem, err := hs.storage.GetRandomProblemFiltered(c.Context(), "", nil, []string{sampledTopic}, "or", "")
+	problem, err := hs.storage.GetRandomProblemFiltered(c.RequestCtx(), "", nil, []string{sampledTopic}, "or", "")
 	if err != nil {
 		var httpErr xerrors.HTTPError
 		if errors.As(err, &httpErr) && httpErr.StatusCode == http.StatusNotFound {
-			problem, err = hs.storage.GetRandomProblem(c.Context())
+			problem, err = hs.storage.GetRandomProblem(c.RequestCtx())
 			if err != nil {
 				return err
 			}
@@ -156,14 +156,16 @@ func (hs *HandlerService) GetSmartPracticeProblem(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(problem)
 }
 
-func (hs *HandlerService) GetProficiency(c *fiber.Ctx) error {
+func (hs *HandlerService) GetProficiency(c fiber.Ctx) error {
 	uid, err := xcontext.GetUserID(c)
 	if err != nil {
 		return err
 	}
-	proficiencies, err := hs.storage.GetTopicProficiencies(c.Context(), uid)
+	proficiencies, err := hs.storage.GetTopicProficiencies(c.RequestCtx(), uid)
 	if err != nil {
 		return err
 	}
 	return c.Status(http.StatusOK).JSON(proficiencies)
 }
+
+// fiber:context-methods migrated

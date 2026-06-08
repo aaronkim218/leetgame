@@ -2,6 +2,7 @@ package server
 
 import (
 	"log/slog"
+	"strings"
 
 	"leetgame/internal/evaluation"
 	"leetgame/internal/handlers"
@@ -10,10 +11,10 @@ import (
 	"leetgame/internal/xerrors"
 
 	go_json "github.com/goccy/go-json"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/cors"
+	"github.com/gofiber/fiber/v3/middleware/logger"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -36,8 +37,8 @@ func New(cfg *Config) *fiber.App {
 	app.Use(logger.New())
 	app.Use(recover.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: cfg.AllowedOrigins,
-		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowOrigins: strings.Split(cfg.AllowedOrigins, ","),
+		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
 	}))
 
 	service := handlers.NewService(&handlers.HandlerServiceConfig{

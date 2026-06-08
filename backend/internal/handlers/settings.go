@@ -5,16 +5,16 @@ import (
 	"leetgame/internal/xcontext"
 	"leetgame/internal/xerrors"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
-func (hs *HandlerService) GetSettings(c *fiber.Ctx) error {
+func (hs *HandlerService) GetSettings(c fiber.Ctx) error {
 	uid, err := xcontext.GetUserID(c)
 	if err != nil {
 		return xerrors.UnauthorizedError()
 	}
 
-	settings, err := hs.storage.GetUserSettings(c.Context(), uid)
+	settings, err := hs.storage.GetUserSettings(c.RequestCtx(), uid)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (hs *HandlerService) GetSettings(c *fiber.Ctx) error {
 	})
 }
 
-func (hs *HandlerService) UpdateSettings(c *fiber.Ctx) error {
+func (hs *HandlerService) UpdateSettings(c fiber.Ctx) error {
 	uid, err := xcontext.GetUserID(c)
 	if err != nil {
 		return xerrors.UnauthorizedError()
@@ -49,7 +49,7 @@ func (hs *HandlerService) UpdateSettings(c *fiber.Ctx) error {
 		TourDone       bool     `json:"tour_done"`
 	}
 	var req request
-	if err := c.BodyParser(&req); err != nil {
+	if err := c.Bind().Body(&req); err != nil {
 		return xerrors.InvalidJSON()
 	}
 
@@ -62,7 +62,7 @@ func (hs *HandlerService) UpdateSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := hs.storage.UpsertUserSettings(c.Context(), uid, req.ActiveStages, req.HideTitle, req.HideDifficulty, req.ActiveTopics, req.TourDone); err != nil {
+	if err := hs.storage.UpsertUserSettings(c.RequestCtx(), uid, req.ActiveStages, req.HideTitle, req.HideDifficulty, req.ActiveTopics, req.TourDone); err != nil {
 		return err
 	}
 
@@ -96,3 +96,5 @@ func validateActiveStages(stages []string) map[string]string {
 	}
 	return errs
 }
+
+// fiber:context-methods migrated

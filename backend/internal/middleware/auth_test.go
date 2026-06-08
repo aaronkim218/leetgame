@@ -12,7 +12,7 @@ import (
 	"leetgame/internal/middleware"
 	"leetgame/internal/xcontext"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -61,9 +61,11 @@ func makeHMACToken(t *testing.T, sub string, expiry time.Time) string {
 }
 
 func makeOptionalApp(kf jwt.Keyfunc) *fiber.App {
-	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.Status(http.StatusUnauthorized).SendString("unauthorized")
-	}})
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+		},
+	})
 	app.Use(middleware.OptionalAuth(kf))
 	return app
 }
@@ -73,7 +75,7 @@ func TestRequireAuth_ValidToken(t *testing.T) {
 	app := fiber.New()
 	app.Use(middleware.RequireAuth(kf))
 	uid := uuid.New()
-	app.Get("/test", func(c *fiber.Ctx) error {
+	app.Get("/test", func(c fiber.Ctx) error {
 		got, err := xcontext.GetUserID(c)
 		require.NoError(t, err)
 		assert.Equal(t, uid, got)
@@ -91,11 +93,13 @@ func TestRequireAuth_ValidToken(t *testing.T) {
 
 func TestRequireAuth_MissingHeader(t *testing.T) {
 	_, kf := makeTestKeyfunc(t)
-	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.Status(http.StatusUnauthorized).SendString("unauthorized")
-	}})
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+		},
+	})
 	app.Use(middleware.RequireAuth(kf))
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
 	resp, err := app.Test(req)
@@ -105,11 +109,13 @@ func TestRequireAuth_MissingHeader(t *testing.T) {
 
 func TestRequireAuth_ExpiredToken(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
-	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.Status(http.StatusUnauthorized).SendString("unauthorized")
-	}})
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+		},
+	})
 	app.Use(middleware.RequireAuth(kf))
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	token := makeToken(t, privateKey, uuid.New().String(), time.Now().Add(-time.Hour))
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -122,11 +128,13 @@ func TestRequireAuth_ExpiredToken(t *testing.T) {
 
 func TestRequireAuth_InvalidSignature(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
-	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.Status(http.StatusUnauthorized).SendString("unauthorized")
-	}})
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+		},
+	})
 	app.Use(middleware.RequireAuth(kf))
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	token := makeToken(t, privateKey, uuid.New().String(), time.Now().Add(time.Hour))
 	token = token[:len(token)-4] + "xxxx"
@@ -141,11 +149,13 @@ func TestRequireAuth_InvalidSignature(t *testing.T) {
 
 func TestRequireAuth_NonUUIDSub(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
-	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.Status(http.StatusUnauthorized).SendString("unauthorized")
-	}})
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+		},
+	})
 	app.Use(middleware.RequireAuth(kf))
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	token := makeToken(t, privateKey, "not-a-uuid", time.Now().Add(time.Hour))
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -158,11 +168,13 @@ func TestRequireAuth_NonUUIDSub(t *testing.T) {
 
 func TestRequireAuth_WrongAlgorithm(t *testing.T) {
 	_, kf := makeTestKeyfunc(t) // RS256 keyfunc
-	app := fiber.New(fiber.Config{ErrorHandler: func(c *fiber.Ctx, err error) error {
-		return c.Status(http.StatusUnauthorized).SendString("unauthorized")
-	}})
+	app := fiber.New(fiber.Config{
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			return c.Status(http.StatusUnauthorized).SendString("unauthorized")
+		},
+	})
 	app.Use(middleware.RequireAuth(kf))
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	// HS256 token is the wrong algorithm for an RS256 keyfunc
 	token := makeHMACToken(t, uuid.New().String(), time.Now().Add(time.Hour))
@@ -178,7 +190,7 @@ func TestRequireAuth_WrongAlgorithm(t *testing.T) {
 
 func TestOptionalAuth_NilKeyfunc(t *testing.T) {
 	app := makeOptionalApp(nil)
-	app.Get("/test", func(c *fiber.Ctx) error {
+	app.Get("/test", func(c fiber.Ctx) error {
 		_, err := xcontext.GetUserID(c)
 		assert.Error(t, err, "user ID should not be set when keyfunc is nil")
 		return c.SendStatus(http.StatusOK)
@@ -193,7 +205,7 @@ func TestOptionalAuth_NilKeyfunc(t *testing.T) {
 func TestOptionalAuth_NoHeader(t *testing.T) {
 	_, kf := makeTestKeyfunc(t)
 	app := makeOptionalApp(kf)
-	app.Get("/test", func(c *fiber.Ctx) error {
+	app.Get("/test", func(c fiber.Ctx) error {
 		_, err := xcontext.GetUserID(c)
 		assert.Error(t, err, "user ID should not be set for unauthenticated request")
 		return c.SendStatus(http.StatusOK)
@@ -209,7 +221,7 @@ func TestOptionalAuth_ValidToken(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
 	app := makeOptionalApp(kf)
 	uid := uuid.New()
-	app.Get("/test", func(c *fiber.Ctx) error {
+	app.Get("/test", func(c fiber.Ctx) error {
 		got, err := xcontext.GetUserID(c)
 		require.NoError(t, err)
 		assert.Equal(t, uid, got)
@@ -228,7 +240,7 @@ func TestOptionalAuth_ValidToken(t *testing.T) {
 func TestOptionalAuth_ExpiredToken(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
 	app := makeOptionalApp(kf)
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	token := makeToken(t, privateKey, uuid.New().String(), time.Now().Add(-time.Hour))
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -242,7 +254,7 @@ func TestOptionalAuth_ExpiredToken(t *testing.T) {
 func TestOptionalAuth_InvalidSignature(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
 	app := makeOptionalApp(kf)
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	token := makeToken(t, privateKey, uuid.New().String(), time.Now().Add(time.Hour))
 	token = token[:len(token)-4] + "xxxx"
@@ -258,7 +270,7 @@ func TestOptionalAuth_InvalidSignature(t *testing.T) {
 func TestOptionalAuth_NonUUIDSub(t *testing.T) {
 	privateKey, kf := makeTestKeyfunc(t)
 	app := makeOptionalApp(kf)
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	token := makeToken(t, privateKey, "not-a-uuid", time.Now().Add(time.Hour))
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
@@ -272,7 +284,7 @@ func TestOptionalAuth_NonUUIDSub(t *testing.T) {
 func TestOptionalAuth_WrongAlgorithm(t *testing.T) {
 	_, kf := makeTestKeyfunc(t) // RS256 keyfunc
 	app := makeOptionalApp(kf)
-	app.Get("/test", func(c *fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
+	app.Get("/test", func(c fiber.Ctx) error { return c.SendStatus(http.StatusOK) })
 
 	// HS256 token is wrong algorithm — OptionalAuth silently passes through
 	token := makeHMACToken(t, uuid.New().String(), time.Now().Add(time.Hour))
