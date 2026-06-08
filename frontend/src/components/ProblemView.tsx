@@ -198,7 +198,7 @@ export function ProblemView({
           {onToggleSave && (
             <button
               onClick={e => { e.stopPropagation(); onToggleSave() }}
-              className="shrink-0 text-lg leading-none text-muted-foreground hover:text-foreground transition-colors px-1"
+              className="shrink-0 h-8 w-8 flex items-center justify-center text-lg leading-none text-muted-foreground hover:text-foreground transition-colors"
               title={isSaved ? 'Remove bookmark' : 'Save for later'}
               aria-label={isSaved ? 'Remove bookmark' : 'Save for later'}
             >

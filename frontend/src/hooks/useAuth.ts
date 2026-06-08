@@ -8,6 +8,16 @@ import type { Session } from '@supabase/supabase-js'
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return
+    if (!new URLSearchParams(window.location.search).has('dev')) return
+    const email = import.meta.env.VITE_DEV_EMAIL as string | undefined
+    const password = import.meta.env.VITE_DEV_PASSWORD as string | undefined
+    if (email && password) {
+      supabase.auth.signInWithPassword({ email, password }).catch(() => {})
+    }
+  }, [])
   const [streak, setStreak] = useState<number | null>(null)
   const [lastPracticedAt, setLastPracticedAt] = useState<string | null>(null)
   // eslint-disable-next-line react-hooks/purity

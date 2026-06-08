@@ -9,12 +9,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts'
 const STAGES = ['edge_cases', 'brute_force', 'pattern', 'algorithm', 'tc_sc'] as const
 
 const chartConfig = {
-  edge_cases:  { label: 'Edge Cases',   color: 'hsl(var(--chart-1))' },
-  brute_force: { label: 'Brute Force',  color: 'hsl(var(--chart-2))' },
-  pattern:     { label: 'Pattern',      color: 'hsl(var(--chart-3))' },
-  algorithm:   { label: 'Algorithm',    color: 'hsl(var(--chart-4))' },
-  tc_sc:       { label: 'Time & Space', color: 'hsl(var(--chart-5))' },
-  overall:     { label: 'Overall',      color: 'hsl(var(--foreground))' },
+  edge_cases:  { label: 'Edge Cases',   color: '#a78bfa' },
+  brute_force: { label: 'Brute Force',  color: '#60a5fa' },
+  pattern:     { label: 'Pattern',      color: '#34d399' },
+  algorithm:   { label: 'Algorithm',    color: '#fbbf24' },
+  tc_sc:       { label: 'Time & Space', color: '#f87171' },
+  overall:     { label: 'Overall',      color: '#e2e8f0' },
 } as const
 
 interface ChartPoint {
@@ -70,6 +70,14 @@ export function StatsPage({
   const [topicPickerOpen, setTopicPickerOpen] = useState(false)
   const [history, setHistory] = useState<ProficiencySnapshot[]>([])
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
+  const [hiddenLines, setHiddenLines] = useState<Set<string>>(new Set())
+
+  const toggleLine = (key: string) =>
+    setHiddenLines(prev => {
+      const next = new Set(prev)
+      next.has(key) ? next.delete(key) : next.add(key)
+      return next
+    })
 
   useEffect(() => {
     const controller = new AbortController()
@@ -245,6 +253,7 @@ export function StatsPage({
                     {chartData.length === 0 ? (
                       <p className="text-xs text-muted-foreground">Practice more sessions to see your trend.</p>
                     ) : (
+                      <>
                       <ChartContainer config={chartConfig} className="h-48 w-full">
                         <LineChart data={chartData}>
                           <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
@@ -267,6 +276,7 @@ export function StatsPage({
                               strokeWidth={1.5}
                               dot={false}
                               connectNulls
+                              hide={hiddenLines.has(stage)}
                             />
                           ))}
                           <Line
@@ -277,9 +287,33 @@ export function StatsPage({
                             dot={false}
                             strokeDasharray="4 2"
                             connectNulls
+                            hide={hiddenLines.has('overall')}
                           />
                         </LineChart>
                       </ChartContainer>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 justify-center">
+                        {([...STAGES, 'overall'] as const).map(key => {
+                          const hidden = hiddenLines.has(key)
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => toggleLine(key)}
+                              className="flex items-center gap-1.5 text-xs transition-opacity"
+                              style={{ opacity: hidden ? 0.35 : 1 }}
+                            >
+                              <span
+                                className="inline-block w-4 h-px"
+                                style={key === 'overall'
+                                  ? { borderTop: `1px dashed ${chartConfig.overall.color}` }
+                                  : { backgroundColor: chartConfig[key].color }
+                                }
+                              />
+                              <span className="text-muted-foreground">{chartConfig[key].label}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                      </>
                     )}
                   </div>
                 )}

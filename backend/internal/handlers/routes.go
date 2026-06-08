@@ -6,10 +6,15 @@ import (
 	"leetgame/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
 func (hs *HandlerService) RegisterRoutes(app *fiber.App) {
 	app.Route("/api", func(api fiber.Router) {
+		api.Use(limiter.New(limiter.Config{
+			Max: 300,
+		}))
+
 		api.Get("/healthcheck", func(c *fiber.Ctx) error {
 			if err := hs.storage.Ping(c.Context()); err != nil {
 				return c.Status(http.StatusInternalServerError).SendString("failed to ping database")

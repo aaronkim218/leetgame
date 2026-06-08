@@ -81,7 +81,7 @@ export function SearchPage({ onSelectProblem, onEnterPlaylist, searchState, onSe
   }, [showSave])
 
   const { q, difficulties, tags, tagMatch, results, page, total, hasSearched } = searchState
-  const hasActiveFilters = q !== '' || difficulties.length > 0 || tags.length > 0
+
 
   const setQ = (v: string) => onSearchStateChange({ ...searchState, q: v, page: 1 })
   const toggleDifficulty = (d: string) => {
@@ -240,7 +240,7 @@ export function SearchPage({ onSelectProblem, onEnterPlaylist, searchState, onSe
         </div>
       </div>
 
-      {onEnterPlaylist && hasActiveFilters && !showSaved && (
+      {onEnterPlaylist && !showSaved && (
         <div className="mb-6">
           <Button
             onClick={onEnterPlaylist}
