@@ -140,7 +140,7 @@ func (hs *HandlerService) GetSmartPracticeProblem(c *fiber.Ctx) error {
 	}
 	sampledTopic := sampleTopic(weights)
 
-	problem, err := hs.storage.GetRandomProblemFiltered(c.Context(), "", "", []string{sampledTopic}, "or", "")
+	problem, err := hs.storage.GetRandomProblemFiltered(c.Context(), "", nil, []string{sampledTopic}, "or", "")
 	if err != nil {
 		var httpErr xerrors.HTTPError
 		if errors.As(err, &httpErr) && httpErr.StatusCode == http.StatusNotFound {

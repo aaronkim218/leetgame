@@ -17,13 +17,12 @@ const (
 	maxProblemSearchPageSize     = 50
 )
 
-func parseProblemSearchFilters(q types.SearchQuery) ([]string, string) {
-	tagMatch := strings.ToLower(strings.TrimSpace(q.TagMatch))
+func parseProblemSearchFilters(q types.SearchQuery) (tags []string, tagMatch string, difficulties []string) {
+	tagMatch = strings.ToLower(strings.TrimSpace(q.TagMatch))
 	if tagMatch != "or" {
 		tagMatch = "and"
 	}
 
-	tags := []string{}
 	if q.Tags != "" {
 		for _, t := range strings.Split(q.Tags, ",") {
 			if t = strings.TrimSpace(t); t != "" {
@@ -32,7 +31,15 @@ func parseProblemSearchFilters(q types.SearchQuery) ([]string, string) {
 		}
 	}
 
-	return tags, tagMatch
+	if q.Difficulty != "" {
+		for _, d := range strings.Split(q.Difficulty, ",") {
+			if d = strings.TrimSpace(d); d != "" {
+				difficulties = append(difficulties, d)
+			}
+		}
+	}
+
+	return tags, tagMatch, difficulties
 }
 
 func (hs *HandlerService) GetRandomProblem(c *fiber.Ctx) error {
@@ -41,15 +48,15 @@ func (hs *HandlerService) GetRandomProblem(c *fiber.Ctx) error {
 		return xerrors.BadRequestError("invalid query params")
 	}
 
-	tags, tagMatch := parseProblemSearchFilters(q)
+	tags, tagMatch, difficulties := parseProblemSearchFilters(q)
 
 	var (
 		problem models.Problem
-		err error
+		err     error
 	)
 
-	if q.Q != "" || q.Difficulty != "" || len(tags) > 0 {
-		problem, err = hs.storage.GetRandomProblemFiltered(c.Context(), q.Q, q.Difficulty, tags, tagMatch, q.ExcludeID)
+	if q.Q != "" || len(difficulties) > 0 || len(tags) > 0 {
+		problem, err = hs.storage.GetRandomProblemFiltered(c.Context(), q.Q, difficulties, tags, tagMatch, q.ExcludeID)
 	} else {
 		problem, err = hs.storage.GetRandomProblem(c.Context())
 	}
@@ -87,9 +94,9 @@ func (hs *HandlerService) GetProblems(c *fiber.Ctx) error {
 		pageSize = maxProblemSearchPageSize
 	}
 
-	tags, tagMatch := parseProblemSearchFilters(q)
+	tags, tagMatch, difficulties := parseProblemSearchFilters(q)
 
-	problems, err := hs.storage.SearchProblems(c.Context(), q.Q, q.Difficulty, tags, tagMatch, page, pageSize)
+	problems, err := hs.storage.SearchProblems(c.Context(), q.Q, difficulties, tags, tagMatch, page, pageSize)
 	if err != nil {
 		return err
 	}
