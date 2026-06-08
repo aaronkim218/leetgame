@@ -31,7 +31,7 @@ interface PracticeSnapshot {
 
 interface SearchPlaylist {
   q: string
-  difficulty: string
+  difficulties: string[]
   tags: string[]
   tagMatch: 'and' | 'or'
   page: number
@@ -43,13 +43,13 @@ interface SearchPlaylist {
 function getPlaylistSummary(searchPlaylist: SearchPlaylist | null) {
   if (!searchPlaylist) return null
 
-  if (!searchPlaylist.q && !searchPlaylist.difficulty && searchPlaylist.tags.length === 0) {
+  if (!searchPlaylist.q && searchPlaylist.difficulties.length === 0 && searchPlaylist.tags.length === 0) {
     return null
   }
 
   return {
     q: searchPlaylist.q,
-    difficulty: searchPlaylist.difficulty,
+    difficulties: searchPlaylist.difficulties,
     tags: searchPlaylist.tags,
     tagMatch: searchPlaylist.tagMatch,
   }
@@ -171,7 +171,7 @@ export default function App() {
       setError(null)
       const res = await searchProblems(
         searchPlaylist.q,
-        searchPlaylist.difficulty,
+        searchPlaylist.difficulties,
         searchPlaylist.tags,
         searchPlaylist.tagMatch,
         nextPage,
@@ -222,7 +222,7 @@ export default function App() {
         setError(null)
         const p = await getRandomProblemFiltered(
           searchPlaylist.q,
-          searchPlaylist.difficulty,
+          searchPlaylist.difficulties,
           searchPlaylist.tags,
           searchPlaylist.tagMatch,
           problem?.id,
@@ -256,19 +256,19 @@ export default function App() {
   }
 
   const enterPlaylistFromSearch = async () => {
-    const { q, difficulty, tags, tagMatch } = searchState
+    const { q, difficulties, tags, tagMatch } = searchState
     try {
       pushSnapshot()
       setError(null)
       setPlaylistExhausted(false)
       setShuffle(true)
       playlistEntryDepthRef.current = sessionStack.length + (problem ? 1 : 0)
-      const p = await getRandomProblemFiltered(q, difficulty, tags, tagMatch)
+      const p = await getRandomProblemFiltered(q, difficulties, tags, tagMatch)
       setProblem(p)
       setProblemSource('search')
       setSearchPlaylist({
         q,
-        difficulty,
+        difficulties,
         tags,
         tagMatch,
         page: 0,
@@ -292,7 +292,7 @@ export default function App() {
     setPlaylistExhausted(false)
     setSearchPlaylist({
       q: context.q,
-      difficulty: context.difficulty,
+      difficulties: context.difficulties,
       tags: context.tags,
       tagMatch: context.tagMatch,
       page: context.page,
@@ -335,7 +335,7 @@ export default function App() {
       setError(null)
       const res = await searchProblems(
         searchPlaylist.q,
-        searchPlaylist.difficulty,
+        searchPlaylist.difficulties,
         searchPlaylist.tags,
         searchPlaylist.tagMatch,
         1,
