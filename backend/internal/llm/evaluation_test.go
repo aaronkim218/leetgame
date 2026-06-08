@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"leetgame/internal/models"
 	"github.com/google/uuid"
+	"leetgame/internal/models"
 )
 
 func TestBuildEvaluationPrompt(t *testing.T) {

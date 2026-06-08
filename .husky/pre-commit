@@ -1,0 +1,26 @@
+#!/bin/sh
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+
+echo "▶ frontend: lint"
+cd "$ROOT/frontend" && npm run lint || exit 1
+
+echo "▶ frontend: build"
+cd "$ROOT/frontend" && npm run build || exit 1
+
+echo "▶ backend: gofumpt"
+unformatted=$(cd "$ROOT/backend" && gofumpt -l .)
+if [ -n "$unformatted" ]; then
+  echo "The following files need gofumpt formatting:"
+  echo "$unformatted"
+  exit 1
+fi
+
+echo "▶ backend: lint"
+cd "$ROOT/backend" && golangci-lint run || exit 1
+
+echo "▶ backend: build"
+cd "$ROOT/backend" && go build ./... || exit 1
+
+echo "▶ backend: test"
+cd "$ROOT/backend" && go test ./... || exit 1

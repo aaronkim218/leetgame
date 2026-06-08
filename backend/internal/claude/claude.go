@@ -142,4 +142,3 @@ func (c *AnthropicClient) Evaluate(ctx context.Context, problem models.Problem, 
 
 	return evalResp, nil
 }
-

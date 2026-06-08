@@ -124,4 +124,3 @@ func (c *OllamaClient) Evaluate(ctx context.Context, problem models.Problem, sta
 
 	return evalResp, nil
 }
-

@@ -10,8 +10,8 @@ import (
 	"leetgame/internal/llm"
 	"leetgame/internal/models"
 
-	kafkago "github.com/segmentio/kafka-go"
 	"github.com/google/uuid"
+	kafkago "github.com/segmentio/kafka-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -118,8 +118,8 @@ func TestConsumer_HandlerAlwaysFails_CommitsAfterMaxRetries(t *testing.T) {
 	}()
 	c.Run(ctx) //nolint:errcheck
 
-	assert.Len(t, r.commits, 1)             // still committed after max retries
-	assert.Equal(t, maxRetries, callCount)   // retried maxRetries times
+	assert.Len(t, r.commits, 1)            // still committed after max retries
+	assert.Equal(t, maxRetries, callCount) // retried maxRetries times
 }
 
 func TestConsumer_FetchError_ReturnsError(t *testing.T) {
@@ -142,6 +142,7 @@ type errorReader struct {
 func (e *errorReader) FetchMessage(_ context.Context) (kafkago.Message, error) {
 	return kafkago.Message{}, e.err
 }
+
 func (e *errorReader) CommitMessages(_ context.Context, msgs ...kafkago.Message) error {
 	e.commits = append(e.commits, msgs...)
 	return nil

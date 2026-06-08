@@ -26,19 +26,24 @@ func (s *stubStorage) GetAllProblems(_ context.Context) ([]models.Problem, error
 }
 
 // Implement the rest of storage.Storage as panics — should never be called in these tests.
-func (s *stubStorage) Ping(_ context.Context) error                        { panic("unexpected") }
+func (s *stubStorage) Ping(_ context.Context) error { panic("unexpected") }
+
 func (s *stubStorage) GetRandomProblem(_ context.Context) (models.Problem, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) GetRandomProblemFiltered(_ context.Context, _ string, _ []string, _ []string, _, _ string) (models.Problem, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) GetProblemByID(_ context.Context, _ uuid.UUID) (models.Problem, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) SearchProblems(_ context.Context, _ string, _ []string, _ []string, _ string, _, _ int) (types.ProblemSearchResponse, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) GetProblemTags(_ context.Context) ([]types.ProblemTag, error) {
 	panic("unexpected")
 }
@@ -46,9 +51,11 @@ func (s *stubStorage) UpsertPracticeDay(_ context.Context, _ uuid.UUID) error { 
 func (s *stubStorage) GetStreak(_ context.Context, _ uuid.UUID) (types.StreakInfo, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) GetUserSettings(_ context.Context, _ uuid.UUID) (models.UserSettings, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) UpsertUserSettings(_ context.Context, _ uuid.UUID, _ []string, _ bool, _ bool, _ []string, _ bool) error {
 	panic("unexpected")
 }
@@ -57,12 +64,15 @@ func (s *stubStorage) UnsaveProblem(_ context.Context, _, _ uuid.UUID) error { p
 func (s *stubStorage) GetSavedProblems(_ context.Context, _ uuid.UUID) ([]models.Problem, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) UpsertTopicProficiency(_ context.Context, _, _ uuid.UUID, _, _ string, _, _, _ float64) error {
 	panic("unexpected")
 }
+
 func (s *stubStorage) GetTopicProficiencies(_ context.Context, _ uuid.UUID) ([]models.TopicProficiency, error) {
 	panic("unexpected")
 }
+
 func (s *stubStorage) GetProficiencyHistory(_ context.Context, _ uuid.UUID) ([]models.ProficiencySnapshot, error) {
 	panic("unexpected")
 }

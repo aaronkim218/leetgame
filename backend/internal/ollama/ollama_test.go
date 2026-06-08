@@ -224,7 +224,7 @@ func makeOllamaEvalServer(content string) *httptest.Server {
 			"done":    true,
 		})
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(resp)
+		_, _ = w.Write(resp)
 	}))
 }
 
@@ -262,7 +262,7 @@ func TestEvaluateSession_strips_code_fence(t *testing.T) {
 func TestEvaluateSession_api_error(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("internal server error"))
+		_, _ = w.Write([]byte("internal server error"))
 	}))
 	defer srv.Close()
 
@@ -296,7 +296,7 @@ func TestEvaluateSession_sends_prompt_to_api(t *testing.T) {
 			"done":    true,
 		})
 		w.Header().Set("Content-Type", "application/json")
-		w.Write(resp)
+		_, _ = w.Write(resp)
 	}))
 	defer srv.Close()
 

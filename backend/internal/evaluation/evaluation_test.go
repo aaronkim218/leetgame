@@ -24,8 +24,8 @@ type stubStorage struct {
 }
 
 type upsertArgs struct {
-	userID, problemID uuid.UUID
-	topic, stage      string
+	userID, problemID   uuid.UUID
+	topic, stage        string
 	score, scale, floor float64
 }
 
@@ -122,5 +122,7 @@ func TestRunSessionWithError_DBError(t *testing.T) {
 }
 
 // Ensure stubStorage and stubLLM satisfy the required interfaces at compile time.
-var _ storage.Storage = (*stubStorage)(nil)
-var _ llm.Client = (*stubLLM)(nil)
+var (
+	_ storage.Storage = (*stubStorage)(nil)
+	_ llm.Client      = (*stubLLM)(nil)
+)

@@ -19,7 +19,16 @@ jobs:
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
+      - name: gofumpt
+        run: |
+          go install mvdan.cc/gofumpt@latest
+          gofumpt -l . | grep . && exit 1 || true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: backend
       - run: go vet ./...
+      - run: go build ./...
       - run: go test ./...
 
   frontend:
