@@ -24,7 +24,7 @@ jobs:
           go install mvdan.cc/gofumpt@latest
           gofumpt -l . | grep . && exit 1 || true
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           working-directory: backend
           version: v2.12.2
