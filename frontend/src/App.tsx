@@ -7,6 +7,7 @@ import { useTheme } from './hooks/useTheme'
 import { useSearch, SEARCH_PAGE_SIZE } from './hooks/useSearch'
 import { useTags } from './hooks/useTags'
 import { useSaved } from './hooks/useSaved'
+import { useSessionStack } from './hooks/useSessionStack'
 import { NavBar } from './components/NavBar'
 import { ProblemView } from './components/ProblemView'
 import { ChatView } from './components/ChatView'
@@ -27,6 +28,7 @@ interface PracticeSnapshot {
   searchPlaylist: SearchPlaylist | null
   problemSource: ProblemSource
   shuffle: boolean
+  stageBannerDismissed: boolean
 }
 
 interface SearchPlaylist {
@@ -79,13 +81,12 @@ export default function App() {
   const [streamingMessage, setStreamingMessage] = useState('')
   const [sessionActiveStages, setSessionActiveStages] = useState<ActiveStage[]>(activeStages)
   const [stageBannerDismissed, setStageBannerDismissed] = useState(false)
-  const [sessionStack, setSessionStack] = useState<PracticeSnapshot[]>([])
+  const { canGoBack, push: pushToStack, pop: popFromStack, clear: clearStack } = useSessionStack<PracticeSnapshot>()
   const [searchState, setSearchState] = useState<SearchState>(defaultSearchState)
   const { loading: searchLoading, error: searchError } = useSearch(searchState, setSearchState)
   const { availableTags, tagsLoading, tagsError } = useTags()
   const { savedProblems, savedIds, save, unsave, isSaved } = useSaved(session)
   const { theme, setTheme } = useTheme()
-  const playlistEntryDepthRef = useRef<number>(0)
   const streamAbortRef = useRef<AbortController | null>(null)
 
   const resetPracticeState = () => {
@@ -96,24 +97,24 @@ export default function App() {
     setStageBannerDismissed(false)
   }
 
-  const pushSnapshot = () => {
-    if (!problem) return
-    setSessionStack(s => [...s, { problem, stage, history, searchPlaylist, problemSource, shuffle }])
+  const captureSnapshot = (): PracticeSnapshot | null => {
+    if (!problem) return null
+    return { problem, stage, history, searchPlaylist, problemSource, shuffle, stageBannerDismissed }
   }
 
   const goBack = () => {
-    if (sessionStack.length === 0) return
-    const snap = sessionStack[sessionStack.length - 1]
+    const snap = popFromStack()
+    if (!snap) return
     setProblem(snap.problem)
     setStage(snap.stage)
     setHistory(snap.history)
     setSearchPlaylist(snap.searchPlaylist)
     setProblemSource(snap.problemSource)
     setShuffle(snap.shuffle)
+    setStageBannerDismissed(snap.stageBannerDismissed)
     setPlaylistExhausted(false)
     setError(null)
     setStreamingMessage('')
-    setSessionStack(s => s.slice(0, -1))
   }
 
   const handleStagesChange = (stages: ActiveStage[]) => {
@@ -131,10 +132,10 @@ export default function App() {
 
   const loadRandomProblem = async () => {
     try {
-      pushSnapshot()
       setError(null)
       setPlaylistExhausted(false)
       const p = await getRandomProblem()
+      clearStack()
       setProblem(p)
       setProblemSource('random')
       setSearchPlaylist(null)
@@ -152,12 +153,10 @@ export default function App() {
 
     const nextIndex = searchPlaylist.selectedIndex + 1
     if (nextIndex < searchPlaylist.results.length) {
-      pushSnapshot()
+      const snap = captureSnapshot()
+      if (snap) pushToStack(snap)
       setProblem(searchPlaylist.results[nextIndex])
-      setSearchPlaylist({
-        ...searchPlaylist,
-        selectedIndex: nextIndex,
-      })
+      setSearchPlaylist({ ...searchPlaylist, selectedIndex: nextIndex })
       resetPracticeState()
       setPlaylistExhausted(false)
       setError(null)
@@ -165,9 +164,8 @@ export default function App() {
     }
 
     const nextPage = searchPlaylist.page + 1
-
+    const snap = captureSnapshot()
     try {
-      pushSnapshot()
       setError(null)
       const res = await searchProblems(
         searchPlaylist.q,
@@ -184,6 +182,7 @@ export default function App() {
         return
       }
 
+      if (snap) pushToStack(snap)
       setProblem(res.problems[0])
       setSearchPlaylist({
         ...searchPlaylist,
@@ -212,40 +211,55 @@ export default function App() {
       await loadSmartPracticeProblem()
       return
     }
-    await loadRandomProblem()
+    // random mode: push current state, then load next
+    const snap = captureSnapshot()
+    try {
+      setError(null)
+      setPlaylistExhausted(false)
+      const p = await getRandomProblem()
+      if (snap) pushToStack(snap)
+      setProblem(p)
+      setProblemSource('random')
+      setSearchPlaylist(null)
+      resetPracticeState()
+    } catch {
+      setError('Failed to load problem. Is the backend running?')
+    }
   }
 
   const loadRandomNextProblem = async () => {
-    if (problemSource === 'search' && searchPlaylist) {
-      try {
-        pushSnapshot()
-        setError(null)
-        const p = await getRandomProblemFiltered(
-          searchPlaylist.q,
-          searchPlaylist.difficulties,
-          searchPlaylist.tags,
-          searchPlaylist.tagMatch,
-          problem?.id,
-        )
-        setProblem(p)
-        resetPracticeState()
-        setPlaylistExhausted(false)
-        return
-      } catch {
-        setError('Failed to load a random filtered problem. Is the backend running?')
-        return
-      }
+    if (!searchPlaylist) return
+    const snap = captureSnapshot()
+    try {
+      setError(null)
+      const p = await getRandomProblemFiltered(
+        searchPlaylist.q,
+        searchPlaylist.difficulties,
+        searchPlaylist.tags,
+        searchPlaylist.tagMatch,
+        problem?.id,
+      )
+      if (snap) pushToStack(snap)
+      setProblem(p)
+      resetPracticeState()
+      setPlaylistExhausted(false)
+    } catch {
+      setError('Failed to load a random filtered problem. Is the backend running?')
     }
-
-    await loadRandomProblem()
   }
 
   const loadSmartPracticeProblem = async () => {
+    const isNextInSmartMode = problemSource === 'smart'
+    const snap = captureSnapshot()
     try {
-      pushSnapshot()
       setError(null)
       setPlaylistExhausted(false)
       const p = await getSmartPracticeProblem(activeStages, activeTopics)
+      if (isNextInSmartMode && snap) {
+        pushToStack(snap)
+      } else {
+        clearStack()
+      }
       setProblem(p)
       setProblemSource('smart')
       setSearchPlaylist(null)
@@ -258,12 +272,11 @@ export default function App() {
   const enterPlaylistFromSearch = async () => {
     const { q, difficulties, tags, tagMatch } = searchState
     try {
-      pushSnapshot()
       setError(null)
       setPlaylistExhausted(false)
       setShuffle(true)
-      playlistEntryDepthRef.current = sessionStack.length + (problem ? 1 : 0)
       const p = await getRandomProblemFiltered(q, difficulties, tags, tagMatch)
+      clearStack()
       setProblem(p)
       setProblemSource('search')
       setSearchPlaylist({
@@ -284,8 +297,7 @@ export default function App() {
   }
 
   const selectProblem = (p: Problem, context: SearchSelectionContext) => {
-    pushSnapshot()
-    playlistEntryDepthRef.current = sessionStack.length + (problem ? 1 : 0)
+    clearStack()
     setShuffle(false)
     setProblem(p)
     setProblemSource('search')
@@ -347,7 +359,7 @@ export default function App() {
         return
       }
 
-      pushSnapshot()
+      clearStack()
       setProblem(res.problems[0])
       setSearchPlaylist({
         ...searchPlaylist,
@@ -421,11 +433,7 @@ export default function App() {
         />
       )
     }
-    const canGoBack = problemSource === 'search'
-      ? sessionStack.length > playlistEntryDepthRef.current
-      : sessionStack.length > 0
     const exitSmartPractice = () => {
-      setSessionStack([])
       void loadRandomProblem()
     }
     const stagesChanged = !stageBannerDismissed &&
@@ -433,8 +441,6 @@ export default function App() {
       history.length > 0 &&
       JSON.stringify(activeStages) !== JSON.stringify(sessionActiveStages)
     const exitPlaylist = () => {
-      playlistEntryDepthRef.current = 0
-      setSessionStack([])
       void loadRandomProblem()
     }
     return (
