@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export interface SessionStack<T> {
+interface SessionStack<T> {
   stack: T[]
   canGoBack: boolean
   push: (item: T) => void
