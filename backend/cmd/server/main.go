@@ -33,7 +33,7 @@ func main() {
 
 	// Render sets PORT; our settings use SERVER_PORT via envPrefix.
 	if port := os.Getenv("PORT"); port != "" && os.Getenv("SERVER_PORT") == "" {
-		os.Setenv("SERVER_PORT", port)
+		_ = os.Setenv("SERVER_PORT", port)
 	}
 
 	settings, err := settings.Load()
@@ -84,7 +84,7 @@ func main() {
 			slog.Error("failed to create kafka producer", "error", err)
 			os.Exit(1)
 		}
-		defer producer.Close()
+		defer producer.Close() //nolint:errcheck
 		fallback := func(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) {
 			evaluation.RunSession(ctx, store, llmClient, slog.Default(), userID, problem, activeStages, history)
 		}

@@ -57,7 +57,7 @@ func newConsumer(reader messageReader, handler func(context.Context, SessionComp
 }
 
 func (c *Consumer) Run(ctx context.Context) error {
-	defer c.reader.Close()
+	defer c.reader.Close() //nolint:errcheck
 	for {
 		msg, err := c.reader.FetchMessage(ctx)
 		if err != nil {
