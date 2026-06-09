@@ -84,7 +84,11 @@ func main() {
 			slog.Error("failed to create kafka producer", "error", err)
 			os.Exit(1)
 		}
-		defer producer.Close() //nolint:errcheck
+		defer func() {
+			if err := producer.Close(); err != nil {
+				slog.Error("failed to close kafka producer", "error", err)
+			}
+		}()
 		fallback := func(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) {
 			evaluation.RunSession(ctx, store, llmClient, slog.Default(), userID, problem, activeStages, history)
 		}

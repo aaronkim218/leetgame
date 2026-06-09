@@ -1,9 +1,1 @@
 version: "2"
-
-linters:
-  settings:
-    errcheck:
-      exclude-functions:
-        # Deferred Close() errors can't be acted on at the call site.
-        - (io.Closer).Close
-        - (*net/http.Response.Body).Close

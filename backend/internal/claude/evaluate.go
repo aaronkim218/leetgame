@@ -46,7 +46,7 @@ func (c *AnthropicClient) EvaluateSession(ctx context.Context, problem models.Pr
 	if err != nil {
 		return llm.SessionEvaluation{}, fmt.Errorf("claude evaluation request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)

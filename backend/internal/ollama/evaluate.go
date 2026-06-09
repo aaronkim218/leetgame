@@ -42,7 +42,7 @@ func (c *OllamaClient) EvaluateSession(ctx context.Context, problem models.Probl
 	if err != nil {
 		return llm.SessionEvaluation{}, fmt.Errorf("ollama evaluation request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)

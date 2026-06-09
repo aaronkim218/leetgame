@@ -65,7 +65,7 @@ func (c *OllamaClient) Evaluate(ctx context.Context, problem models.Problem, sta
 	if err != nil {
 		return llm.EvaluateResponse{}, fmt.Errorf("ollama request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		b, _ := io.ReadAll(resp.Body)

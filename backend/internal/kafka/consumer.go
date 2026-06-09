@@ -57,7 +57,11 @@ func newConsumer(reader messageReader, handler func(context.Context, SessionComp
 }
 
 func (c *Consumer) Run(ctx context.Context) error {
-	defer c.reader.Close() //nolint:errcheck
+	defer func() {
+		if err := c.reader.Close(); err != nil {
+			c.logger.Error("failed to close kafka reader", "error", err)
+		}
+	}()
 	for {
 		msg, err := c.reader.FetchMessage(ctx)
 		if err != nil {
