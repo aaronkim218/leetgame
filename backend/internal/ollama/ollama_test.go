@@ -30,14 +30,14 @@ func makeOllamaServer(tokens []string) *httptest.Server {
 				"message": map[string]string{"role": "assistant", "content": tok},
 				"done":    false,
 			})
-			fmt.Fprintf(w, "%s\n", line)
+			_, _ = fmt.Fprintf(w, "%s\n", line)
 			flusher.Flush()
 		}
 		done, _ := json.Marshal(map[string]any{
 			"message": map[string]string{"role": "assistant", "content": ""},
 			"done":    true,
 		})
-		fmt.Fprintf(w, "%s\n", done)
+		_, _ = fmt.Fprintf(w, "%s\n", done)
 		flusher.Flush()
 	}))
 }
@@ -71,10 +71,10 @@ func TestEvaluate_think_false_in_request(t *testing.T) {
 			"message": map[string]string{"role": "assistant", "content": `{"message": "ok", "stage": "algorithm"}`},
 			"done":    false,
 		})
-		fmt.Fprintf(w, "%s\n", line)
+		_, _ = fmt.Fprintf(w, "%s\n", line)
 		w.(http.Flusher).Flush()
 		done, _ := json.Marshal(map[string]any{"message": map[string]string{}, "done": true})
-		fmt.Fprintf(w, "%s\n", done)
+		_, _ = fmt.Fprintf(w, "%s\n", done)
 		w.(http.Flusher).Flush()
 	}))
 	defer srv.Close()
@@ -112,7 +112,7 @@ func TestEvaluate_context_cancellation(t *testing.T) {
 			"message": map[string]string{"role": "assistant", "content": `{"message": "`},
 			"done":    false,
 		})
-		fmt.Fprintf(w, "%s\n", line)
+		_, _ = fmt.Fprintf(w, "%s\n", line)
 		w.(http.Flusher).Flush()
 		select {
 		case <-r.Context().Done():
@@ -140,10 +140,10 @@ func TestEvaluate_passes_history_and_system_prompt(t *testing.T) {
 			"message": map[string]string{"role": "assistant", "content": `{"message": "ok", "stage": "algorithm"}`},
 			"done":    false,
 		})
-		fmt.Fprintf(w, "%s\n", line)
+		_, _ = fmt.Fprintf(w, "%s\n", line)
 		w.(http.Flusher).Flush()
 		done, _ := json.Marshal(map[string]any{"message": map[string]string{}, "done": true})
-		fmt.Fprintf(w, "%s\n", done)
+		_, _ = fmt.Fprintf(w, "%s\n", done)
 		w.(http.Flusher).Flush()
 	}))
 	defer srv.Close()
