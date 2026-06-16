@@ -8,7 +8,9 @@ function readStored(): Theme {
   try {
     const v = localStorage.getItem(STORAGE_KEY)
     if (v === 'light' || v === 'dark' || v === 'system') return v
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return 'system'
 }
 
@@ -38,7 +40,9 @@ export function useTheme(): { theme: Theme; setTheme: (t: Theme) => void } {
     setThemeState(t)
     try {
       localStorage.setItem(STORAGE_KEY, t)
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   return { theme, setTheme }

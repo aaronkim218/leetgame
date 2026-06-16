@@ -27,10 +27,29 @@ export function useSearch(
       setLoading(true)
       setError(null)
       try {
-        const { q: sq, difficulties: sd, tags: st, tagMatch: sm, page: sp } = searchStateRef.current
-        const res = await searchProblems(sq, sd, st, sm, sp, SEARCH_PAGE_SIZE, controller.signal)
+        const {
+          q: sq,
+          difficulties: sd,
+          tags: st,
+          tagMatch: sm,
+          page: sp,
+        } = searchStateRef.current
+        const res = await searchProblems(
+          sq,
+          sd,
+          st,
+          sm,
+          sp,
+          SEARCH_PAGE_SIZE,
+          controller.signal,
+        )
         // only writes results/total/hasSearched — none of which are in the effect deps, so no loop
-        onSearchStateChange({ ...searchStateRef.current, results: res.problems, total: res.total, hasSearched: true })
+        onSearchStateChange({
+          ...searchStateRef.current,
+          results: res.problems,
+          total: res.total,
+          hasSearched: true,
+        })
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
           setError('Search failed. Is the backend running?')
@@ -43,7 +62,7 @@ export function useSearch(
       if (debounceRef.current) clearTimeout(debounceRef.current)
       abortRef.current?.abort()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- difficulties.join(',') replaces array ref; others are primitives; onSearchStateChange is a stable useState setter
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- difficulties.join(',') replaces array ref; others are primitives; onSearchStateChange is a stable useState setter
   }, [q, difficulties.join(','), tags.join(','), tagMatch, page])
 
   return { loading, error }

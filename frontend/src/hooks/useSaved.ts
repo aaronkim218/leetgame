@@ -19,25 +19,33 @@ export function useSaved(session: Session | null): {
       setSavedProblems([])
       return
     }
-    getSavedProblems().then(setSavedProblems).catch(() => {})
+    getSavedProblems()
+      .then(setSavedProblems)
+      .catch(() => {})
   }, [userId])
 
   const savedIds = useMemo(
-    () => new Set(savedProblems.map(p => p.id)),
-    [savedProblems]
+    () => new Set(savedProblems.map((p) => p.id)),
+    [savedProblems],
   )
 
   const save = async (problem: Problem) => {
-    setSavedProblems(prev => prev.some(p => p.id === problem.id) ? prev : [...prev, problem])
+    setSavedProblems((prev) =>
+      prev.some((p) => p.id === problem.id) ? prev : [...prev, problem],
+    )
     await saveProblem(problem.id).catch(() => {
-      getSavedProblems().then(setSavedProblems).catch(() => {})
+      getSavedProblems()
+        .then(setSavedProblems)
+        .catch(() => {})
     })
   }
 
   const unsave = async (problemId: string) => {
-    setSavedProblems(prev => prev.filter(p => p.id !== problemId))
+    setSavedProblems((prev) => prev.filter((p) => p.id !== problemId))
     await unsaveProblem(problemId).catch(() => {
-      getSavedProblems().then(setSavedProblems).catch(() => {})
+      getSavedProblems()
+        .then(setSavedProblems)
+        .catch(() => {})
     })
   }
 

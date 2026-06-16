@@ -11,7 +11,9 @@ describe('useSessionStack', () => {
 
   it('push: adds item, canGoBack becomes true', () => {
     const { result } = renderHook(() => useSessionStack<string>())
-    act(() => { result.current.push('a') })
+    act(() => {
+      result.current.push('a')
+    })
     expect(result.current.stack).toEqual(['a'])
     expect(result.current.canGoBack).toBe(true)
   })
@@ -29,7 +31,9 @@ describe('useSessionStack', () => {
   it('pop on empty: returns undefined, stack stays empty, canGoBack stays false', () => {
     const { result } = renderHook(() => useSessionStack<string>())
     let popped: string | undefined
-    act(() => { popped = result.current.pop() })
+    act(() => {
+      popped = result.current.pop()
+    })
     expect(popped).toBeUndefined()
     expect(result.current.stack).toEqual([])
     expect(result.current.canGoBack).toBe(false)
@@ -42,7 +46,9 @@ describe('useSessionStack', () => {
       result.current.push('b')
     })
     let popped: string | undefined
-    act(() => { popped = result.current.pop() })
+    act(() => {
+      popped = result.current.pop()
+    })
     expect(popped).toBe('b')
     expect(result.current.stack).toEqual(['a'])
     expect(result.current.canGoBack).toBe(true)
@@ -50,8 +56,12 @@ describe('useSessionStack', () => {
 
   it('pop until empty: canGoBack becomes false', () => {
     const { result } = renderHook(() => useSessionStack<string>())
-    act(() => { result.current.push('a') })
-    act(() => { result.current.pop() })
+    act(() => {
+      result.current.push('a')
+    })
+    act(() => {
+      result.current.pop()
+    })
     expect(result.current.stack).toEqual([])
     expect(result.current.canGoBack).toBe(false)
   })
@@ -62,14 +72,18 @@ describe('useSessionStack', () => {
       result.current.push('a')
       result.current.push('b')
     })
-    act(() => { result.current.clear() })
+    act(() => {
+      result.current.clear()
+    })
     expect(result.current.stack).toEqual([])
     expect(result.current.canGoBack).toBe(false)
   })
 
   it('clear on empty stack: no-op', () => {
     const { result } = renderHook(() => useSessionStack<string>())
-    act(() => { result.current.clear() })
+    act(() => {
+      result.current.clear()
+    })
     expect(result.current.stack).toEqual([])
     expect(result.current.canGoBack).toBe(false)
   })
@@ -80,8 +94,12 @@ describe('useSessionStack', () => {
       result.current.push('a')
       result.current.push('b')
     })
-    act(() => { result.current.clear() })
-    act(() => { result.current.push('c') })
+    act(() => {
+      result.current.clear()
+    })
+    act(() => {
+      result.current.push('c')
+    })
     expect(result.current.stack).toEqual(['c'])
     expect(result.current.canGoBack).toBe(true)
   })
@@ -94,9 +112,15 @@ describe('useSessionStack', () => {
       result.current.push('third')
     })
     const results: (string | undefined)[] = []
-    act(() => { results.push(result.current.pop()) })
-    act(() => { results.push(result.current.pop()) })
-    act(() => { results.push(result.current.pop()) })
+    act(() => {
+      results.push(result.current.pop())
+    })
+    act(() => {
+      results.push(result.current.pop())
+    })
+    act(() => {
+      results.push(result.current.pop())
+    })
     expect(results).toEqual(['third', 'second', 'first'])
     expect(result.current.canGoBack).toBe(false)
   })

@@ -24,7 +24,23 @@ interface Props {
   onThemeChange: (t: Theme) => void
 }
 
-export function NavBar({ view, onNavigate, session, authLoading, streak, streakStatus, activeStages, onStagesChange, hideTitle, onHideTitleChange, hideDifficulty, onHideDifficultyChange, onTakeTour, theme, onThemeChange }: Props) {
+export function NavBar({
+  view,
+  onNavigate,
+  session,
+  authLoading,
+  streak,
+  streakStatus,
+  activeStages,
+  onStagesChange,
+  hideTitle,
+  onHideTitleChange,
+  hideDifficulty,
+  onHideDifficultyChange,
+  onTakeTour,
+  theme,
+  onThemeChange,
+}: Props) {
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -37,8 +53,8 @@ export function NavBar({ view, onNavigate, session, authLoading, streak, streakS
   }
 
   return (
-    <div className="flex items-center gap-1 px-4 py-2 border-b border-border bg-background shrink-0">
-      {(['practice', 'search'] as const).map(v => (
+    <div className="border-border bg-background flex shrink-0 items-center gap-1 border-b px-4 py-2">
+      {(['practice', 'search'] as const).map((v) => (
         <Button
           key={v}
           data-tour={`nav-${v}`}
@@ -72,13 +88,13 @@ export function NavBar({ view, onNavigate, session, authLoading, streak, streakS
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className="text-muted-foreground hover:text-foreground transition-colors text-2xl leading-none px-1"
+                className="text-muted-foreground hover:text-foreground px-1 text-2xl leading-none transition-colors"
                 title="Practice stages"
               >
                 ⚙
               </button>
             </PopoverTrigger>
-            <PopoverContent className="p-0 w-72">
+            <PopoverContent className="w-72 p-0">
               <StagesSettings
                 activeStages={activeStages}
                 onChange={onStagesChange}
@@ -96,10 +112,17 @@ export function NavBar({ view, onNavigate, session, authLoading, streak, streakS
         {authLoading ? null : session ? (
           <>
             {streakStatus === 'solid' && (
-              <span data-tour="streak" className="text-sm font-medium">🔥 {streak}</span>
+              <span data-tour="streak" className="text-sm font-medium">
+                🔥 {streak}
+              </span>
             )}
             {streakStatus === 'hollow' && (
-              <span data-tour="streak" className="text-sm font-medium opacity-50 grayscale">🔥 {streak}</span>
+              <span
+                data-tour="streak"
+                className="text-sm font-medium opacity-50 grayscale"
+              >
+                🔥 {streak}
+              </span>
             )}
             {session.user.user_metadata?.avatar_url && (
               <img
@@ -108,10 +131,15 @@ export function NavBar({ view, onNavigate, session, authLoading, streak, streakS
                 className="h-6 w-6 rounded-full"
               />
             )}
-            <span className="text-sm text-muted-foreground hidden sm:inline">
-              {session.user.user_metadata?.name as string ?? session.user.email}
+            <span className="text-muted-foreground hidden text-sm sm:inline">
+              {(session.user.user_metadata?.name as string) ??
+                session.user.email}
             </span>
-            <Button variant="ghost" size="sm" onClick={() => void handleSignOut()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleSignOut()}
+            >
               Sign out
             </Button>
           </>

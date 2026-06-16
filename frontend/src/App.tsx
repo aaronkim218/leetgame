@@ -1,7 +1,20 @@
 import { useEffect, useState, useRef } from 'react'
-import type { Problem, ChatMessage, Stage, ActiveStage, SearchState, View } from './types'
+import type {
+  Problem,
+  ChatMessage,
+  Stage,
+  ActiveStage,
+  SearchState,
+  View,
+} from './types'
 import { defaultSearchState } from './types'
-import { getRandomProblem, getRandomProblemFiltered, searchProblems, streamChat, getSmartPracticeProblem } from './api'
+import {
+  getRandomProblem,
+  getRandomProblemFiltered,
+  searchProblems,
+  streamChat,
+  getSmartPracticeProblem,
+} from './api'
 import { useAuth } from './hooks/useAuth'
 import { useTheme } from './hooks/useTheme'
 import { useSearch, SEARCH_PAGE_SIZE } from './hooks/useSearch'
@@ -12,7 +25,10 @@ import { NavBar } from './components/NavBar'
 import { ProblemView } from './components/ProblemView'
 import { ChatView } from './components/ChatView'
 import { EndOfSetView } from './components/EndOfSetView'
-import { SearchPage, type SearchSelectionContext } from './components/SearchPage'
+import {
+  SearchPage,
+  type SearchSelectionContext,
+} from './components/SearchPage'
 import { StatsPage } from './components/StatsPage'
 import { MissionPage } from './components/MissionPage'
 import { TourBanner } from './components/TourBanner'
@@ -45,7 +61,11 @@ interface SearchPlaylist {
 function getPlaylistSummary(searchPlaylist: SearchPlaylist | null) {
   if (!searchPlaylist) return null
 
-  if (!searchPlaylist.q && searchPlaylist.difficulties.length === 0 && searchPlaylist.tags.length === 0) {
+  if (
+    !searchPlaylist.q &&
+    searchPlaylist.difficulties.length === 0 &&
+    searchPlaylist.tags.length === 0
+  ) {
     return null
   }
 
@@ -58,20 +78,46 @@ function getPlaylistSummary(searchPlaylist: SearchPlaylist | null) {
 }
 
 export default function App() {
-  const { session, authLoading, streak, streakStatus, activeStages, hideTitle, hideDifficulty, activeTopics, tourDone, settingsReady, persistStages, persistHideTitle, persistHideDifficulty, persistTopics, persistTourDone, recordAndUpdateStreak } = useAuth()
-  const { showBanner, dismiss: dismissTour, markDone: markTourDone } = useTour(!!session, settingsReady, tourDone, persistTourDone)
+  const {
+    session,
+    authLoading,
+    streak,
+    streakStatus,
+    activeStages,
+    hideTitle,
+    hideDifficulty,
+    activeTopics,
+    tourDone,
+    settingsReady,
+    persistStages,
+    persistHideTitle,
+    persistHideDifficulty,
+    persistTopics,
+    persistTourDone,
+    recordAndUpdateStreak,
+  } = useAuth()
+  const {
+    showBanner,
+    dismiss: dismissTour,
+    markDone: markTourDone,
+  } = useTour(!!session, settingsReady, tourDone, persistTourDone)
 
   const handleStartTour = () => {
     if (view !== 'practice') setView('practice')
-    setTimeout(() => {
-      startTour(markTourDone, !!session)
-    }, view !== 'practice' ? 100 : 0)
+    setTimeout(
+      () => {
+        startTour(markTourDone, !!session)
+      },
+      view !== 'practice' ? 100 : 0,
+    )
   }
 
   const [view, setView] = useState<View>('practice')
   const [problem, setProblem] = useState<Problem | null>(null)
   const [problemSource, setProblemSource] = useState<ProblemSource>('random')
-  const [searchPlaylist, setSearchPlaylist] = useState<SearchPlaylist | null>(null)
+  const [searchPlaylist, setSearchPlaylist] = useState<SearchPlaylist | null>(
+    null,
+  )
   const [history, setHistory] = useState<ChatMessage[]>([])
   const [stage, setStage] = useState<Stage>('pattern')
   const [loading, setLoading] = useState(false)
@@ -79,11 +125,21 @@ export default function App() {
   const [playlistExhausted, setPlaylistExhausted] = useState(false)
   const [shuffle, setShuffle] = useState(false)
   const [streamingMessage, setStreamingMessage] = useState('')
-  const [sessionActiveStages, setSessionActiveStages] = useState<ActiveStage[]>(activeStages)
+  const [sessionActiveStages, setSessionActiveStages] =
+    useState<ActiveStage[]>(activeStages)
   const [stageBannerDismissed, setStageBannerDismissed] = useState(false)
-  const { canGoBack, push: pushToStack, pop: popFromStack, clear: clearStack } = useSessionStack<PracticeSnapshot>()
-  const [searchState, setSearchState] = useState<SearchState>(defaultSearchState)
-  const { loading: searchLoading, error: searchError } = useSearch(searchState, setSearchState)
+  const {
+    canGoBack,
+    push: pushToStack,
+    pop: popFromStack,
+    clear: clearStack,
+  } = useSessionStack<PracticeSnapshot>()
+  const [searchState, setSearchState] =
+    useState<SearchState>(defaultSearchState)
+  const { loading: searchLoading, error: searchError } = useSearch(
+    searchState,
+    setSearchState,
+  )
   const { availableTags, tagsLoading, tagsError } = useTags()
   const { savedProblems, savedIds, save, unsave, isSaved } = useSaved(session)
   const { theme, setTheme } = useTheme()
@@ -99,7 +155,15 @@ export default function App() {
 
   const captureSnapshot = (): PracticeSnapshot | null => {
     if (!problem) return null
-    return { problem, stage, history, searchPlaylist, problemSource, shuffle, stageBannerDismissed }
+    return {
+      problem,
+      stage,
+      history,
+      searchPlaylist,
+      problemSource,
+      shuffle,
+      stageBannerDismissed,
+    }
   }
 
   const goBack = () => {
@@ -194,7 +258,9 @@ export default function App() {
       resetPracticeState()
       setPlaylistExhausted(false)
     } catch {
-      setError('Failed to load the next filtered problem. Is the backend running?')
+      setError(
+        'Failed to load the next filtered problem. Is the backend running?',
+      )
     }
   }
 
@@ -244,7 +310,9 @@ export default function App() {
       resetPracticeState()
       setPlaylistExhausted(false)
     } catch {
-      setError('Failed to load a random filtered problem. Is the backend running?')
+      setError(
+        'Failed to load a random filtered problem. Is the backend running?',
+      )
     }
   }
 
@@ -292,7 +360,9 @@ export default function App() {
       resetPracticeState()
       setView('practice')
     } catch {
-      setError('Failed to load a problem with those filters. Is the backend running?')
+      setError(
+        'Failed to load a problem with those filters. Is the backend running?',
+      )
     }
   }
 
@@ -317,7 +387,6 @@ export default function App() {
     setView('practice')
   }
 
-
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (settingsReady && !problem) void loadRandomProblem()
@@ -336,9 +405,12 @@ export default function App() {
     if (!session && view === 'stats') setView('practice')
   }, [session, view])
 
-  useEffect(() => () => {
-    streamAbortRef.current?.abort()
-  }, [problem])
+  useEffect(
+    () => () => {
+      streamAbortRef.current?.abort()
+    },
+    [problem],
+  )
 
   const restartSearchSet = async () => {
     if (!searchPlaylist) return
@@ -375,7 +447,11 @@ export default function App() {
     }
   }
 
-  const handleSubmit = async (message: string, hintRequested = false, answerRequested = false) => {
+  const handleSubmit = async (
+    message: string,
+    hintRequested = false,
+    answerRequested = false,
+  ) => {
     if (!problem) return
 
     streamAbortRef.current?.abort()
@@ -396,12 +472,24 @@ export default function App() {
 
     try {
       let accumulated = ''
-      for await (const event of streamChat(problem.id, stage, sessionActiveStages, history, message, hintRequested, answerRequested, controller.signal)) {
+      for await (const event of streamChat(
+        problem.id,
+        stage,
+        sessionActiveStages,
+        history,
+        message,
+        hintRequested,
+        answerRequested,
+        controller.signal,
+      )) {
         if (event.type === 'token') {
           accumulated += event.content
           setStreamingMessage(accumulated)
         } else if (event.type === 'done') {
-          setHistory([...nextHistory, { role: 'assistant', content: event.message }])
+          setHistory([
+            ...nextHistory,
+            { role: 'assistant', content: event.message },
+          ])
           setStage(event.stage)
           setStreamingMessage('')
           if (event.stage === 'complete' && session) {
@@ -419,12 +507,14 @@ export default function App() {
   }
 
   const practiceView = () => {
-    if (error && !problem) return (
-      <div className="p-10 text-center text-destructive">{error}</div>
-    )
-    if (!problem) return (
-      <div className="p-10 text-center text-muted-foreground">Loading problem...</div>
-    )
+    if (error && !problem)
+      return <div className="text-destructive p-10 text-center">{error}</div>
+    if (!problem)
+      return (
+        <div className="text-muted-foreground p-10 text-center">
+          Loading problem...
+        </div>
+      )
     if (playlistExhausted && problemSource === 'search') {
       return (
         <EndOfSetView
@@ -436,7 +526,8 @@ export default function App() {
     const exitSmartPractice = () => {
       void loadRandomProblem()
     }
-    const stagesChanged = !stageBannerDismissed &&
+    const stagesChanged =
+      !stageBannerDismissed &&
       stage !== 'complete' &&
       history.length > 0 &&
       JSON.stringify(activeStages) !== JSON.stringify(sessionActiveStages)
@@ -444,65 +535,111 @@ export default function App() {
       void loadRandomProblem()
     }
     return (
-      <div className="flex flex-col flex-1 overflow-hidden min-h-0">
-      {stagesChanged && (
-        <div className="flex items-center justify-between gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800 text-sm text-amber-900 dark:text-amber-200 shrink-0">
-          <span>Stage settings changed.</span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => { setHistory([]); setStage(activeStages[0]); setStreamingMessage(''); setSessionActiveStages(activeStages); setStageBannerDismissed(false) }}
-              className="font-medium underline underline-offset-2 hover:opacity-80 transition-opacity"
-            >
-              Restart with new stages
-            </button>
-            <button
-              onClick={() => setStageBannerDismissed(true)}
-              className="opacity-60 hover:opacity-100 transition-opacity"
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {stagesChanged && (
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
+            <span>Stage settings changed.</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setHistory([])
+                  setStage(activeStages[0])
+                  setStreamingMessage('')
+                  setSessionActiveStages(activeStages)
+                  setStageBannerDismissed(false)
+                }}
+                className="font-medium underline underline-offset-2 transition-opacity hover:opacity-80"
+              >
+                Restart with new stages
+              </button>
+              <button
+                onClick={() => setStageBannerDismissed(true)}
+                className="opacity-60 transition-opacity hover:opacity-100"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
           </div>
+        )}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+          <ProblemView
+            key={problem.id}
+            problem={problem}
+            onSkip={() => void loadNextProblem()}
+            onBack={canGoBack ? goBack : undefined}
+            onExitPlaylist={
+              problemSource === 'search'
+                ? exitPlaylist
+                : problemSource === 'smart'
+                  ? exitSmartPractice
+                  : undefined
+            }
+            smartMode={problemSource === 'smart'}
+            playlistSummary={
+              problemSource === 'search'
+                ? getPlaylistSummary(searchPlaylist)
+                : null
+            }
+            hideTitle={hideTitle}
+            hideDifficulty={hideDifficulty}
+            isSaved={isSaved(problem.id)}
+            onToggleSave={
+              session
+                ? () => {
+                    if (isSaved(problem.id)) {
+                      void unsave(problem.id)
+                    } else {
+                      void save(problem)
+                    }
+                  }
+                : undefined
+            }
+            onSmartPractice={
+              session ? () => void loadSmartPracticeProblem() : undefined
+            }
+            shuffle={problemSource === 'search' ? shuffle : undefined}
+            onToggleShuffle={
+              problemSource === 'search'
+                ? () => setShuffle((s) => !s)
+                : undefined
+            }
+          />
+          <ChatView
+            history={history}
+            stage={stage}
+            sessionActiveStages={sessionActiveStages}
+            loading={loading}
+            error={error}
+            onSubmit={handleSubmit}
+            streamingMessage={streamingMessage}
+            onNext={
+              stage === 'complete' ? () => void loadNextProblem() : undefined
+            }
+            onSmartPractice={
+              stage === 'complete' && !!session
+                ? () => void loadSmartPracticeProblem()
+                : undefined
+            }
+            onBack={stage === 'complete' && canGoBack ? goBack : undefined}
+            onHint={
+              stage !== 'complete'
+                ? () => void handleSubmit('Give me a hint', true, false)
+                : undefined
+            }
+            onAnswer={
+              stage !== 'complete'
+                ? () => void handleSubmit('Give me the answer', false, true)
+                : undefined
+            }
+          />
         </div>
-      )}
-      <div className="flex flex-col md:flex-row flex-1 overflow-hidden min-h-0">
-        <ProblemView
-          key={problem.id}
-          problem={problem}
-          onSkip={() => void loadNextProblem()}
-          onBack={canGoBack ? goBack : undefined}
-          onExitPlaylist={problemSource === 'search' ? exitPlaylist : problemSource === 'smart' ? exitSmartPractice : undefined}
-          smartMode={problemSource === 'smart'}
-          playlistSummary={problemSource === 'search' ? getPlaylistSummary(searchPlaylist) : null}
-          hideTitle={hideTitle}
-          hideDifficulty={hideDifficulty}
-          isSaved={isSaved(problem.id)}
-          onToggleSave={session ? () => { if (isSaved(problem.id)) { void unsave(problem.id) } else { void save(problem) } } : undefined}
-          onSmartPractice={session ? () => void loadSmartPracticeProblem() : undefined}
-          shuffle={problemSource === 'search' ? shuffle : undefined}
-          onToggleShuffle={problemSource === 'search' ? () => setShuffle(s => !s) : undefined}
-        />
-        <ChatView
-          history={history}
-          stage={stage}
-          sessionActiveStages={sessionActiveStages}
-          loading={loading}
-          error={error}
-          onSubmit={handleSubmit}
-          streamingMessage={streamingMessage}
-          onNext={stage === 'complete' ? () => void loadNextProblem() : undefined}
-          onSmartPractice={stage === 'complete' && !!session ? () => void loadSmartPracticeProblem() : undefined}
-          onBack={stage === 'complete' && canGoBack ? goBack : undefined}
-          onHint={stage !== 'complete' ? () => void handleSubmit('Give me a hint', true, false) : undefined}
-          onAnswer={stage !== 'complete' ? () => void handleSubmit('Give me the answer', false, true) : undefined}
-        />
-      </div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col h-dvh">
+    <div className="flex h-dvh flex-col">
       <NavBar
         view={view}
         onNavigate={setView}
@@ -523,33 +660,47 @@ export default function App() {
       {showBanner && (
         <TourBanner onStart={handleStartTour} onDismiss={dismissTour} />
       )}
-      {view === 'search'
-        ? <SearchPage
-            onSelectProblem={selectProblem}
-            onEnterPlaylist={() => void enterPlaylistFromSearch()}
-            searchState={searchState}
-            onSearchStateChange={setSearchState}
-            loading={searchLoading}
-            error={searchError}
-            availableTags={availableTags}
-            tagsLoading={tagsLoading}
-            tagsError={tagsError}
-            savedIds={savedIds}
-            savedProblems={savedProblems}
-            onToggleSave={(p) => { if (isSaved(p.id)) { void unsave(p.id) } else { void save(p) } }}
-            showSave={!!session}
-          />
-        : view === 'stats'
-        ? <StatsPage
-            onSmartPractice={session ? () => { void loadSmartPracticeProblem(); setView('practice') } : undefined}
-            activeTopics={activeTopics}
-            onTopicsChange={persistTopics}
-          />
-        : view === 'mission'
-        ? <MissionPage />
+      {view === 'search' ? (
+        <SearchPage
+          onSelectProblem={selectProblem}
+          onEnterPlaylist={() => void enterPlaylistFromSearch()}
+          searchState={searchState}
+          onSearchStateChange={setSearchState}
+          loading={searchLoading}
+          error={searchError}
+          availableTags={availableTags}
+          tagsLoading={tagsLoading}
+          tagsError={tagsError}
+          savedIds={savedIds}
+          savedProblems={savedProblems}
+          onToggleSave={(p) => {
+            if (isSaved(p.id)) {
+              void unsave(p.id)
+            } else {
+              void save(p)
+            }
+          }}
+          showSave={!!session}
+        />
+      ) : view === 'stats' ? (
+        <StatsPage
+          onSmartPractice={
+            session
+              ? () => {
+                  void loadSmartPracticeProblem()
+                  setView('practice')
+                }
+              : undefined
+          }
+          activeTopics={activeTopics}
+          onTopicsChange={persistTopics}
+        />
+      ) : view === 'mission' ? (
+        <MissionPage />
+      ) : (
         // eslint-disable-next-line react-hooks/refs
-        : practiceView()
-      }
+        practiceView()
+      )}
     </div>
   )
 }

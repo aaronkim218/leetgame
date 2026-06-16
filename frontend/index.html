@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <script>
-      (function(){
+      ;(function () {
         try {
-          var t = localStorage.getItem('leetgame_theme');
-          if (t === 'dark') document.documentElement.classList.add('dark');
-          else if (t === 'light') document.documentElement.classList.add('light');
-        } catch(e){}
-      })();
+          var t = localStorage.getItem('leetgame_theme')
+          if (t === 'dark') document.documentElement.classList.add('dark')
+          else if (t === 'light')
+            document.documentElement.classList.add('light')
+        } catch (e) {}
+      })()
     </script>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />

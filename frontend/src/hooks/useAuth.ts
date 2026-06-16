@@ -20,14 +20,21 @@ export function useAuth() {
   }, [])
   const [streak, setStreak] = useState<number | null>(null)
   const [lastPracticedAt, setLastPracticedAt] = useState<string | null>(null)
-  // eslint-disable-next-line react-hooks/purity
-  const ms = lastPracticedAt === null ? Infinity : Date.now() - new Date(lastPracticedAt).getTime()
+  const ms =
+    lastPracticedAt === null
+      ? Infinity
+      : // eslint-disable-next-line react-hooks/purity
+        Date.now() - new Date(lastPracticedAt).getTime()
   const streakStatus: 'solid' | 'hollow' | 'none' | null =
-    lastPracticedAt === null ? null
-    : ms < 864e5  ? 'solid'
-    : ms < 1728e5 ? 'hollow'
-    : 'none'
-  const [activeStages, setActiveStages] = useState<ActiveStage[]>(DEFAULT_STAGES)
+    lastPracticedAt === null
+      ? null
+      : ms < 864e5
+        ? 'solid'
+        : ms < 1728e5
+          ? 'hollow'
+          : 'none'
+  const [activeStages, setActiveStages] =
+    useState<ActiveStage[]>(DEFAULT_STAGES)
   const [hideTitle, setHideTitle] = useState(true)
   const [hideDifficulty, setHideDifficulty] = useState(true)
   const [activeTopics, setActiveTopics] = useState<string[]>(NEETCODE_TOPICS)
@@ -38,33 +45,53 @@ export function useAuth() {
     const stored = localStorage.getItem('leetgame_active_stages')
     let stages = DEFAULT_STAGES
     if (stored) {
-      try { stages = JSON.parse(stored) as ActiveStage[] } catch { /* use default */ }
+      try {
+        stages = JSON.parse(stored) as ActiveStage[]
+      } catch {
+        /* use default */
+      }
     }
     const storedHideTitle = localStorage.getItem('leetgame_hide_title')
-    const storedHideDifficulty = localStorage.getItem('leetgame_hide_difficulty')
+    const storedHideDifficulty = localStorage.getItem(
+      'leetgame_hide_difficulty',
+    )
     setActiveStages(stages)
     setHideTitle(storedHideTitle === null ? true : storedHideTitle === 'true')
-    setHideDifficulty(storedHideDifficulty === null ? true : storedHideDifficulty === 'true')
+    setHideDifficulty(
+      storedHideDifficulty === null ? true : storedHideDifficulty === 'true',
+    )
   }
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       setAuthLoading(false)
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         if (session) {
-          getStreak().then(({ streak, last_practiced_at }) => {
-            setStreak(streak)
-            setLastPracticedAt(last_practiced_at)
-          }).catch(() => {})
-          getSettings()
-            .then(({ active_stages, hide_title, hide_difficulty, active_topics, tour_done }) => {
-              setActiveStages(active_stages)
-              setHideTitle(hide_title)
-              setHideDifficulty(hide_difficulty)
-              setActiveTopics(active_topics ?? NEETCODE_TOPICS)
-              setTourDone(tour_done)
+          getStreak()
+            .then(({ streak, last_practiced_at }) => {
+              setStreak(streak)
+              setLastPracticedAt(last_practiced_at)
             })
+            .catch(() => {})
+          getSettings()
+            .then(
+              ({
+                active_stages,
+                hide_title,
+                hide_difficulty,
+                active_topics,
+                tour_done,
+              }) => {
+                setActiveStages(active_stages)
+                setHideTitle(hide_title)
+                setHideDifficulty(hide_difficulty)
+                setActiveTopics(active_topics ?? NEETCODE_TOPICS)
+                setTourDone(tour_done)
+              },
+            )
             .catch(() => {})
             .finally(() => setSettingsReady(true))
         } else {
@@ -88,55 +115,93 @@ export function useAuth() {
   const persistStages = (stages: ActiveStage[]) => {
     setActiveStages(stages)
     if (session) {
-      updateSettings(stages, hideTitle, hideDifficulty, activeTopics, tourDone).catch(() => {})
+      updateSettings(
+        stages,
+        hideTitle,
+        hideDifficulty,
+        activeTopics,
+        tourDone,
+      ).catch(() => {})
     } else {
       try {
         localStorage.setItem('leetgame_active_stages', JSON.stringify(stages))
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   const persistHideTitle = (value: boolean) => {
     setHideTitle(value)
     if (session) {
-      updateSettings(activeStages, value, hideDifficulty, activeTopics, tourDone).catch(() => {})
+      updateSettings(
+        activeStages,
+        value,
+        hideDifficulty,
+        activeTopics,
+        tourDone,
+      ).catch(() => {})
     } else {
       try {
         localStorage.setItem('leetgame_hide_title', String(value))
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   const persistHideDifficulty = (value: boolean) => {
     setHideDifficulty(value)
     if (session) {
-      updateSettings(activeStages, hideTitle, value, activeTopics, tourDone).catch(() => {})
+      updateSettings(
+        activeStages,
+        hideTitle,
+        value,
+        activeTopics,
+        tourDone,
+      ).catch(() => {})
     } else {
       try {
         localStorage.setItem('leetgame_hide_difficulty', String(value))
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   const persistTopics = (topics: string[]) => {
     setActiveTopics(topics)
     if (session) {
-      updateSettings(activeStages, hideTitle, hideDifficulty, topics, tourDone).catch(() => {})
+      updateSettings(
+        activeStages,
+        hideTitle,
+        hideDifficulty,
+        topics,
+        tourDone,
+      ).catch(() => {})
     }
   }
 
   const persistTourDone = () => {
     setTourDone(true)
     if (session) {
-      updateSettings(activeStages, hideTitle, hideDifficulty, activeTopics, true).catch(() => {})
+      updateSettings(
+        activeStages,
+        hideTitle,
+        hideDifficulty,
+        activeTopics,
+        true,
+      ).catch(() => {})
     }
   }
 
   const recordAndUpdateStreak = () => {
-    recordStreak().then(({ streak, last_practiced_at }) => {
-      setStreak(streak)
-      setLastPracticedAt(last_practiced_at)
-    }).catch(() => {})
+    recordStreak()
+      .then(({ streak, last_practiced_at }) => {
+        setStreak(streak)
+        setLastPracticedAt(last_practiced_at)
+      })
+      .catch(() => {})
   }
 
   return {

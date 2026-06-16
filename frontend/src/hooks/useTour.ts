@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 
 const UNAUTH_TOUR_KEY = 'leetgame_tour_dismissed'
 
-export function useTour(isAuth: boolean, settingsReady: boolean, tourDone: boolean, persistTourDone: () => void) {
+export function useTour(
+  isAuth: boolean,
+  settingsReady: boolean,
+  tourDone: boolean,
+  persistTourDone: () => void,
+) {
   const [showBanner, setShowBanner] = useState(false)
 
   useEffect(() => {
