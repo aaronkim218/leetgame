@@ -1,6 +1,7 @@
 # env
 .env
 .env.local
+mobile/.env
 
 # build artifacts
 backend/internal/static/
