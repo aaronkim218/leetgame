@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react-native'
+import { act, render, waitFor } from '@testing-library/react-native'
 import { Text } from 'react-native'
 import { AuthProvider, useAuth } from './auth-context'
 
@@ -30,7 +30,9 @@ test('anonymous session falls back to default settings', async () => {
       <Probe />
     </AuthProvider>,
   )
-  authState.callback('INITIAL_SESSION', null)
+  await act(async () => {
+    authState.callback('INITIAL_SESSION', null)
+  })
   await waitFor(() =>
     expect(getByText('true|pattern,algorithm,tc_sc|true')).toBeTruthy(),
   )
