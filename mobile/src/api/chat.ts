@@ -30,15 +30,15 @@ export async function* streamChat(
     signal,
   })
   if (!res.ok) throw new Error(`Chat request failed: ${res.status}`)
+  if (!res.body) throw new Error('No response body')
 
-  const reader = res.body!.getReader()
+  const reader = res.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
 
   while (true) {
     const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
+    buffer += done ? decoder.decode() : decoder.decode(value, { stream: true })
     const events = buffer.split('\n\n')
     buffer = events.pop()!
     for (const event of events) {
@@ -48,8 +48,9 @@ export async function* streamChat(
       if (!type || !data) continue
       const parsed = JSON.parse(data)
       if (type === 'token') yield { type: 'token', content: parsed.content }
-      else if (type === 'done') yield { type: 'done', ...parsed }
+      else if (type === 'done') yield { type: 'done', stage: parsed.stage, message: parsed.message }
       else if (type === 'error') throw new Error('LLM evaluation failed')
     }
+    if (done) break
   }
 }

@@ -56,7 +56,7 @@ test('throws when the server emits an error event', async () => {
     for await (const _ of streamChat('p1', 'pattern', ['pattern'], [], 'hi', false, false)) {
       void _
     }
-  }).rejects.toThrow()
+  }).rejects.toThrow('LLM evaluation failed')
 })
 
 test('sends the correct request body', async () => {
