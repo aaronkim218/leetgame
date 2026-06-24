@@ -1,98 +1,154 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect } from 'react'
+import {
+  ScrollView,
+  View,
+  Pressable,
+  Text,
+  ActivityIndicator,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { Link } from 'expo-router'
+import { useAuth } from '@/auth/auth-context'
+import { useTheme } from '@/theme/theme-context'
+import { usePracticeSession } from '@/practice/use-practice-session'
+import { STAGE_PLACEHOLDER } from '@/practice/stage-banner-text'
+import { ProblemView } from '@/components/problem-view'
+import { StageBanner } from '@/components/stage-banner'
+import { ChatThread } from '@/components/chat-thread'
+import { InputBar } from '@/components/input-bar'
+import { CompletionFooter } from '@/components/completion-footer'
+import { NEETCODE_TOPICS, type ActiveStage } from '@/types'
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function PracticeScreen() {
+  const theme = useTheme()
+  const {
+    session,
+    authReady,
+    streak,
+    streakStatus,
+    activeStages,
+    hideTitle,
+    hideDifficulty,
+    refreshStreak,
+  } = useAuth()
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
+  const practice = usePracticeSession({
+    activeStages,
+    activeTopics: NEETCODE_TOPICS,
+    onComplete: () => {
+      if (session) refreshStreak()
+    },
+  })
+
+  useEffect(() => {
+    if (authReady && !practice.problem) void practice.loadRandom()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authReady])
+
+  if (!authReady || !practice.problem) {
     return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
+      <SafeAreaView
+        testID="practice-screen"
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: theme.background,
+        }}
+      >
+        {practice.error ? (
+          <Text
+            testID="practice-error"
+            style={{
+              color: theme.destructive,
+              padding: 24,
+              textAlign: 'center',
+            }}
+          >
+            {practice.error}
+          </Text>
+        ) : (
+          <ActivityIndicator testID="practice-loading" color={theme.primary} />
+        )}
       </SafeAreaView>
-    </ThemedView>
-  );
-}
+    )
+  }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
+  const isComplete = practice.stage === 'complete'
+
+  return (
+    <SafeAreaView
+      testID="practice-screen"
+      edges={['top']}
+      style={{ flex: 1, backgroundColor: theme.background }}
+    >
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          gap: 12,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+        }}
+      >
+        {session && streak !== null && (
+          <Text
+            testID="streak-indicator"
+            style={{
+              color:
+                streakStatus === 'solid' ? theme.primary : theme.mutedForeground,
+            }}
+          >
+            🔥 {streak}
+          </Text>
+        )}
+        <Link href="/account" asChild>
+          <Pressable testID="account-button">
+            <Text style={{ color: theme.primary, fontWeight: '600' }}>
+              {session ? 'Account' : 'Sign in'}
+            </Text>
+          </Pressable>
+        </Link>
+      </View>
+
+      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+        <ProblemView
+          problem={practice.problem}
+          hideTitle={hideTitle}
+          hideDifficulty={hideDifficulty}
+        />
+        <StageBanner
+          stage={practice.stage}
+          sessionActiveStages={practice.sessionActiveStages}
+        />
+        <ChatThread
+          history={practice.history}
+          loading={practice.loading}
+          streamingMessage={practice.streamingMessage}
+          error={practice.error}
+        />
+      </ScrollView>
+
+      {isComplete ? (
+        <CompletionFooter
+          onNext={() => void practice.loadRandom()}
+          onSmart={() => void practice.loadSmart()}
+        />
+      ) : (
+        <InputBar
+          disabled={practice.loading}
+          placeholder={
+            STAGE_PLACEHOLDER[practice.stage as ActiveStage] ??
+            'Describe your approach…'
+          }
+          onSubmit={(text) => void practice.submit(text)}
+          onHint={() => void practice.submit('Give me a hint', { hint: true })}
+          onAnswer={() =>
+            void practice.submit('Give me the answer', { answer: true })
+          }
+        />
+      )}
+    </SafeAreaView>
+  )
+}
