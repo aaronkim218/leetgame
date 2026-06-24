@@ -11,7 +11,7 @@ const problem = {
 }
 
 beforeEach(() => {
-  global.fetch = jest.fn(async () => ({
+  globalThis.fetch = jest.fn(async () => ({
     ok: true,
     json: async () => problem,
   })) as unknown as typeof fetch
@@ -20,7 +20,7 @@ beforeEach(() => {
 test('getRandomProblem hits the random endpoint with auth header', async () => {
   const result = await getRandomProblem()
   expect(result).toEqual(problem)
-  expect(global.fetch).toHaveBeenCalledWith(
+  expect(globalThis.fetch).toHaveBeenCalledWith(
     'https://api.test/api/problems/random',
     { headers: { Authorization: 'Bearer t' } },
   )
@@ -28,7 +28,7 @@ test('getRandomProblem hits the random endpoint with auth header', async () => {
 
 test('getSmartPracticeProblem encodes active stages and topics', async () => {
   await getSmartPracticeProblem(['pattern', 'tc_sc'], ['Array', 'Graph'])
-  const url = (global.fetch as jest.Mock).mock.calls[0][0] as string
+  const url = (globalThis.fetch as jest.Mock).mock.calls[0][0] as string
   expect(url).toContain('/api/problems/smart?')
   expect(url).toContain('active_stages=pattern%2Ctc_sc')
   expect(url).toContain('active_topics=Array%2CGraph')
