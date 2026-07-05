@@ -237,7 +237,7 @@ func TestEvaluateSession_returns_scores(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers", TopicTags: []string{"Dynamic Programming"}}
 	history := []llm.ChatMessage{{Role: "user", Content: "I'd use DP here"}}
 
-	eval, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history)
+	eval, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history, false)
 	require.NoError(t, err)
 	require.Len(t, eval.Scores, 1)
 	assert.Equal(t, "Dynamic Programming", eval.Scores[0].Topic)
@@ -253,7 +253,7 @@ func TestEvaluateSession_strips_code_fence(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers", TopicTags: []string{"Arrays"}}
 
-	eval, err := client.EvaluateSession(context.Background(), problem, []string{"algorithm"}, nil)
+	eval, err := client.EvaluateSession(context.Background(), problem, []string{"algorithm"}, nil, false)
 	require.NoError(t, err)
 	require.Len(t, eval.Scores, 1)
 	assert.Equal(t, 0.6, eval.Scores[0].Score)
@@ -269,7 +269,7 @@ func TestEvaluateSession_api_error(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find"}
 
-	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil)
+	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil, false)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "500")
 }
@@ -281,7 +281,7 @@ func TestEvaluateSession_empty_content_returns_error(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find"}
 
-	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil)
+	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil, false)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "empty content")
 }
@@ -304,7 +304,7 @@ func TestEvaluateSession_sends_prompt_to_api(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers", TopicTags: []string{"Arrays"}}
 	history := []llm.ChatMessage{{Role: "user", Content: "two pointers"}}
 
-	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history)
+	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history, false)
 	require.NoError(t, err)
 
 	body := string(capturedBody)

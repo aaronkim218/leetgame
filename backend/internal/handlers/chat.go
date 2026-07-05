@@ -94,7 +94,7 @@ func (hs *HandlerService) Chat(c fiber.Ctx) error {
 
 		if evalEnabled && result.Stage == "complete" {
 			fullHistory := append(baseHistory[:len(baseHistory):len(baseHistory)], llm.ChatMessage{Role: "assistant", Content: result.Message})
-			go hs.dispatcher.Dispatch(context.Background(), evalUID, evalProblem, evalActiveStages, fullHistory)
+			go hs.dispatcher.Dispatch(context.Background(), evalUID, evalProblem, evalActiveStages, fullHistory, req.Concise)
 		}
 	})
 

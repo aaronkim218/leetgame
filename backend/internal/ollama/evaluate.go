@@ -13,8 +13,8 @@ import (
 	"leetgame/internal/models"
 )
 
-func (c *OllamaClient) EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []llm.ChatMessage) (llm.SessionEvaluation, error) {
-	prompt := llm.BuildEvaluationPrompt(problem, activeStages, history, false)
+func (c *OllamaClient) EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool) (llm.SessionEvaluation, error) {
+	prompt := llm.BuildEvaluationPrompt(problem, activeStages, history, concise)
 
 	body := map[string]any{
 		"model":  c.model,

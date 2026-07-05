@@ -128,5 +128,5 @@ type EvaluateResponse struct {
 
 type Client interface {
 	Evaluate(ctx context.Context, problem models.Problem, stage string, activeStages []string, history []ChatMessage, userMessage string, hintRequested, answerRequested, concise bool, onToken func(string)) (EvaluateResponse, error)
-	EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []ChatMessage) (SessionEvaluation, error)
+	EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []ChatMessage, concise bool) (SessionEvaluation, error)
 }
