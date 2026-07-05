@@ -86,12 +86,14 @@ export default function App() {
     activeStages,
     hideTitle,
     hideDifficulty,
+    conciseMode,
     activeTopics,
     tourDone,
     settingsReady,
     persistStages,
     persistHideTitle,
     persistHideDifficulty,
+    persistConciseMode,
     persistTopics,
     persistTourDone,
     recordAndUpdateStreak,
@@ -192,6 +194,10 @@ export default function App() {
 
   const handleHideDifficultyChange = (value: boolean) => {
     persistHideDifficulty(value)
+  }
+
+  const handleConciseModeChange = (value: boolean) => {
+    persistConciseMode(value)
   }
 
   const loadRandomProblem = async () => {
@@ -480,6 +486,7 @@ export default function App() {
         message,
         hintRequested,
         answerRequested,
+        conciseMode,
         controller.signal,
       )) {
         if (event.type === 'token') {
@@ -653,6 +660,8 @@ export default function App() {
         onHideTitleChange={handleHideTitleChange}
         hideDifficulty={hideDifficulty}
         onHideDifficultyChange={handleHideDifficultyChange}
+        conciseMode={conciseMode}
+        onConciseModeChange={handleConciseModeChange}
         onTakeTour={handleStartTour}
         theme={theme}
         onThemeChange={setTheme}

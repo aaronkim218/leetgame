@@ -34,6 +34,8 @@ interface Props {
   onHideTitleChange: (value: boolean) => void
   hideDifficulty: boolean
   onHideDifficultyChange: (value: boolean) => void
+  conciseMode: boolean
+  onConciseModeChange: (value: boolean) => void
   onTakeTour?: () => void
   theme: Theme
   onThemeChange: (t: Theme) => void
@@ -46,6 +48,8 @@ export function StagesSettings({
   onHideTitleChange,
   hideDifficulty,
   onHideDifficultyChange,
+  conciseMode,
+  onConciseModeChange,
   onTakeTour,
   theme,
   onThemeChange,
@@ -111,6 +115,21 @@ export function StagesSettings({
           <p className="text-sm font-medium">Hide difficulty</p>
           <p className="text-muted-foreground text-xs">
             Reveal on click to test recall
+          </p>
+        </div>
+      </button>
+      <button
+        onClick={() => onConciseModeChange(!conciseMode)}
+        className="hover:bg-muted flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left transition-colors"
+      >
+        <Checkbox
+          checked={conciseMode}
+          onCheckedChange={(v) => onConciseModeChange(v === true)}
+        />
+        <div>
+          <p className="text-sm font-medium">Concise mode</p>
+          <p className="text-muted-foreground text-xs">
+            Less back-and-forth — brief correct answers advance the stage
           </p>
         </div>
       </button>
