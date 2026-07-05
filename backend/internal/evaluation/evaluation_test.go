@@ -40,11 +40,11 @@ type stubLLM struct {
 	err  error
 }
 
-func (s *stubLLM) Evaluate(_ context.Context, _ models.Problem, _ string, _ []string, _ []llm.ChatMessage, _ string, _, _ bool, _ func(string)) (llm.EvaluateResponse, error) {
+func (s *stubLLM) Evaluate(_ context.Context, _ models.Problem, _ string, _ []string, _ []llm.ChatMessage, _ string, _, _, _ bool, _ func(string)) (llm.EvaluateResponse, error) {
 	return llm.EvaluateResponse{}, nil
 }
 
-func (s *stubLLM) EvaluateSession(_ context.Context, _ models.Problem, _ []string, _ []llm.ChatMessage) (llm.SessionEvaluation, error) {
+func (s *stubLLM) EvaluateSession(_ context.Context, _ models.Problem, _ []string, _ []llm.ChatMessage, _ bool) (llm.SessionEvaluation, error) {
 	return s.eval, s.err
 }
 
@@ -67,7 +67,7 @@ func TestRunSessionWithError_Success(t *testing.T) {
 		},
 	}
 
-	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory)
+	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory, false)
 	require.NoError(t, err)
 	require.Len(t, store.upsertCalls, 1)
 	call := store.upsertCalls[0]
@@ -85,7 +85,7 @@ func TestRunSessionWithError_LLMError(t *testing.T) {
 	store := &stubStorage{}
 	llmClient := &stubLLM{err: errors.New("llm unavailable")}
 
-	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory)
+	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory, false)
 	assert.Error(t, err)
 	assert.Empty(t, store.upsertCalls)
 }
@@ -101,7 +101,7 @@ func TestRunSessionWithError_OutOfRangeScoreSkipped(t *testing.T) {
 		},
 	}
 
-	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory)
+	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory, false)
 	require.NoError(t, err)
 	require.Len(t, store.upsertCalls, 1) // only the valid score
 	assert.Equal(t, "tc_sc", store.upsertCalls[0].stage)
@@ -117,7 +117,7 @@ func TestRunSessionWithError_DBError(t *testing.T) {
 		},
 	}
 
-	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory)
+	err := evaluation.RunSessionWithError(context.Background(), store, llmClient, testLogger, testUserID, testProblem, testStages, testHistory, false)
 	assert.Error(t, err)
 }
 

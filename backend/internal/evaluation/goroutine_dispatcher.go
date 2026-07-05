@@ -21,8 +21,8 @@ func NewGoroutineDispatcher(store storage.Storage, llmClient llm.Client, logger 
 	return &GoroutineDispatcher{store: store, llmClient: llmClient, logger: logger}
 }
 
-func (d *GoroutineDispatcher) Dispatch(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) {
-	RunSession(ctx, d.store, d.llmClient, d.logger, userID, problem, activeStages, history)
+func (d *GoroutineDispatcher) Dispatch(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool) {
+	RunSession(ctx, d.store, d.llmClient, d.logger, userID, problem, activeStages, history, concise)
 }
 
 var _ EvaluationDispatcher = (*GoroutineDispatcher)(nil)

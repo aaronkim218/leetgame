@@ -52,7 +52,7 @@ func TestEvaluate_streams_message_tokens(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 
 	var received []string
-	result, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, func(tok string) {
+	result, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, false, func(tok string) {
 		received = append(received, tok)
 	})
 
@@ -82,7 +82,7 @@ func TestEvaluate_think_false_in_request(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 
-	_, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, nil)
+	_, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, false, nil)
 	require.NoError(t, err)
 
 	var body map[string]any
@@ -98,7 +98,7 @@ func TestEvaluate_nil_onToken_does_not_panic(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 
-	result, err := client.Evaluate(context.Background(), problem, "complexity", []string{"pattern", "algorithm", "tc_sc", "complexity"}, nil, "O(n) time", false, false, nil)
+	result, err := client.Evaluate(context.Background(), problem, "complexity", []string{"pattern", "algorithm", "tc_sc", "complexity"}, nil, "O(n) time", false, false, false, nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, "Good", result.Message)
@@ -127,7 +127,7 @@ func TestEvaluate_context_cancellation(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 
-	_, err := client.Evaluate(ctx, problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, nil)
+	_, err := client.Evaluate(ctx, problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, false, nil)
 	assert.Error(t, err)
 }
 
@@ -152,7 +152,7 @@ func TestEvaluate_passes_history_and_system_prompt(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 	history := []llm.ChatMessage{{Role: "user", Content: "prev"}, {Role: "assistant", Content: "resp"}}
 
-	_, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, history, "new message", false, false, nil)
+	_, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, history, "new message", false, false, false, nil)
 	require.NoError(t, err)
 
 	body := string(capturedBody)
@@ -170,7 +170,7 @@ func TestEvaluate_pattern_stage_returned(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Max Subarray", Description: "find the contiguous subarray"}
 
-	result, err := client.Evaluate(context.Background(), problem, "pattern", []string{"pattern", "algorithm", "tc_sc"}, nil, "binary search maybe?", false, false, nil)
+	result, err := client.Evaluate(context.Background(), problem, "pattern", []string{"pattern", "algorithm", "tc_sc"}, nil, "binary search maybe?", false, false, false, nil)
 
 	require.NoError(t, err)
 	assert.Equal(t, "Think about a subarray technique", result.Message)
@@ -187,7 +187,7 @@ func TestEvaluate_prefix_and_content_in_single_token(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 
 	var received []string
-	result, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, func(tok string) {
+	result, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, false, func(tok string) {
 		received = append(received, tok)
 	})
 
@@ -207,7 +207,7 @@ func TestEvaluate_code_fence_wrapped_response(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers"}
 
 	var received []string
-	result, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, func(tok string) {
+	result, err := client.Evaluate(context.Background(), problem, "algorithm", []string{"pattern", "algorithm", "tc_sc"}, nil, "use a hash map", false, false, false, func(tok string) {
 		received = append(received, tok)
 	})
 
@@ -237,7 +237,7 @@ func TestEvaluateSession_returns_scores(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers", TopicTags: []string{"Dynamic Programming"}}
 	history := []llm.ChatMessage{{Role: "user", Content: "I'd use DP here"}}
 
-	eval, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history)
+	eval, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history, false)
 	require.NoError(t, err)
 	require.Len(t, eval.Scores, 1)
 	assert.Equal(t, "Dynamic Programming", eval.Scores[0].Topic)
@@ -253,7 +253,7 @@ func TestEvaluateSession_strips_code_fence(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers", TopicTags: []string{"Arrays"}}
 
-	eval, err := client.EvaluateSession(context.Background(), problem, []string{"algorithm"}, nil)
+	eval, err := client.EvaluateSession(context.Background(), problem, []string{"algorithm"}, nil, false)
 	require.NoError(t, err)
 	require.Len(t, eval.Scores, 1)
 	assert.Equal(t, 0.6, eval.Scores[0].Score)
@@ -269,7 +269,7 @@ func TestEvaluateSession_api_error(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find"}
 
-	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil)
+	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil, false)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "500")
 }
@@ -281,7 +281,7 @@ func TestEvaluateSession_empty_content_returns_error(t *testing.T) {
 	client := ollama.New(srv.URL, "test-model", "")
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find"}
 
-	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil)
+	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, nil, false)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "empty content")
 }
@@ -304,7 +304,7 @@ func TestEvaluateSession_sends_prompt_to_api(t *testing.T) {
 	problem := models.Problem{Id: uuid.New(), Title: "Two Sum", Description: "find two numbers", TopicTags: []string{"Arrays"}}
 	history := []llm.ChatMessage{{Role: "user", Content: "two pointers"}}
 
-	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history)
+	_, err := client.EvaluateSession(context.Background(), problem, []string{"pattern"}, history, false)
 	require.NoError(t, err)
 
 	body := string(capturedBody)

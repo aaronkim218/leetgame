@@ -37,6 +37,7 @@ export function useAuth() {
     useState<ActiveStage[]>(DEFAULT_STAGES)
   const [hideTitle, setHideTitle] = useState(true)
   const [hideDifficulty, setHideDifficulty] = useState(true)
+  const [conciseMode, setConciseMode] = useState(false)
   const [activeTopics, setActiveTopics] = useState<string[]>(NEETCODE_TOPICS)
   const [tourDone, setTourDone] = useState(false)
   const [settingsReady, setSettingsReady] = useState(false)
@@ -55,11 +56,13 @@ export function useAuth() {
     const storedHideDifficulty = localStorage.getItem(
       'leetgame_hide_difficulty',
     )
+    const storedConciseMode = localStorage.getItem('leetgame_concise_mode')
     setActiveStages(stages)
     setHideTitle(storedHideTitle === null ? true : storedHideTitle === 'true')
     setHideDifficulty(
       storedHideDifficulty === null ? true : storedHideDifficulty === 'true',
     )
+    setConciseMode(storedConciseMode === 'true')
   }
 
   useEffect(() => {
@@ -82,12 +85,14 @@ export function useAuth() {
                 active_stages,
                 hide_title,
                 hide_difficulty,
+                concise_mode,
                 active_topics,
                 tour_done,
               }) => {
                 setActiveStages(active_stages)
                 setHideTitle(hide_title)
                 setHideDifficulty(hide_difficulty)
+                setConciseMode(concise_mode)
                 setActiveTopics(active_topics ?? NEETCODE_TOPICS)
                 setTourDone(tour_done)
               },
@@ -119,6 +124,7 @@ export function useAuth() {
         stages,
         hideTitle,
         hideDifficulty,
+        conciseMode,
         activeTopics,
         tourDone,
       ).catch(() => {})
@@ -138,6 +144,7 @@ export function useAuth() {
         activeStages,
         value,
         hideDifficulty,
+        conciseMode,
         activeTopics,
         tourDone,
       ).catch(() => {})
@@ -157,12 +164,33 @@ export function useAuth() {
         activeStages,
         hideTitle,
         value,
+        conciseMode,
         activeTopics,
         tourDone,
       ).catch(() => {})
     } else {
       try {
         localStorage.setItem('leetgame_hide_difficulty', String(value))
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  const persistConciseMode = (value: boolean) => {
+    setConciseMode(value)
+    if (session) {
+      updateSettings(
+        activeStages,
+        hideTitle,
+        hideDifficulty,
+        value,
+        activeTopics,
+        tourDone,
+      ).catch(() => {})
+    } else {
+      try {
+        localStorage.setItem('leetgame_concise_mode', String(value))
       } catch {
         /* ignore */
       }
@@ -176,6 +204,7 @@ export function useAuth() {
         activeStages,
         hideTitle,
         hideDifficulty,
+        conciseMode,
         topics,
         tourDone,
       ).catch(() => {})
@@ -189,6 +218,7 @@ export function useAuth() {
         activeStages,
         hideTitle,
         hideDifficulty,
+        conciseMode,
         activeTopics,
         true,
       ).catch(() => {})
@@ -212,12 +242,14 @@ export function useAuth() {
     activeStages,
     hideTitle,
     hideDifficulty,
+    conciseMode,
     activeTopics,
     tourDone,
     settingsReady,
     persistStages,
     persistHideTitle,
     persistHideDifficulty,
+    persistConciseMode,
     persistTopics,
     persistTourDone,
     recordAndUpdateStreak,

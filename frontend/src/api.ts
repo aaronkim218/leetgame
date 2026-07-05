@@ -108,6 +108,7 @@ export async function* streamChat(
   message: string,
   hintRequested: boolean,
   answerRequested: boolean,
+  concise: boolean,
   signal?: AbortSignal,
 ): AsyncGenerator<
   | { type: 'token'; content: string }
@@ -128,6 +129,7 @@ export async function* streamChat(
       message,
       hint_requested: hintRequested,
       answer_requested: answerRequested,
+      concise,
     }),
     signal,
   })
@@ -201,6 +203,7 @@ export async function getSettings(): Promise<{
   active_stages: ActiveStage[]
   hide_title: boolean
   hide_difficulty: boolean
+  concise_mode: boolean
   active_topics: string[]
   tour_done: boolean
 }> {
@@ -215,6 +218,7 @@ export async function updateSettings(
   activeStages: ActiveStage[],
   hideTitle: boolean,
   hideDifficulty: boolean,
+  conciseMode: boolean,
   activeTopics: string[],
   tourDone: boolean,
 ): Promise<void> {
@@ -225,6 +229,7 @@ export async function updateSettings(
       active_stages: activeStages,
       hide_title: hideTitle,
       hide_difficulty: hideDifficulty,
+      concise_mode: conciseMode,
       active_topics: activeTopics,
       tour_done: tourDone,
     }),

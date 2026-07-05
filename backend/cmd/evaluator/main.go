@@ -53,7 +53,7 @@ func main() {
 	logger := slog.Default()
 
 	handler := func(ctx context.Context, event kafka.SessionCompletedEvent) error {
-		return evaluation.RunSessionWithError(ctx, pg, llmClient, logger, event.UserID, event.Problem, event.ActiveStages, event.History)
+		return evaluation.RunSessionWithError(ctx, pg, llmClient, logger, event.UserID, event.Problem, event.ActiveStages, event.History, event.Concise)
 	}
 
 	consumer := kafka.NewConsumer(

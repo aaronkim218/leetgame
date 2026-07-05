@@ -19,6 +19,8 @@ interface Props {
   onHideTitleChange: (value: boolean) => void
   hideDifficulty: boolean
   onHideDifficultyChange: (value: boolean) => void
+  conciseMode: boolean
+  onConciseModeChange: (value: boolean) => void
   onTakeTour?: () => void
   theme: Theme
   onThemeChange: (t: Theme) => void
@@ -37,6 +39,8 @@ export function NavBar({
   onHideTitleChange,
   hideDifficulty,
   onHideDifficultyChange,
+  conciseMode,
+  onConciseModeChange,
   onTakeTour,
   theme,
   onThemeChange,
@@ -107,6 +111,8 @@ export function NavBar({
                 onHideTitleChange={onHideTitleChange}
                 hideDifficulty={hideDifficulty}
                 onHideDifficultyChange={onHideDifficultyChange}
+                conciseMode={conciseMode}
+                onConciseModeChange={onConciseModeChange}
                 onTakeTour={onTakeTour}
                 theme={theme}
                 onThemeChange={onThemeChange}

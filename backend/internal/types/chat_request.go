@@ -22,6 +22,7 @@ type ChatRequest struct {
 	Message         string           `json:"message"`
 	HintRequested   bool             `json:"hint_requested"`
 	AnswerRequested bool             `json:"answer_requested"`
+	Concise         bool             `json:"concise"`
 }
 
 func (r ChatRequest) Validate() map[string]string {

@@ -12,4 +12,5 @@ type SessionCompletedEvent struct {
 	Problem      models.Problem    `json:"problem"`
 	ActiveStages []string          `json:"active_stages"`
 	History      []llm.ChatMessage `json:"history"`
+	Concise      bool              `json:"concise"`
 }
