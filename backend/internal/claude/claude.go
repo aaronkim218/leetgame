@@ -29,14 +29,14 @@ func New(apiKey, model string) *AnthropicClient {
 	}
 }
 
-func (c *AnthropicClient) Evaluate(ctx context.Context, problem models.Problem, stage string, activeStages []string, history []llm.ChatMessage, userMessage string, hintRequested, answerRequested bool, onToken func(string)) (llm.EvaluateResponse, error) {
+func (c *AnthropicClient) Evaluate(ctx context.Context, problem models.Problem, stage string, activeStages []string, history []llm.ChatMessage, userMessage string, hintRequested, answerRequested, concise bool, onToken func(string)) (llm.EvaluateResponse, error) {
 	messages := make([]map[string]string, 0, len(history)+1)
 	for _, h := range history {
 		messages = append(messages, map[string]string{"role": h.Role, "content": h.Content})
 	}
 	messages = append(messages, map[string]string{"role": "user", "content": userMessage})
 
-	stablePrompt := llm.BuildStableSystemPrompt(problem.Title, problem.Description, activeStages, false)
+	stablePrompt := llm.BuildStableSystemPrompt(problem.Title, problem.Description, activeStages, concise)
 	volatileSuffix := llm.BuildVolatileSystemSuffix(stage, hintRequested, answerRequested)
 
 	body := map[string]any{

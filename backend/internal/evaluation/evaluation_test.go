@@ -40,7 +40,7 @@ type stubLLM struct {
 	err  error
 }
 
-func (s *stubLLM) Evaluate(_ context.Context, _ models.Problem, _ string, _ []string, _ []llm.ChatMessage, _ string, _, _ bool, _ func(string)) (llm.EvaluateResponse, error) {
+func (s *stubLLM) Evaluate(_ context.Context, _ models.Problem, _ string, _ []string, _ []llm.ChatMessage, _ string, _, _, _ bool, _ func(string)) (llm.EvaluateResponse, error) {
 	return llm.EvaluateResponse{}, nil
 }
 
