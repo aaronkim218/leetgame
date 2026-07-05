@@ -32,7 +32,7 @@ func New(baseURL, model, apiKey string) *OllamaClient {
 }
 
 func (c *OllamaClient) Evaluate(ctx context.Context, problem models.Problem, stage string, activeStages []string, history []llm.ChatMessage, userMessage string, hintRequested, answerRequested bool, onToken func(string)) (llm.EvaluateResponse, error) {
-	systemPrompt := llm.BuildSystemPrompt(problem.Title, problem.Description, stage, activeStages, hintRequested, answerRequested)
+	systemPrompt := llm.BuildSystemPrompt(problem.Title, problem.Description, stage, activeStages, hintRequested, answerRequested, false)
 
 	messages := make([]map[string]string, 0, len(history)+2)
 	messages = append(messages, map[string]string{"role": "system", "content": systemPrompt})

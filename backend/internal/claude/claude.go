@@ -36,7 +36,7 @@ func (c *AnthropicClient) Evaluate(ctx context.Context, problem models.Problem, 
 	}
 	messages = append(messages, map[string]string{"role": "user", "content": userMessage})
 
-	stablePrompt := llm.BuildStableSystemPrompt(problem.Title, problem.Description, activeStages)
+	stablePrompt := llm.BuildStableSystemPrompt(problem.Title, problem.Description, activeStages, false)
 	volatileSuffix := llm.BuildVolatileSystemSuffix(stage, hintRequested, answerRequested)
 
 	body := map[string]any{
