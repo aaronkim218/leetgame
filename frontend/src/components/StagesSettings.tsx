@@ -37,6 +37,8 @@ interface Props {
   onTakeTour?: () => void
   theme: Theme
   onThemeChange: (t: Theme) => void
+  signedInAs?: string
+  onSignOut?: () => void
 }
 
 export function StagesSettings({
@@ -49,6 +51,8 @@ export function StagesSettings({
   onTakeTour,
   theme,
   onThemeChange,
+  signedInAs,
+  onSignOut,
 }: Props) {
   const toggle = (stage: ActiveStage) => {
     const isActive = activeStages.includes(stage)
@@ -153,6 +157,23 @@ export function StagesSettings({
             Take a tour
           </button>
         </>
+      )}
+      {/* account actions live in the navbar on desktop; surfaced here on small screens */}
+      {onSignOut && (
+        <div className="sm:hidden">
+          <div className="border-border mx-3 my-2 border-t" />
+          {signedInAs && (
+            <p className="text-muted-foreground truncate px-3 pb-1 text-xs">
+              Signed in as {signedInAs}
+            </p>
+          )}
+          <button
+            onClick={onSignOut}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted w-full px-3 py-2 text-left text-sm transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       )}
     </div>
   )

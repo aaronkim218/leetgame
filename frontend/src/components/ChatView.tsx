@@ -131,11 +131,11 @@ export function ChatView({
   return (
     <div
       data-tour="chat-panel"
-      className="flex min-h-0 flex-1 flex-col md:w-1/2"
+      className="flex min-h-0 flex-col max-md:flex-[0_1_auto] md:w-1/2 md:flex-1"
     >
       <div
         className={cn(
-          'border-border border-b px-5 py-3 text-sm font-semibold',
+          'border-border shrink-0 border-b px-5 py-3 text-sm font-semibold',
           stage === 'complete'
             ? 'bg-green-500/10 text-green-700 dark:text-green-400'
             : 'bg-muted text-foreground',
@@ -146,7 +146,7 @@ export function ChatView({
           : getStageBanner(stage as ActiveStage, sessionActiveStages)}
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
+      <div className="flex min-h-0 flex-col gap-3 overflow-y-auto p-5 max-md:max-h-[45dvh] max-md:flex-[0_1_auto] md:flex-1">
         {history.map((msg, i) => (
           <div
             key={`${i}-${msg.role}`}
@@ -181,7 +181,7 @@ export function ChatView({
       </div>
 
       {stage === 'complete' ? (
-        <div className="border-border flex items-center gap-2 border-t p-4">
+        <div className="border-border flex shrink-0 items-center gap-2 border-t p-4">
           {onBack && (
             <Button variant="ghost" onClick={onBack}>
               ← Back
@@ -204,7 +204,7 @@ export function ChatView({
             e.preventDefault()
             handleSubmit()
           }}
-          className="border-border flex flex-col gap-2 border-t p-4"
+          className="border-border flex shrink-0 flex-col gap-2 border-t p-4"
         >
           <div className="flex gap-2">
             <div className="flex flex-1 flex-col gap-1">

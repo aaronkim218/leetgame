@@ -12,6 +12,16 @@ import { supabase } from './lib/supabase'
 
 const API_URL = import.meta.env.VITE_API_URL ?? ''
 
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const {
     data: { session },
@@ -48,7 +58,10 @@ export async function getRandomProblemFiltered(
     },
   )
   if (!res.ok)
-    throw new Error(`Failed to fetch filtered random problem: ${res.status}`)
+    throw new ApiError(
+      `Failed to fetch filtered random problem: ${res.status}`,
+      res.status,
+    )
   return res.json()
 }
 

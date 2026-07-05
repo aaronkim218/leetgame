@@ -64,7 +64,7 @@ export function ProblemView({
       data-tour="problem-panel"
       className={cn(
         'border-border [scrollbar-width:none] border-b [-ms-overflow-style:none] md:w-1/2 md:overflow-y-auto md:border-r md:border-b-0 [&::-webkit-scrollbar]:hidden',
-        problemOpen ? 'flex-1 overflow-y-auto' : 'shrink-0',
+        problemOpen ? 'flex-1 overflow-y-auto max-md:min-h-24' : 'shrink-0',
       )}
     >
       {/* mobile toggle bar */}
@@ -85,7 +85,7 @@ export function ProblemView({
         <button
           onClick={() => setProblemOpen((o) => !o)}
           aria-expanded={problemOpen}
-          className="text-muted-foreground hover:text-foreground border-border rounded border px-2 py-1 text-xs transition-colors"
+          className="text-muted-foreground hover:text-foreground border-border -my-1 rounded border px-3 py-2 text-xs transition-colors"
         >
           {problemOpen ? 'Hide ▴' : 'Show ▾'}
         </button>
