@@ -20,7 +20,7 @@ func (c *AnthropicClient) EvaluateSession(ctx context.Context, problem models.Pr
 		"system": []map[string]any{
 			{
 				"type":          "text",
-				"text":          llm.BuildEvaluationSystemPrompt(),
+				"text":          llm.BuildEvaluationSystemPrompt(false),
 				"cache_control": map[string]string{"type": "ephemeral"},
 			},
 		},

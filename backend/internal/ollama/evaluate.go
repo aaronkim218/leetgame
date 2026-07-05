@@ -14,7 +14,7 @@ import (
 )
 
 func (c *OllamaClient) EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []llm.ChatMessage) (llm.SessionEvaluation, error) {
-	prompt := llm.BuildEvaluationPrompt(problem, activeStages, history)
+	prompt := llm.BuildEvaluationPrompt(problem, activeStages, history, false)
 
 	body := map[string]any{
 		"model":  c.model,

@@ -22,7 +22,7 @@ func TestBuildEvaluationPrompt(t *testing.T) {
 		{Role: "user", Content: "To achieve O(n) lookup"},
 	}
 
-	prompt := BuildEvaluationPrompt(problem, activeStages, history)
+	prompt := BuildEvaluationPrompt(problem, activeStages, history, false)
 
 	checks := []struct {
 		name    string
@@ -70,7 +70,7 @@ func TestBuildEvaluationPrompt_MarkerInjectedIntoHistory(t *testing.T) {
 		{Role: "assistant", Content: "Good, explain why"},
 		{Role: "user", Content: "To get O(n)", Marker: "answer"},
 	}
-	prompt := BuildEvaluationPrompt(problem, []string{"pattern"}, history)
+	prompt := BuildEvaluationPrompt(problem, []string{"pattern"}, history, false)
 
 	if !strings.Contains(prompt, "[USER REQUESTED HINT]\nI think hash map") {
 		t.Error("expected hint marker injected before hint message content")
@@ -90,14 +90,14 @@ func TestBuildEvaluationPrompt_EmptyHistory(t *testing.T) {
 		TopicTags: []string{"Array"},
 	}
 	// Should not panic
-	prompt := BuildEvaluationPrompt(problem, []string{"pattern"}, nil)
+	prompt := BuildEvaluationPrompt(problem, []string{"pattern"}, nil, false)
 	if !strings.Contains(prompt, "Test") {
 		t.Error("prompt missing problem title")
 	}
 }
 
 func TestBuildEvaluationSystemPrompt_contains_rubric_anchors(t *testing.T) {
-	system := BuildEvaluationSystemPrompt()
+	system := BuildEvaluationSystemPrompt(false)
 
 	checks := []struct {
 		name    string
@@ -125,7 +125,7 @@ func TestBuildEvaluationSystemPrompt_contains_rubric_anchors(t *testing.T) {
 }
 
 func TestBuildEvaluationSystemPrompt_does_not_contain_problem_specific_content(t *testing.T) {
-	system := BuildEvaluationSystemPrompt()
+	system := BuildEvaluationSystemPrompt(false)
 	if strings.Contains(system, "Two Sum") {
 		t.Error("system prompt should not contain problem-specific content")
 	}
@@ -198,5 +198,31 @@ func TestBuildEvaluationUserPrompt_marker_injection(t *testing.T) {
 	}
 	if !strings.Contains(user, "[USER REQUESTED ANSWER]\nOK reveal it") {
 		t.Error("expected answer marker injected before answer message content")
+	}
+}
+
+func TestBuildEvaluationSystemPrompt_concise_adds_calibration(t *testing.T) {
+	prompt := BuildEvaluationSystemPrompt(true)
+	if !strings.Contains(prompt, "concise mode") {
+		t.Error("concise rubric must mention concise mode")
+	}
+	if !strings.Contains(prompt, "Do not penalize brevity") {
+		t.Error("concise rubric must contain the brevity calibration")
+	}
+}
+
+func TestBuildEvaluationSystemPrompt_strict_has_no_calibration(t *testing.T) {
+	prompt := BuildEvaluationSystemPrompt(false)
+	if strings.Contains(prompt, "concise mode") {
+		t.Error("strict rubric must not mention concise mode")
+	}
+}
+
+func TestBuildEvaluationSystemPrompt_concise_keeps_caps(t *testing.T) {
+	prompt := BuildEvaluationSystemPrompt(true)
+	for _, keep := range []string{"Reveal cap", "Hint cap", "Answer cap", `"scores"`} {
+		if !strings.Contains(prompt, keep) {
+			t.Errorf("concise rubric missing %q", keep)
+		}
 	}
 }
