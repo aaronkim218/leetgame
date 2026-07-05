@@ -7,6 +7,7 @@ type UserSettings struct {
 	ActiveStages   []string  `json:"active_stages"    db:"active_stages"`
 	HideTitle      bool      `json:"hide_title"       db:"hide_title"`
 	HideDifficulty bool      `json:"hide_difficulty"  db:"hide_difficulty"`
+	ConciseMode    bool      `json:"concise_mode"     db:"concise_mode"`
 	ActiveTopics   []string  `json:"active_topics"    db:"active_topics"`
 	TourDone       bool      `json:"tour_done"        db:"tour_done"`
 }

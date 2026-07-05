@@ -23,6 +23,7 @@ func (hs *HandlerService) GetSettings(c fiber.Ctx) error {
 		ActiveStages   []string `json:"active_stages"`
 		HideTitle      bool     `json:"hide_title"`
 		HideDifficulty bool     `json:"hide_difficulty"`
+		ConciseMode    bool     `json:"concise_mode"`
 		ActiveTopics   []string `json:"active_topics"`
 		TourDone       bool     `json:"tour_done"`
 	}
@@ -30,6 +31,7 @@ func (hs *HandlerService) GetSettings(c fiber.Ctx) error {
 		ActiveStages:   settings.ActiveStages,
 		HideTitle:      settings.HideTitle,
 		HideDifficulty: settings.HideDifficulty,
+		ConciseMode:    settings.ConciseMode,
 		ActiveTopics:   settings.ActiveTopics,
 		TourDone:       settings.TourDone,
 	})
@@ -45,6 +47,7 @@ func (hs *HandlerService) UpdateSettings(c fiber.Ctx) error {
 		ActiveStages   []string `json:"active_stages"`
 		HideTitle      bool     `json:"hide_title"`
 		HideDifficulty bool     `json:"hide_difficulty"`
+		ConciseMode    bool     `json:"concise_mode"`
 		ActiveTopics   []string `json:"active_topics"`
 		TourDone       bool     `json:"tour_done"`
 	}
@@ -62,7 +65,7 @@ func (hs *HandlerService) UpdateSettings(c fiber.Ctx) error {
 		})
 	}
 
-	if err := hs.storage.UpsertUserSettings(c.RequestCtx(), uid, req.ActiveStages, req.HideTitle, req.HideDifficulty, req.ActiveTopics, req.TourDone); err != nil {
+	if err := hs.storage.UpsertUserSettings(c.RequestCtx(), uid, req.ActiveStages, req.HideTitle, req.HideDifficulty, req.ConciseMode, req.ActiveTopics, req.TourDone); err != nil {
 		return err
 	}
 

@@ -274,8 +274,8 @@ func (c *CachedStorage) GetUserSettings(ctx context.Context, userID uuid.UUID) (
 	return c.inner.GetUserSettings(ctx, userID)
 }
 
-func (c *CachedStorage) UpsertUserSettings(ctx context.Context, userID uuid.UUID, activeStages []string, hideTitle bool, hideDifficulty bool, activeTopics []string, tourDone bool) error {
-	return c.inner.UpsertUserSettings(ctx, userID, activeStages, hideTitle, hideDifficulty, activeTopics, tourDone)
+func (c *CachedStorage) UpsertUserSettings(ctx context.Context, userID uuid.UUID, activeStages []string, hideTitle bool, hideDifficulty bool, conciseMode bool, activeTopics []string, tourDone bool) error {
+	return c.inner.UpsertUserSettings(ctx, userID, activeStages, hideTitle, hideDifficulty, conciseMode, activeTopics, tourDone)
 }
 
 func (c *CachedStorage) SaveProblem(ctx context.Context, userID, problemID uuid.UUID) error {

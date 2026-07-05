@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
   active_stages   TEXT[]  NOT NULL DEFAULT '{pattern,algorithm,tc_sc}',
   hide_title      BOOLEAN NOT NULL DEFAULT TRUE,
   hide_difficulty BOOLEAN NOT NULL DEFAULT TRUE,
+  concise_mode    BOOLEAN NOT NULL DEFAULT FALSE,
   active_topics   TEXT[]  NOT NULL DEFAULT '{}',
   tour_done       BOOLEAN NOT NULL DEFAULT FALSE
 );

@@ -58,7 +58,7 @@ func (s *stubStorage) GetUserSettings(_ context.Context, _ uuid.UUID) (models.Us
 	panic("unexpected")
 }
 
-func (s *stubStorage) UpsertUserSettings(_ context.Context, _ uuid.UUID, _ []string, _ bool, _ bool, _ []string, _ bool) error {
+func (s *stubStorage) UpsertUserSettings(_ context.Context, _ uuid.UUID, _ []string, _ bool, _ bool, _ bool, _ []string, _ bool) error {
 	panic("unexpected")
 }
 func (s *stubStorage) SaveProblem(_ context.Context, _, _ uuid.UUID) error   { panic("unexpected") }
