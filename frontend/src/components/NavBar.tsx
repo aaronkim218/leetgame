@@ -58,7 +58,7 @@ export function NavBar({
 
   return (
     <div className="border-border bg-background flex shrink-0 items-center gap-1 border-b px-2 py-2 sm:px-4">
-      <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
         {(['practice', 'search'] as const).map((v) => (
           <Button
             key={v}
