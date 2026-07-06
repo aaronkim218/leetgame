@@ -165,3 +165,29 @@ test('loadRandom returns the session to random mode', async () => {
   })
   expect(getRandomProblem).toHaveBeenCalledTimes(2)
 })
+
+test('a newer load supersedes a stale in-flight load', async () => {
+  let resolveSmart: (p: typeof problem) => void = () => {}
+  ;(getSmartPracticeProblem as jest.Mock).mockImplementationOnce(
+    () => new Promise((resolve) => (resolveSmart = resolve)),
+  )
+  const randomProblem = { ...problem, id: 'p-random' }
+  ;(getRandomProblem as jest.Mock).mockResolvedValueOnce(randomProblem)
+
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    const smartPromise = result.current.loadSmart() // stays pending
+    await result.current.loadRandom() // initiated later, resolves first
+    resolveSmart({ ...problem, id: 'p-smart' }) // stale result arrives late
+    await smartPromise
+  })
+  expect(result.current.problem?.id).toBe('p-random')
+  expect(result.current.problemSource).toBe('random')
+})

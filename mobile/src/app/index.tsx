@@ -45,18 +45,19 @@ export default function PracticeScreen() {
   })
 
   const { smart } = useLocalSearchParams<{ smart?: string }>()
+  const smartValue = Array.isArray(smart) ? smart[0] : smart
   const lastSmartRef = useRef<string | null>(null)
   useEffect(() => {
-    const value = Array.isArray(smart) ? smart[0] : smart
-    if (value && value !== lastSmartRef.current) {
-      lastSmartRef.current = value
+    if (authReady && smartValue && smartValue !== lastSmartRef.current) {
+      lastSmartRef.current = smartValue
       void practice.loadSmart()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [smart])
+  }, [smartValue, authReady])
 
   useEffect(() => {
-    if (authReady && !practice.problem) void practice.loadRandom()
+    if (authReady && !practice.problem && !smartValue)
+      void practice.loadRandom()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authReady])
 

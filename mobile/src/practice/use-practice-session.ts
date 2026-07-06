@@ -27,6 +27,7 @@ export function usePracticeSession({
   )
   const sessionStagesRef = useRef<ActiveStage[]>(activeStages)
   const abortRef = useRef<AbortController | null>(null)
+  const loadSeqRef = useRef(0)
 
   const startSession = useCallback(
     (p: Problem) => {
@@ -42,21 +43,29 @@ export function usePracticeSession({
   )
 
   const loadRandom = useCallback(async () => {
+    const seq = ++loadSeqRef.current
     setError(null)
     try {
-      startSession(await getRandomProblem())
+      const p = await getRandomProblem()
+      if (seq !== loadSeqRef.current) return
+      startSession(p)
       setProblemSource('random')
     } catch {
+      if (seq !== loadSeqRef.current) return
       setError('Failed to load a problem. Is the backend running?')
     }
   }, [startSession])
 
   const loadSmart = useCallback(async () => {
+    const seq = ++loadSeqRef.current
     setError(null)
     try {
-      startSession(await getSmartPracticeProblem(activeStages, activeTopics))
+      const p = await getSmartPracticeProblem(activeStages, activeTopics)
+      if (seq !== loadSeqRef.current) return
+      startSession(p)
       setProblemSource('smart')
     } catch {
+      if (seq !== loadSeqRef.current) return
       setError('Failed to load a problem. Is the backend running?')
     }
   }, [startSession, activeStages, activeTopics])
