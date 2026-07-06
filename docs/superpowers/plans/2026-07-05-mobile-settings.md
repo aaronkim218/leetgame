@@ -31,7 +31,7 @@
 **Interfaces:**
 - Produces: current backend/web contract in-tree (`concise_mode` in settings, `concise` in chat) for reference; `mobile/` is untouched by the merge.
 
-- [ ] **Step 1: Merge**
+- [x] **Step 1: Merge**
 
 Run from the repo root (`/Users/aaronkim/projects/leetgame`):
 
@@ -42,7 +42,7 @@ git merge main --no-edit
 
 Expected: clean merge (`mobile/` is disjoint from main's changes). If conflicts appear, they will be in docs — resolve keeping both sides.
 
-- [ ] **Step 2: Verify mobile is unaffected**
+- [x] **Step 2: Verify mobile is unaffected**
 
 ```bash
 cd mobile && npx tsc --noEmit && npx jest
@@ -50,7 +50,7 @@ cd mobile && npx tsc --noEmit && npx jest
 
 Expected: typecheck clean, 9 suites / 18 tests pass.
 
-- [ ] **Step 3: Verify the frontend/backend still build (pre-commit hook runs these anyway)**
+- [x] **Step 3: Verify the frontend/backend still build (pre-commit hook runs these anyway)**
 
 ```bash
 cd .. && git log --oneline -1
@@ -72,7 +72,7 @@ Expected: a merge commit like `Merge branch 'main' into feat/mobile-app`. (The m
   - `getSettings(): Promise<{ active_stages: ActiveStage[]; hide_title: boolean; hide_difficulty: boolean; concise_mode: boolean; active_topics: string[]; tour_done: boolean }>`
   - `updateSettings(activeStages: ActiveStage[], hideTitle: boolean, hideDifficulty: boolean, conciseMode: boolean, activeTopics: string[], tourDone: boolean): Promise<void>` — throws on non-OK.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `mobile/src/api/settings.test.ts`:
 
@@ -123,12 +123,12 @@ test('updateSettings throws on non-OK response', async () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/api/settings.test.ts`
 Expected: FAIL — `updateSettings` is not exported.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace the whole of `mobile/src/api/settings.ts` with:
 
@@ -175,12 +175,12 @@ export async function updateSettings(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx jest src/api/settings.test.ts`
 Expected: PASS (2 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/api/settings.ts src/api/settings.test.ts
@@ -200,7 +200,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 **Interfaces:**
 - Produces: `streamChat(problemId, stage, activeStages, history, message, hintRequested, answerRequested, concise: boolean, signal?)` — `concise` is a new positional param **before** `signal`; request body gains `concise`.
 
-- [ ] **Step 1: Update the body-shape test to expect `concise`**
+- [x] **Step 1: Update the body-shape test to expect `concise`**
 
 In `mobile/src/api/chat.test.ts`, the three `streamChat(...)` calls each gain a `false` (or `true`) argument after the `answerRequested` argument, and the body assertion gains `concise`:
 
@@ -209,12 +209,12 @@ In `mobile/src/api/chat.test.ts`, the three `streamChat(...)` calls each gain a 
 - Line 67: `streamChat('p1', 'pattern', ['pattern'], [{ role: 'user', content: 'prev' }], 'hi', true, false)` → `...'hi', true, false, true)`
 - The `expect(body).toEqual({...})` block gains `concise: true,` after `answer_requested: false,`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/api/chat.test.ts`
 Expected: FAIL — body does not contain `concise` (the third test's `toEqual` mismatches).
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `mobile/src/api/chat.ts`, change the signature and body:
 
@@ -247,12 +247,12 @@ Note: `mobile/src/practice/use-practice-session.ts` now fails typecheck (missing
 
 (Task 6 replaces this `false` with the real setting.)
 
-- [ ] **Step 4: Run tests and typecheck**
+- [x] **Step 4: Run tests and typecheck**
 
 Run: `npx jest src/api/chat.test.ts src/practice/use-practice-session.test.tsx && npx tsc --noEmit`
 Expected: PASS, typecheck clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/api/chat.ts src/api/chat.test.ts src/practice/use-practice-session.ts
@@ -278,7 +278,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
   - `persistHideDifficulty(value: boolean): void`
   - `persistConciseMode(value: boolean): void`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `mobile/src/auth/auth-context.test.tsx`. First extend the settings mock at the top of the file (line 18) to include `updateSettings`:
 
@@ -368,12 +368,12 @@ test('anonymous persistStages updates state without a PUT', async () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/auth/auth-context.test.tsx`
 Expected: FAIL — `conciseMode` / `persistConciseMode` undefined.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `mobile/src/auth/auth-context.tsx`:
 
@@ -465,12 +465,12 @@ const persistConciseMode = (value: boolean) => {
 
 7. Add `conciseMode` and the four persist functions to the provider `value`.
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 Run: `npx jest && npx tsc --noEmit`
 Expected: all suites PASS, typecheck clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/auth/auth-context.tsx src/auth/auth-context.test.tsx
@@ -495,7 +495,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
   - `useTheme(): Theme` — unchanged signature; now resolves from preference.
   - AsyncStorage key: `leetgame_theme`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `mobile/src/theme/theme-context.test.tsx`:
 
@@ -552,12 +552,12 @@ test('loads a stored preference on mount', async () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/theme/theme-context.test.tsx`
 Expected: FAIL — `useThemePreference` is not exported.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Replace the whole of `mobile/src/theme/theme-context.tsx` with:
 
@@ -622,12 +622,12 @@ export function useThemePreference() {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx jest src/theme/theme-context.test.tsx && npx tsc --noEmit`
 Expected: PASS (2 tests), typecheck clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/theme/theme-context.tsx src/theme/theme-context.test.tsx
@@ -648,7 +648,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Consumes: `CANONICAL_STAGES`, `ActiveStage` from `../types`.
 - Produces: `toggleStage(activeStages: ActiveStage[], stage: ActiveStage): ActiveStage[]` — pure; returns the input array unchanged when removal would empty the list.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `mobile/src/practice/stage-toggle.test.ts`:
 
@@ -674,12 +674,12 @@ test('refuses to remove the last active stage', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/practice/stage-toggle.test.ts`
 Expected: FAIL — module not found.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `mobile/src/practice/stage-toggle.ts` (logic copied from web
 `StagesSettings.toggle`):
@@ -699,12 +699,12 @@ export function toggleStage(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx jest src/practice/stage-toggle.test.ts`
 Expected: PASS (3 tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/practice/stage-toggle.ts src/practice/stage-toggle.test.ts
@@ -731,7 +731,7 @@ This task is presentational — no unit test (matches the existing convention:
 screens and layout-only components in `mobile/src/app/` have no unit tests;
 behavior is verified in Task 9 on the simulator).
 
-- [ ] **Step 1: Create `SettingRow`**
+- [x] **Step 1: Create `SettingRow`**
 
 Create `mobile/src/components/setting-row.tsx`:
 
@@ -804,7 +804,7 @@ export function SettingRow({
 }
 ```
 
-- [ ] **Step 2: Create the settings screen**
+- [x] **Step 2: Create the settings screen**
 
 Create `mobile/src/app/settings.tsx` (copy mirrors web
 `frontend/src/components/StagesSettings.tsx` structure and copy text):
@@ -995,7 +995,7 @@ export default function SettingsScreen() {
 }
 ```
 
-- [ ] **Step 3: Register the route**
+- [x] **Step 3: Register the route**
 
 In `mobile/src/app/_layout.tsx`, add inside the `<Stack>` after the
 `account` screen:
@@ -1004,7 +1004,7 @@ In `mobile/src/app/_layout.tsx`, add inside the `<Stack>` after the
 <Stack.Screen name="settings" options={{ title: 'Settings' }} />
 ```
 
-- [ ] **Step 4: Add the gear button to the Practice header**
+- [x] **Step 4: Add the gear button to the Practice header**
 
 In `mobile/src/app/index.tsx`, inside the header `<View>` (the one with
 `flexDirection: 'row'`), add **before** the streak indicator:
@@ -1017,12 +1017,12 @@ In `mobile/src/app/index.tsx`, inside the header `<View>` (the one with
 </Link>
 ```
 
-- [ ] **Step 5: Typecheck and run the full suite**
+- [x] **Step 5: Typecheck and run the full suite**
 
 Run: `npx tsc --noEmit && npx jest`
 Expected: clean, all suites pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/setting-row.tsx src/app/settings.tsx src/app/_layout.tsx src/app/index.tsx
@@ -1044,7 +1044,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Consumes: `streamChat` 8-arg signature (Task 3); `conciseMode` from `useAuth()` (Task 4).
 - Produces: `usePracticeSession` `Opts` gains `conciseMode: boolean`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `mobile/src/practice/use-practice-session.test.tsx`:
 
@@ -1073,13 +1073,13 @@ test('submit passes conciseMode to streamChat', async () => {
 Also add `conciseMode: false,` to the three existing `usePracticeSession({...})`
 option objects in this file (the `Opts` type gains a required field).
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest src/practice/use-practice-session.test.tsx`
 Expected: FAIL — `mockStreamChat.mock.calls[0][7]` is `false` (the Task 3
 placeholder), not `true`.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `mobile/src/practice/use-practice-session.ts`:
 
@@ -1112,12 +1112,12 @@ const practice = usePracticeSession({
 })
 ```
 
-- [ ] **Step 4: Run the full suite and typecheck**
+- [x] **Step 4: Run the full suite and typecheck**
 
 Run: `npx jest && npx tsc --noEmit`
 Expected: all suites PASS, typecheck clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/practice/use-practice-session.ts src/practice/use-practice-session.test.tsx src/app/index.tsx
@@ -1135,18 +1135,18 @@ ios-simulator tooling, receipt-driven — declare each receipt before acting,
 verify with runtime state (component props / network log), never a screenshot
 alone.
 
-- [ ] **Step 1: Launch**
+- [x] **Step 1: Launch**
 
 `cd mobile && npx expo start`, then `xcrun simctl openurl booted "exp://127.0.0.1:8081"`
 (avoids the Expo Go upgrade-download prompt that can time out).
 
-- [ ] **Step 2: Navigation receipt**
+- [x] **Step 2: Navigation receipt**
 
 Tap `settings-button` on the Practice header. Receipt: `get_current_route` →
 `settings`; controls render with current AuthContext values (checked states
 match `hideTitle`/`hideDifficulty`/`conciseMode`).
 
-- [ ] **Step 3: Signed-in persistence receipt**
+- [x] **Step 3: Signed-in persistence receipt**
 
 Sign in (dev account `leetgametest@gmail.com` / `leetgametest`, testIDs
 `sign-in-email`, `sign-in-password`, `sign-in-submit`). In settings, toggle
@@ -1154,31 +1154,31 @@ Concise mode ON. Receipt: `PUT /api/settings → 200` fires with
 `concise_mode: true` and the previously fetched `active_topics`/`tour_done`
 intact in the body (check via `get_request_details`).
 
-- [ ] **Step 4: Concise chat receipt**
+- [x] **Step 4: Concise chat receipt**
 
 Return to Practice, submit a message. Receipt: the `POST /api/chat` request
 body contains `concise: true`.
 
-- [ ] **Step 5: Stage toggle receipt**
+- [x] **Step 5: Stage toggle receipt**
 
 In settings, disable a stage (e.g. Time & Space) → `PUT /api/settings` body
 has the reduced `active_stages`. Back on Practice, tap Next Problem →
 `StageBanner.props.sessionActiveStages` reflects the new list.
 
-- [ ] **Step 6: Theme receipt**
+- [x] **Step 6: Theme receipt**
 
 Tap `settings-theme-dark`. Receipt: screen background flips to `#16171d`
 (inspect a themed component's resolved style or screenshot for the visual
 layer) AND relaunching the app (`xcrun simctl terminate` + `openurl`) still
 shows dark (AsyncStorage receipt).
 
-- [ ] **Step 7: Anonymous receipt**
+- [x] **Step 7: Anonymous receipt**
 
 Sign out. Toggle Hide difficulty in settings. Receipt: no `PUT /api/settings`
 fires (clear the network buffer first); `ProblemView.props.hideDifficulty`
 reflects the change on Practice.
 
-- [ ] **Step 8: Document results + commit plan checkboxes**
+- [x] **Step 8: Document results + commit plan checkboxes**
 
 Append a "Verification results" section to this plan, check off boxes, and
 commit:
@@ -1189,3 +1189,39 @@ git commit -m "docs: record mobile settings E2E verification results
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 ```
+
+---
+
+## Task 9 verification results (2026-07-05)
+
+Verified on iOS Simulator (iPhone 17 Pro, Expo Go, SDK 56) against the live
+Render backend via metro-mcp runtime receipts. All PASS:
+
+- **Freshness:** `settings-button` (absent from the old bundle) mounted after
+  relaunch — new code confirmed live before any receipt was trusted.
+- **Navigation:** gear → route `settings`; all 8 SettingRows mounted with
+  props matching AuthContext (hide flags checked, concise unchecked, 3 stages
+  active, none disabled).
+- **Signed-in persistence:** concise toggle → `PUT /api/settings 200` (Bearer
+  auth); stage toggle (tc_sc off) → second `PUT 200`. Server round-trip
+  verified by direct GET: `concise_mode:true`,
+  `active_stages:["pattern","algorithm"]`, all 23 `active_topics` and
+  `tour_done:true` intact (nothing clobbered).
+- **Concise chat:** post-toggle `POST /api/chat 200`; live `submit` callback
+  deps showed `conciseMode === true` in the closure that fired the request
+  (streamChat arg 8 is unit-tested).
+- **Stage snapshot:** after relaunch, `StageBanner.sessionActiveStages =
+  ["pattern","algorithm"]` — server-fetched reduced stages drive the new
+  session.
+- **Theme:** `settings-theme-dark` → screen body renders dark tokens
+  (screenshot); full terminate + relaunch still dark (AsyncStorage receipt).
+- **Anonymous:** after sign-out, hide-difficulty toggle updated
+  `ProblemView.props.hideDifficulty` true→false with zero `PUT /api/settings`
+  in a cleared network buffer.
+
+Cleanup: dev account settings restored via authed PUT (stages ×3, concise
+off) and confirmed by GET.
+
+Deviations/observations: the native Stack header stays light in dark theme
+(header colors not wired to theme tokens) — recorded as a minor finding for
+follow-up.
