@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   ScrollView,
   View,
@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Link } from 'expo-router'
+import { Link, useLocalSearchParams, type Href } from 'expo-router'
 import { useAuth } from '@/auth/auth-context'
 import { useTheme } from '@/theme/theme-context'
 import { usePracticeSession } from '@/practice/use-practice-session'
@@ -17,7 +17,8 @@ import { StageBanner } from '@/components/stage-banner'
 import { ChatThread } from '@/components/chat-thread'
 import { InputBar } from '@/components/input-bar'
 import { CompletionFooter } from '@/components/completion-footer'
-import { NEETCODE_TOPICS, type ActiveStage } from '@/types'
+import { SmartBanner } from '@/components/smart-banner'
+import { type ActiveStage } from '@/types'
 
 export default function PracticeScreen() {
   const theme = useTheme()
@@ -30,17 +31,29 @@ export default function PracticeScreen() {
     hideTitle,
     hideDifficulty,
     conciseMode,
+    activeTopics,
     refreshStreak,
   } = useAuth()
 
   const practice = usePracticeSession({
     activeStages,
-    activeTopics: NEETCODE_TOPICS,
+    activeTopics,
     conciseMode,
     onComplete: () => {
       if (session) refreshStreak()
     },
   })
+
+  const { smart } = useLocalSearchParams<{ smart?: string }>()
+  const lastSmartRef = useRef<string | null>(null)
+  useEffect(() => {
+    const value = Array.isArray(smart) ? smart[0] : smart
+    if (value && value !== lastSmartRef.current) {
+      lastSmartRef.current = value
+      void practice.loadSmart()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [smart])
 
   useEffect(() => {
     if (authReady && !practice.problem) void practice.loadRandom()
@@ -94,6 +107,16 @@ export default function PracticeScreen() {
           paddingVertical: 8,
         }}
       >
+        {/* cast needed until the /stats screen exists (next task); then use href="/stats" */}
+        <Link href={'/stats' as Href} asChild>
+          <Pressable
+            testID="stats-button"
+            accessibilityLabel="Stats"
+            accessibilityRole="button"
+          >
+            <Text style={{ fontSize: 18 }}>📊</Text>
+          </Pressable>
+        </Link>
         <Link href="/settings" asChild>
           <Pressable
             testID="settings-button"
@@ -126,6 +149,9 @@ export default function PracticeScreen() {
       </View>
 
       <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+        {practice.problemSource === 'smart' && (
+          <SmartBanner onExit={() => void practice.loadRandom()} />
+        )}
         <ProblemView
           problem={practice.problem}
           hideTitle={hideTitle}
@@ -145,7 +171,7 @@ export default function PracticeScreen() {
 
       {isComplete ? (
         <CompletionFooter
-          onNext={() => void practice.loadRandom()}
+          onNext={() => void practice.loadNext()}
           onSmart={() => void practice.loadSmart()}
         />
       ) : (
