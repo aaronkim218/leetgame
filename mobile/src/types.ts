@@ -42,6 +42,27 @@ export interface ProblemTag {
   count: number
 }
 
+export interface ProblemSearchResponse {
+  problems: Problem[]
+  page: number
+  page_size: number
+  total: number
+}
+
+export interface PlaylistFilters {
+  q: string
+  difficulties: string[]
+  tags: string[]
+  tagMatch: 'and' | 'or'
+}
+
+export const EMPTY_FILTERS: PlaylistFilters = {
+  q: '',
+  difficulties: [],
+  tags: [],
+  tagMatch: 'and',
+}
+
 export const NEETCODE_TOPICS: string[] = [
   'Array',
   'Hash Table',
