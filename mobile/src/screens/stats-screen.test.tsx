@@ -15,7 +15,7 @@ jest.mock('@/auth/auth-context', () => ({ useAuth: () => mockAuth }))
 jest.mock('@/api/proficiency', () => ({ getProficiency: jest.fn() }))
 jest.mock('@/api/problems', () => ({ getProblemTags: jest.fn() }))
 
-import StatsScreen from './stats'
+import StatsScreen from './stats-screen'
 import { getProficiency } from '@/api/proficiency'
 import { getProblemTags } from '@/api/problems'
 
