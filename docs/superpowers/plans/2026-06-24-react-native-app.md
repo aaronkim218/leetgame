@@ -45,7 +45,7 @@
   - `tokens.ts`: `type ThemeName = 'light'|'dark'`; `type Theme = { background:string; foreground:string; card:string; primary:string; primaryForeground:string; secondary:string; secondaryForeground:string; muted:string; mutedForeground:string; border:string; destructive:string; codeBg:string; easy:string; medium:string; hard:string }`; `const themes: Record<ThemeName, Theme>`.
   - `theme-context.tsx`: `ThemeProvider` (React component), `useTheme(): Theme`.
 
-- [ ] **Step 1: Scaffold the app**
+- [x] **Step 1: Scaffold the app**
 
 Run from repo root:
 ```bash
@@ -54,7 +54,7 @@ cd mobile
 ```
 The default template includes Expo Router + TypeScript.
 
-- [ ] **Step 2: Install dependencies**
+- [x] **Step 2: Install dependencies**
 
 ```bash
 cd mobile
@@ -62,7 +62,7 @@ npx expo install @supabase/supabase-js @react-native-async-storage/async-storage
 npx expo install -- --save-dev jest-expo jest @testing-library/react-native @types/jest
 ```
 
-- [ ] **Step 3: Configure Jest**
+- [x] **Step 3: Configure Jest**
 
 Add to `mobile/package.json`:
 ```json
@@ -79,7 +79,7 @@ Add to `mobile/package.json`:
 }
 ```
 
-- [ ] **Step 4: Create env files and gitignore entry**
+- [x] **Step 4: Create env files and gitignore entry**
 
 `mobile/.env.example`:
 ```
@@ -89,7 +89,7 @@ EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 Copy the same values used by `frontend/.env` into `mobile/.env`. Append `mobile/.env` to the root `.gitignore`.
 
-- [ ] **Step 5: Write the failing token test**
+- [x] **Step 5: Write the failing token test**
 
 `mobile/src/theme/tokens.test.ts`:
 ```ts
@@ -115,12 +115,12 @@ test('primary differs between light and dark', () => {
 })
 ```
 
-- [ ] **Step 6: Run test to verify it fails**
+- [x] **Step 6: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- tokens`
 Expected: FAIL — cannot find module `./tokens`.
 
-- [ ] **Step 7: Implement tokens.ts**
+- [x] **Step 7: Implement tokens.ts**
 
 `mobile/src/theme/tokens.ts`:
 ```ts
@@ -182,7 +182,7 @@ export const themes: Record<ThemeName, Theme> = {
 }
 ```
 
-- [ ] **Step 8: Implement theme-context.tsx**
+- [x] **Step 8: Implement theme-context.tsx**
 
 `mobile/src/theme/theme-context.tsx`:
 ```tsx
@@ -203,7 +203,7 @@ export function useTheme(): Theme {
 }
 ```
 
-- [ ] **Step 9: Implement types.ts**
+- [x] **Step 9: Implement types.ts**
 
 Port `frontend/src/types.ts`, keeping only what v1 uses. `mobile/src/types.ts`:
 ```ts
@@ -260,16 +260,16 @@ export const NEETCODE_TOPICS: string[] = [
 ]
 ```
 
-- [ ] **Step 10: Run tests**
+- [x] **Step 10: Run tests**
 
 Run: `cd mobile && npm test -- tokens`
 Expected: PASS (both tests).
 
-- [ ] **Step 11: Verify the app boots**
+- [x] **Step 11: Verify the app boots**
 
 Run: `cd mobile && npx expo start --ios` (or press `i`). Expected: the default Expo Router starter screen renders in the simulator with no red error. Stop the server after confirming.
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add mobile .gitignore
@@ -292,7 +292,7 @@ git commit -m "feat(mobile): scaffold Expo app with theme tokens and types"
   - `supabase.ts`: `const supabase` (configured client).
   - `auth-context.tsx`: `AuthProvider`; `useAuth(): { session: Session|null; authReady: boolean; streak: number|null; streakStatus: 'solid'|'hollow'|'none'|null; activeStages: ActiveStage[]; hideTitle: boolean; hideDifficulty: boolean; signOut: () => Promise<void>; refreshStreak: () => void }`.
 
-- [ ] **Step 1: Implement the Supabase client**
+- [x] **Step 1: Implement the Supabase client**
 
 `mobile/src/auth/supabase.ts`:
 ```ts
@@ -325,7 +325,7 @@ AppState.addEventListener('change', (state) => {
 })
 ```
 
-- [ ] **Step 2: Write the failing AuthContext test**
+- [x] **Step 2: Write the failing AuthContext test**
 
 `mobile/src/auth/auth-context.test.tsx`:
 ```tsx
@@ -368,12 +368,12 @@ test('anonymous session falls back to default settings', async () => {
 })
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- auth-context`
 Expected: FAIL — cannot find module `./auth-context`.
 
-- [ ] **Step 4: Implement AuthContext**
+- [x] **Step 4: Implement AuthContext**
 
 `mobile/src/auth/auth-context.tsx`:
 ```tsx
@@ -492,12 +492,12 @@ export function useAuth(): AuthValue {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- auth-context`
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add mobile/src/auth
@@ -524,7 +524,7 @@ git commit -m "feat(mobile): add Supabase client and AuthContext"
   - `settings.ts`: `getSettings(): Promise<{ active_stages: ActiveStage[]; hide_title: boolean; hide_difficulty: boolean; active_topics: string[]; tour_done: boolean }>`.
   - `streak.ts`: `getStreak(): Promise<{ streak: number; last_practiced_at: string|null }>`; `recordStreak(): Promise<{ streak: number; last_practiced_at: string|null }>`.
 
-- [ ] **Step 1: Write the failing client test**
+- [x] **Step 1: Write the failing client test**
 
 `mobile/src/api/client.test.ts`:
 ```ts
@@ -553,12 +553,12 @@ test('authHeaders returns empty object when anonymous', async () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- client`
 Expected: FAIL — cannot find module `./client`.
 
-- [ ] **Step 3: Implement client.ts**
+- [x] **Step 3: Implement client.ts**
 
 `mobile/src/api/client.ts`:
 ```ts
@@ -575,12 +575,12 @@ export async function authHeaders(): Promise<Record<string, string>> {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- client`
 Expected: PASS.
 
-- [ ] **Step 5: Write the failing problems test**
+- [x] **Step 5: Write the failing problems test**
 
 `mobile/src/api/problems.test.ts`:
 ```ts
@@ -621,12 +621,12 @@ test('getSmartPracticeProblem encodes active stages and topics', async () => {
 })
 ```
 
-- [ ] **Step 6: Run test to verify it fails**
+- [x] **Step 6: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- problems`
 Expected: FAIL — cannot find module `./problems`.
 
-- [ ] **Step 7: Implement problems.ts**
+- [x] **Step 7: Implement problems.ts**
 
 `mobile/src/api/problems.ts`:
 ```ts
@@ -658,7 +658,7 @@ export async function getSmartPracticeProblem(
 }
 ```
 
-- [ ] **Step 8: Implement settings.ts**
+- [x] **Step 8: Implement settings.ts**
 
 `mobile/src/api/settings.ts`:
 ```ts
@@ -680,7 +680,7 @@ export async function getSettings(): Promise<{
 }
 ```
 
-- [ ] **Step 9: Implement streak.ts**
+- [x] **Step 9: Implement streak.ts**
 
 `mobile/src/api/streak.ts`:
 ```ts
@@ -710,12 +710,12 @@ export async function recordStreak(): Promise<{
 }
 ```
 
-- [ ] **Step 10: Run all api tests**
+- [x] **Step 10: Run all api tests**
 
 Run: `cd mobile && npm test -- api`
 Expected: PASS (client + problems).
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add mobile/src/api
@@ -736,7 +736,7 @@ git commit -m "feat(mobile): add API client and problem/settings/streak modules"
   - `chat.ts`: `streamChat(problemId, stage, activeStages, history, message, hintRequested, answerRequested, signal?): AsyncGenerator<{type:'token',content:string} | {type:'done',stage:Stage,message:string}>`.
   - Imports `fetch` from `expo/fetch` (NOT global) so the response body is streamable on native.
 
-- [ ] **Step 1: Write the failing chat SSE test**
+- [x] **Step 1: Write the failing chat SSE test**
 
 `mobile/src/api/chat.test.ts`:
 ```ts
@@ -821,12 +821,12 @@ test('sends the correct request body', async () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- chat`
 Expected: FAIL — cannot find module `./chat`.
 
-- [ ] **Step 3: Implement chat.ts**
+- [x] **Step 3: Implement chat.ts**
 
 `mobile/src/api/chat.ts`:
 ```ts
@@ -887,12 +887,12 @@ export async function* streamChat(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- chat`
 Expected: PASS (all three tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add mobile/src/api/chat.ts mobile/src/api/chat.test.ts
@@ -916,7 +916,7 @@ git commit -m "feat(mobile): add SSE chat stream via expo/fetch"
   - `use-practice-session.ts`: `usePracticeSession(opts: { activeStages: ActiveStage[]; activeTopics: string[]; onComplete: () => void }): { problem: Problem|null; history: ChatMessage[]; stage: Stage; streamingMessage: string; loading: boolean; error: string|null; sessionActiveStages: ActiveStage[]; loadRandom: () => Promise<void>; loadSmart: () => Promise<void>; submit: (message: string, opts?: {hint?: boolean; answer?: boolean}) => Promise<void> }`.
   - `onComplete` is called when a stream resolves with `stage === 'complete'` (the screen wires this to `refreshStreak` only when signed in).
 
-- [ ] **Step 1: Write the failing stage-banner test**
+- [x] **Step 1: Write the failing stage-banner test**
 
 `mobile/src/practice/stage-banner-text.test.ts`:
 ```ts
@@ -935,12 +935,12 @@ test('prefixes prior-stage checkmark for algorithm after pattern', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- stage-banner-text`
 Expected: FAIL — cannot find module.
 
-- [ ] **Step 3: Implement stage-banner-text.ts**
+- [x] **Step 3: Implement stage-banner-text.ts**
 
 Ported from `frontend/src/components/ChatView.tsx`. `mobile/src/practice/stage-banner-text.ts`:
 ```ts
@@ -984,12 +984,12 @@ export function getStageBanner(
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- stage-banner-text`
 Expected: PASS.
 
-- [ ] **Step 5: Write the failing session-hook test**
+- [x] **Step 5: Write the failing session-hook test**
 
 `mobile/src/practice/use-practice-session.test.tsx`:
 ```tsx
@@ -1079,12 +1079,12 @@ test('calls onComplete when stage resolves to complete', async () => {
 })
 ```
 
-- [ ] **Step 6: Run test to verify it fails**
+- [x] **Step 6: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- use-practice-session`
 Expected: FAIL — cannot find module.
 
-- [ ] **Step 7: Implement use-practice-session.ts**
+- [x] **Step 7: Implement use-practice-session.ts**
 
 `mobile/src/practice/use-practice-session.ts`:
 ```ts
@@ -1218,12 +1218,12 @@ export function usePracticeSession({
 }
 ```
 
-- [ ] **Step 8: Run test to verify it passes**
+- [x] **Step 8: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- use-practice-session`
 Expected: PASS (all three tests).
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add mobile/src/practice
@@ -1258,7 +1258,7 @@ git commit -m "feat(mobile): add usePracticeSession state machine and stage bann
   - `input-bar.tsx`: `InputBar({ disabled, onSubmit, onHint, onAnswer, placeholder }: { disabled: boolean; onSubmit: (text: string) => void; onHint: () => void; onAnswer: () => void; placeholder: string })`.
   - `completion-footer.tsx`: `CompletionFooter({ onNext, onSmart }: { onNext: () => void; onSmart: () => void })`.
 
-- [ ] **Step 1: Write the failing difficulty-badge test**
+- [x] **Step 1: Write the failing difficulty-badge test**
 
 `mobile/src/components/difficulty-badge.test.tsx`:
 ```tsx
@@ -1276,12 +1276,12 @@ test('renders the difficulty label', () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- difficulty-badge`
 Expected: FAIL — cannot find module.
 
-- [ ] **Step 3: Implement difficulty-badge.tsx**
+- [x] **Step 3: Implement difficulty-badge.tsx**
 
 `mobile/src/components/difficulty-badge.tsx`:
 ```tsx
@@ -1304,12 +1304,12 @@ export function DifficultyBadge({
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- difficulty-badge`
 Expected: PASS.
 
-- [ ] **Step 5: Implement markdown.tsx**
+- [x] **Step 5: Implement markdown.tsx**
 
 `mobile/src/components/markdown.tsx`:
 ```tsx
@@ -1341,7 +1341,7 @@ export function Markdown({ content }: { content: string }) {
 }
 ```
 
-- [ ] **Step 6: Write the failing message-bubble test**
+- [x] **Step 6: Write the failing message-bubble test**
 
 `mobile/src/components/message-bubble.test.tsx`:
 ```tsx
@@ -1368,12 +1368,12 @@ test('renders assistant content', () => {
 })
 ```
 
-- [ ] **Step 7: Run test to verify it fails**
+- [x] **Step 7: Run test to verify it fails**
 
 Run: `cd mobile && npm test -- message-bubble`
 Expected: FAIL — cannot find module.
 
-- [ ] **Step 8: Implement message-bubble.tsx**
+- [x] **Step 8: Implement message-bubble.tsx**
 
 `mobile/src/components/message-bubble.tsx`:
 ```tsx
@@ -1414,12 +1414,12 @@ export function MessageBubble({
 }
 ```
 
-- [ ] **Step 9: Run test to verify it passes**
+- [x] **Step 9: Run test to verify it passes**
 
 Run: `cd mobile && npm test -- message-bubble`
 Expected: PASS.
 
-- [ ] **Step 10: Implement stage-banner.tsx**
+- [x] **Step 10: Implement stage-banner.tsx**
 
 `mobile/src/components/stage-banner.tsx`:
 ```tsx
@@ -1457,7 +1457,7 @@ export function StageBanner({
 }
 ```
 
-- [ ] **Step 11: Implement problem-view.tsx**
+- [x] **Step 11: Implement problem-view.tsx**
 
 `mobile/src/components/problem-view.tsx`:
 ```tsx
@@ -1499,7 +1499,7 @@ export function ProblemView({
 }
 ```
 
-- [ ] **Step 12: Implement chat-thread.tsx**
+- [x] **Step 12: Implement chat-thread.tsx**
 
 `mobile/src/components/chat-thread.tsx`:
 ```tsx
@@ -1541,7 +1541,7 @@ export function ChatThread({
 }
 ```
 
-- [ ] **Step 13: Implement input-bar.tsx**
+- [x] **Step 13: Implement input-bar.tsx**
 
 `mobile/src/components/input-bar.tsx`:
 ```tsx
@@ -1619,7 +1619,7 @@ export function InputBar({
 }
 ```
 
-- [ ] **Step 14: Implement completion-footer.tsx**
+- [x] **Step 14: Implement completion-footer.tsx**
 
 `mobile/src/components/completion-footer.tsx`:
 ```tsx
@@ -1653,12 +1653,12 @@ export function CompletionFooter({
 }
 ```
 
-- [ ] **Step 15: Run component tests**
+- [x] **Step 15: Run component tests**
 
 Run: `cd mobile && npm test -- components`
 Expected: PASS (difficulty-badge + message-bubble).
 
-- [ ] **Step 16: Commit**
+- [x] **Step 16: Commit**
 
 ```bash
 git add mobile/src/components
@@ -1680,7 +1680,7 @@ git commit -m "feat(mobile): add practice UI components"
 - Consumes: `auth/auth-context.tsx` (`AuthProvider`, `useAuth`), `theme/theme-context.tsx` (`ThemeProvider`, `useTheme`), `practice/use-practice-session.ts`, `practice/stage-banner-text.ts` (`STAGE_PLACEHOLDER`), all `components/*`, `auth/supabase.ts` (`supabase` for sign-in).
 - Produces: the running app (no exported API).
 
-- [ ] **Step 1: Implement the root layout**
+- [x] **Step 1: Implement the root layout**
 
 Replace `mobile/app/_layout.tsx`:
 ```tsx
@@ -1703,7 +1703,7 @@ export default function RootLayout() {
 }
 ```
 
-- [ ] **Step 2: Remove unused starter routes**
+- [x] **Step 2: Remove unused starter routes**
 
 Delete the template's default screens so only `_layout.tsx`, `index.tsx`, `sign-in.tsx`, `account.tsx` remain under `mobile/app/`:
 ```bash
@@ -1712,7 +1712,7 @@ rm -rf app/\(tabs\) app/+not-found.tsx app/modal.tsx 2>/dev/null || true
 ```
 (Only delete files that exist; keep `_layout.tsx`.)
 
-- [ ] **Step 3: Implement the Practice screen**
+- [x] **Step 3: Implement the Practice screen**
 
 `mobile/app/index.tsx`:
 ```tsx
@@ -1816,7 +1816,7 @@ export default function PracticeScreen() {
 }
 ```
 
-- [ ] **Step 4: Implement the sign-in screen**
+- [x] **Step 4: Implement the sign-in screen**
 
 `mobile/app/sign-in.tsx`:
 ```tsx
@@ -1885,7 +1885,7 @@ export default function SignInScreen() {
 }
 ```
 
-- [ ] **Step 5: Implement the account screen**
+- [x] **Step 5: Implement the account screen**
 
 `mobile/app/account.tsx`:
 ```tsx
@@ -1932,12 +1932,12 @@ export default function AccountScreen() {
 }
 ```
 
-- [ ] **Step 6: Typecheck and run the full test suite**
+- [x] **Step 6: Typecheck and run the full test suite**
 
 Run: `cd mobile && npx tsc --noEmit && npm test`
 Expected: no type errors; all tests PASS.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add mobile/app
@@ -1952,15 +1952,15 @@ git commit -m "feat(mobile): wire Practice, sign-in, and account routes"
 
 **Interfaces:** Consumes the full app. Uses the `rn-agentic-loop` / metro-mcp / ios-simulator tooling.
 
-- [ ] **Step 1: Confirm env is set**
+- [x] **Step 1: Confirm env is set**
 
 Verify `mobile/.env` has real `EXPO_PUBLIC_API_URL` (a reachable backend), `EXPO_PUBLIC_SUPABASE_URL`, and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. If the backend is local, ensure the simulator can reach it (use the machine's LAN IP, not `localhost`, if needed).
 
-- [ ] **Step 2: Launch the app**
+- [x] **Step 2: Launch the app**
 
 Run: `cd mobile && npx expo start --ios`. Wait for the bundle to load in the iOS simulator.
 
-- [ ] **Step 3: Verify anonymous practice loop (receipt-driven)**
+- [x] **Step 3: Verify anonymous practice loop (receipt-driven)**
 
 Declare success receipt up front: *a problem renders, submitting an explanation streams assistant feedback token-by-token, and the stage banner advances.*
 - Confirm a problem card renders (title shows "Hidden problem" by default since `hideTitle` defaults true; description renders as markdown).
@@ -1969,15 +1969,15 @@ Declare success receipt up front: *a problem renders, submitting an explanation 
 - Confirm the stage banner updates to the next stage (e.g. "Pattern ✓ — Describe your algorithm").
 - Prove it with runtime state via metro-mcp (component tree / logs), not a screenshot alone.
 
-- [ ] **Step 4: Verify completion + Next/Smart Practice**
+- [x] **Step 4: Verify completion + Next/Smart Practice**
 
 Advance through stages (or use "Give me the answer" to move faster) until the banner reads "Nice work!". Confirm the CompletionFooter shows **Next Problem** and **Smart Practice**, and that tapping **Next Problem** loads a fresh problem and resets the thread.
 
-- [ ] **Step 5: Verify sign-in + streak**
+- [x] **Step 5: Verify sign-in + streak**
 
 Open Account → Sign in, enter valid Supabase credentials (use the same dev account as the web app). Confirm sign-in succeeds, the header shows the 🔥 streak, and completing a session increments/sets the streak (proves authed `/api/chat`, `/api/streak`, and `/api/settings` work). Confirm signed-in settings apply (e.g. title/difficulty visibility per the account's saved settings).
 
-- [ ] **Step 6: Document the result**
+- [x] **Step 6: Document the result**
 
 Note any deviations. If all receipts are met, the v1 core loop is verified end-to-end.
 
@@ -1990,3 +1990,31 @@ Note any deviations. If all receipts are met, the v1 core loop is verified end-t
 - **Backend canonical-order constraint:** `activeStages` from settings/defaults are already canonical-ordered. Never reorder them before sending.
 - **No message queue in v1:** input is disabled while `loading`. Do not add the web's queue behavior.
 - **Markdown renderer:** if `react-native-markdown-display` shows compatibility issues on the installed Expo SDK, swap to `react-native-marked` — keep the `Markdown` wrapper's props identical so callers don't change.
+
+---
+
+## Task 8 verification results (2026-07-05)
+
+Verified end-to-end on iOS Simulator (iPhone 17 Pro, Expo Go 56.0.3, SDK 56) against
+`https://leetgame-backend.onrender.com`, via metro-mcp runtime receipts (fiber tree /
+component props / network log), not screenshots. All receipts PASS:
+
+- **Launch:** Practice screen mounted with a real problem (`ProblemView.problem`
+  populated); anonymous defaults applied (`hideTitle`/`hideDifficulty` true).
+- **Anonymous chat + SSE:** `POST /api/chat → 200` (`text/event-stream`); captured
+  response body shows multiple `event: token` frames + `event: done`; assembled
+  history message exactly matches the `done` message. Request carried no
+  `Authorization` header.
+- **Stage machine:** banner faithfully tracked backend-returned stages
+  (`pattern → tc_sc → complete`, including a backend no-advance follow-up turn).
+- **Completion:** `CompletionFooter` mounted at `complete`; **Next Problem** fired
+  `GET /api/problems/random → 200` and reset history/stage; **Smart Practice** fired
+  `GET /api/problems/smart` with canonical `active_stages`/`active_topics` → 200.
+- **Sign-in + streak:** Supabase `POST /auth/v1/token?grant_type=password → 200`
+  (dev account), auto-fetched `GET /api/settings → 200` + `GET /api/streak → 200`,
+  header shows 🔥 streak; completing a signed-in session fired
+  `POST /api/streak → 200` and the header streak incremented 1 → 2.
+
+Deviation notes: none functional. (Expo Go's recommended-version download can
+time out on `expo start --ios`; workaround is `expo start` + opening
+`exp://127.0.0.1:8081` via `simctl openurl`.)
