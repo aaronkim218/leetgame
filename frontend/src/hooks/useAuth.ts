@@ -41,6 +41,7 @@ export function useAuth() {
   const [activeTopics, setActiveTopics] = useState<string[]>(NEETCODE_TOPICS)
   const [tourDone, setTourDone] = useState(false)
   const [settingsReady, setSettingsReady] = useState(false)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   const applyLocalSettings = () => {
     const stored = localStorage.getItem('leetgame_active_stages')
@@ -73,6 +74,7 @@ export function useAuth() {
       setAuthLoading(false)
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         if (session) {
+          setSettingsLoaded(false)
           getStreak()
             .then(({ streak, last_practiced_at }) => {
               setStreak(streak)
@@ -95,6 +97,7 @@ export function useAuth() {
                 setConciseMode(concise_mode)
                 setActiveTopics(active_topics ?? NEETCODE_TOPICS)
                 setTourDone(tour_done)
+                setSettingsLoaded(true)
               },
             )
             .catch(() => {})
@@ -103,6 +106,7 @@ export function useAuth() {
           setStreak(null)
           setLastPracticedAt(null)
           applyLocalSettings()
+          setSettingsLoaded(false)
           setSettingsReady(true)
         }
       } else if (event === 'SIGNED_OUT') {
@@ -110,6 +114,7 @@ export function useAuth() {
         setLastPracticedAt(null)
         setActiveTopics(NEETCODE_TOPICS)
         applyLocalSettings()
+        setSettingsLoaded(false)
         setSettingsReady(true)
       }
     })
@@ -120,6 +125,7 @@ export function useAuth() {
   const persistStages = (stages: ActiveStage[]) => {
     setActiveStages(stages)
     if (session) {
+      if (!settingsLoaded) return
       updateSettings(
         stages,
         hideTitle,
@@ -140,6 +146,7 @@ export function useAuth() {
   const persistHideTitle = (value: boolean) => {
     setHideTitle(value)
     if (session) {
+      if (!settingsLoaded) return
       updateSettings(
         activeStages,
         value,
@@ -160,6 +167,7 @@ export function useAuth() {
   const persistHideDifficulty = (value: boolean) => {
     setHideDifficulty(value)
     if (session) {
+      if (!settingsLoaded) return
       updateSettings(
         activeStages,
         hideTitle,
@@ -180,6 +188,7 @@ export function useAuth() {
   const persistConciseMode = (value: boolean) => {
     setConciseMode(value)
     if (session) {
+      if (!settingsLoaded) return
       updateSettings(
         activeStages,
         hideTitle,
@@ -199,7 +208,7 @@ export function useAuth() {
 
   const persistTopics = (topics: string[]) => {
     setActiveTopics(topics)
-    if (session) {
+    if (session && settingsLoaded) {
       updateSettings(
         activeStages,
         hideTitle,
@@ -213,7 +222,7 @@ export function useAuth() {
 
   const persistTourDone = () => {
     setTourDone(true)
-    if (session) {
+    if (session && settingsLoaded) {
       updateSettings(
         activeStages,
         hideTitle,
