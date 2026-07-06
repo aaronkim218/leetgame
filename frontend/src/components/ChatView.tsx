@@ -159,7 +159,12 @@ export function ChatView({
       <div
         className={cn(
           'flex min-h-0 flex-col gap-3 overflow-y-auto p-5 max-md:max-h-[45dvh] max-md:flex-[0_1_auto] md:flex-1',
-          !chatOpen && 'max-md:hidden',
+          (!chatOpen ||
+            (history.length === 0 &&
+              !loading &&
+              !streamingMessage &&
+              !error)) &&
+            'max-md:hidden',
         )}
       >
         {history.map((msg, i) => (
