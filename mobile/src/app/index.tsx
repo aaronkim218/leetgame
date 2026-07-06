@@ -92,6 +92,11 @@ export default function PracticeScreen() {
           paddingVertical: 8,
         }}
       >
+        <Link href="/settings" asChild>
+          <Pressable testID="settings-button">
+            <Text style={{ fontSize: 18 }}>⚙️</Text>
+          </Pressable>
+        </Link>
         {session && streak !== null && (
           <Text
             testID="streak-indicator"

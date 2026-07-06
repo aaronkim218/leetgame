@@ -13,6 +13,7 @@ export default function RootLayout() {
             options={{ presentation: 'modal', title: 'Sign in' }}
           />
           <Stack.Screen name="account" options={{ title: 'Account' }} />
+          <Stack.Screen name="settings" options={{ title: 'Settings' }} />
         </Stack>
       </AuthProvider>
     </ThemeProvider>
