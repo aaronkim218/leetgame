@@ -15,12 +15,12 @@ import (
 // EvaluationDispatcher dispatches session evaluation work after a session completes.
 // Implementations: GoroutineDispatcher (direct), KafkaDispatcher (via Kafka topic).
 type EvaluationDispatcher interface {
-	Dispatch(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage)
+	Dispatch(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool)
 }
 
 // RunSession runs session evaluation and logs any error. Used by GoroutineDispatcher.
-func RunSession(ctx context.Context, store storage.Storage, llmClient llm.Client, logger *slog.Logger, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) {
-	if err := RunSessionWithError(ctx, store, llmClient, logger, userID, problem, activeStages, history); err != nil {
+func RunSession(ctx context.Context, store storage.Storage, llmClient llm.Client, logger *slog.Logger, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool) {
+	if err := RunSessionWithError(ctx, store, llmClient, logger, userID, problem, activeStages, history, concise); err != nil {
 		logger.Error(
 			"session evaluation failed",
 			"error", err,
@@ -33,7 +33,7 @@ func RunSession(ctx context.Context, store storage.Storage, llmClient llm.Client
 
 // RunSessionWithError runs session evaluation and returns the first error encountered.
 // Used by the Kafka consumer so it can decide whether to retry.
-func RunSessionWithError(ctx context.Context, store storage.Storage, llmClient llm.Client, logger *slog.Logger, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) error {
+func RunSessionWithError(ctx context.Context, store storage.Storage, llmClient llm.Client, logger *slog.Logger, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool) error {
 	logger.Info(
 		"starting session evaluation",
 		"user_id", userID,
@@ -42,7 +42,7 @@ func RunSessionWithError(ctx context.Context, store storage.Storage, llmClient l
 		"active_stages", activeStages,
 	)
 
-	eval, err := llmClient.EvaluateSession(ctx, problem, activeStages, history)
+	eval, err := llmClient.EvaluateSession(ctx, problem, activeStages, history, concise)
 	if err != nil {
 		return fmt.Errorf("EvaluateSession failed: %w", err)
 	}

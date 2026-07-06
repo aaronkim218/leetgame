@@ -34,9 +34,13 @@ interface Props {
   onHideTitleChange: (value: boolean) => void
   hideDifficulty: boolean
   onHideDifficultyChange: (value: boolean) => void
+  conciseMode: boolean
+  onConciseModeChange: (value: boolean) => void
   onTakeTour?: () => void
   theme: Theme
   onThemeChange: (t: Theme) => void
+  signedInAs?: string
+  onSignOut?: () => void
 }
 
 export function StagesSettings({
@@ -46,9 +50,13 @@ export function StagesSettings({
   onHideTitleChange,
   hideDifficulty,
   onHideDifficultyChange,
+  conciseMode,
+  onConciseModeChange,
   onTakeTour,
   theme,
   onThemeChange,
+  signedInAs,
+  onSignOut,
 }: Props) {
   const toggle = (stage: ActiveStage) => {
     const isActive = activeStages.includes(stage)
@@ -114,6 +122,21 @@ export function StagesSettings({
           </p>
         </div>
       </button>
+      <button
+        onClick={() => onConciseModeChange(!conciseMode)}
+        className="hover:bg-muted flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left transition-colors"
+      >
+        <Checkbox
+          checked={conciseMode}
+          onCheckedChange={(v) => onConciseModeChange(v === true)}
+        />
+        <div>
+          <p className="text-sm font-medium">Concise mode</p>
+          <p className="text-muted-foreground text-xs">
+            Less back-and-forth — brief correct answers advance the stage
+          </p>
+        </div>
+      </button>
       <div className="border-border mx-3 my-2 border-t" />
       <p className="text-muted-foreground px-3 pb-2 text-xs font-semibold tracking-wide uppercase">
         Practice Stages
@@ -153,6 +176,23 @@ export function StagesSettings({
             Take a tour
           </button>
         </>
+      )}
+      {/* account actions live in the navbar on desktop; surfaced here on small screens */}
+      {onSignOut && (
+        <div className="sm:hidden">
+          <div className="border-border mx-3 my-2 border-t" />
+          {signedInAs && (
+            <p className="text-muted-foreground truncate px-3 pb-1 text-xs">
+              Signed in as {signedInAs}
+            </p>
+          )}
+          <button
+            onClick={onSignOut}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted w-full px-3 py-2 text-left text-sm transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
       )}
     </div>
   )

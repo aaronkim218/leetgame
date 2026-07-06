@@ -13,7 +13,6 @@ import (
 	"leetgame/internal/models"
 	"leetgame/internal/storage"
 	"leetgame/internal/types"
-	"leetgame/internal/utils"
 	"leetgame/internal/xerrors"
 
 	"github.com/google/uuid"
@@ -172,7 +171,7 @@ func (c *CachedStorage) GetRandomProblem(ctx context.Context) (models.Problem, e
 		return models.Problem{}, err
 	}
 	if len(problems) == 0 {
-		return models.Problem{}, utils.CreateNonRetryableError(xerrors.NotFoundError("problem", map[string]string{}))
+		return models.Problem{}, xerrors.NotFoundError("problem", map[string]string{})
 	}
 	return problems[rand.Intn(len(problems))], nil
 }
@@ -189,7 +188,7 @@ func (c *CachedStorage) GetRandomProblemFiltered(ctx context.Context, q string, 
 		}
 	}
 	if len(matches) == 0 {
-		return models.Problem{}, utils.CreateNonRetryableError(xerrors.NotFoundError("problem", map[string]string{}))
+		return models.Problem{}, xerrors.NotFoundError("problem", map[string]string{})
 	}
 	return matches[rand.Intn(len(matches))], nil
 }
@@ -201,7 +200,7 @@ func (c *CachedStorage) GetProblemByID(ctx context.Context, id uuid.UUID) (model
 	}
 	p, ok := byID[id]
 	if !ok {
-		return models.Problem{}, utils.CreateNonRetryableError(xerrors.NotFoundError("problem", map[string]string{"id": id.String()}))
+		return models.Problem{}, xerrors.NotFoundError("problem", map[string]string{"id": id.String()})
 	}
 	return p, nil
 }
@@ -274,8 +273,8 @@ func (c *CachedStorage) GetUserSettings(ctx context.Context, userID uuid.UUID) (
 	return c.inner.GetUserSettings(ctx, userID)
 }
 
-func (c *CachedStorage) UpsertUserSettings(ctx context.Context, userID uuid.UUID, activeStages []string, hideTitle bool, hideDifficulty bool, activeTopics []string, tourDone bool) error {
-	return c.inner.UpsertUserSettings(ctx, userID, activeStages, hideTitle, hideDifficulty, activeTopics, tourDone)
+func (c *CachedStorage) UpsertUserSettings(ctx context.Context, userID uuid.UUID, activeStages []string, hideTitle bool, hideDifficulty bool, conciseMode bool, activeTopics []string, tourDone bool) error {
+	return c.inner.UpsertUserSettings(ctx, userID, activeStages, hideTitle, hideDifficulty, conciseMode, activeTopics, tourDone)
 }
 
 func (c *CachedStorage) SaveProblem(ctx context.Context, userID, problemID uuid.UUID) error {

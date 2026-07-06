@@ -12,7 +12,7 @@ import (
 	"leetgame/internal/models"
 )
 
-func (c *AnthropicClient) EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []llm.ChatMessage) (llm.SessionEvaluation, error) {
+func (c *AnthropicClient) EvaluateSession(ctx context.Context, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool) (llm.SessionEvaluation, error) {
 	body := map[string]any{
 		"model":      c.model,
 		"max_tokens": 1024,
@@ -20,7 +20,7 @@ func (c *AnthropicClient) EvaluateSession(ctx context.Context, problem models.Pr
 		"system": []map[string]any{
 			{
 				"type":          "text",
-				"text":          llm.BuildEvaluationSystemPrompt(),
+				"text":          llm.BuildEvaluationSystemPrompt(concise),
 				"cache_control": map[string]string{"type": "ephemeral"},
 			},
 		},

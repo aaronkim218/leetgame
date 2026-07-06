@@ -89,6 +89,7 @@ export function ChatView({
 }: Props) {
   const [input, setInput] = useState('')
   const [queue, setQueue] = useState<string[]>([])
+  const [chatOpen, setChatOpen] = useState(true)
   const bottomRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -131,22 +132,41 @@ export function ChatView({
   return (
     <div
       data-tour="chat-panel"
-      className="flex min-h-0 flex-1 flex-col md:w-1/2"
+      className="flex min-h-0 flex-col max-md:flex-[0_1_auto] md:w-1/2 md:flex-1"
     >
       <div
         className={cn(
-          'border-border border-b px-5 py-3 text-sm font-semibold',
+          'border-border flex shrink-0 items-center gap-3 border-b px-5 py-3 text-sm font-semibold',
           stage === 'complete'
             ? 'bg-green-500/10 text-green-700 dark:text-green-400'
             : 'bg-muted text-foreground',
         )}
       >
-        {stage === 'complete'
-          ? 'Nice work! Review your session below.'
-          : getStageBanner(stage as ActiveStage, sessionActiveStages)}
+        <span className="flex-1">
+          {stage === 'complete'
+            ? 'Nice work! Review your session below.'
+            : getStageBanner(stage as ActiveStage, sessionActiveStages)}
+        </span>
+        <button
+          onClick={() => setChatOpen((o) => !o)}
+          aria-expanded={chatOpen}
+          className="text-muted-foreground hover:text-foreground border-border -my-1 rounded border px-3 py-2 text-xs font-normal transition-colors md:hidden"
+        >
+          {chatOpen ? 'Hide ▾' : 'Show ▴'}
+        </button>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
+      <div
+        className={cn(
+          'flex min-h-0 flex-col gap-3 overflow-y-auto p-5 max-md:max-h-[45dvh] max-md:flex-[0_1_auto] md:flex-1',
+          (!chatOpen ||
+            (history.length === 0 &&
+              !loading &&
+              !streamingMessage &&
+              !error)) &&
+            'max-md:hidden',
+        )}
+      >
         {history.map((msg, i) => (
           <div
             key={`${i}-${msg.role}`}
@@ -181,7 +201,12 @@ export function ChatView({
       </div>
 
       {stage === 'complete' ? (
-        <div className="border-border flex items-center gap-2 border-t p-4">
+        <div
+          className={cn(
+            'border-border flex shrink-0 items-center gap-2 border-t p-4',
+            !chatOpen && 'max-md:hidden',
+          )}
+        >
           {onBack && (
             <Button variant="ghost" onClick={onBack}>
               ← Back
@@ -204,7 +229,10 @@ export function ChatView({
             e.preventDefault()
             handleSubmit()
           }}
-          className="border-border flex flex-col gap-2 border-t p-4"
+          className={cn(
+            'border-border flex shrink-0 flex-col gap-2 border-t p-4',
+            !chatOpen && 'max-md:hidden',
+          )}
         >
           <div className="flex gap-2">
             <div className="flex flex-1 flex-col gap-1">

@@ -89,8 +89,8 @@ func main() {
 				slog.Error("failed to close kafka producer", "error", err)
 			}
 		}()
-		fallback := func(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage) {
-			evaluation.RunSession(ctx, store, llmClient, slog.Default(), userID, problem, activeStages, history)
+		fallback := func(ctx context.Context, userID uuid.UUID, problem models.Problem, activeStages []string, history []llm.ChatMessage, concise bool) {
+			evaluation.RunSession(ctx, store, llmClient, slog.Default(), userID, problem, activeStages, history, concise)
 		}
 		dispatcher = evaluation.NewKafkaDispatcher(producer, fallback, slog.Default())
 		slog.Info("kafka dispatcher enabled", "broker", settings.Kafka.BrokerURL, "topic", settings.Kafka.Topic)

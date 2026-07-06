@@ -1,6 +1,7 @@
 package types_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"leetgame/internal/types"
@@ -172,4 +173,27 @@ func TestChatRequest_Validate_HintAndAnswerMutuallyExclusive(t *testing.T) {
 	}
 	errs := req.Validate()
 	assert.Contains(t, errs, "hint_requested")
+}
+
+func TestConcise_DefaultsFalseWhenOmitted(t *testing.T) {
+	var req types.ChatRequest
+	if err := json.Unmarshal([]byte(`{"message":"hi"}`), &req); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if req.Concise {
+		t.Error("Concise must default to false when omitted from JSON")
+	}
+}
+
+func TestValidate_ConciseTrueIsValid(t *testing.T) {
+	req := types.ChatRequest{
+		ProblemID:    uuid.MustParse("00000000-0000-0000-0000-000000000001"),
+		Stage:        "pattern",
+		ActiveStages: []string{"pattern", "algorithm", "tc_sc"},
+		Message:      "hello",
+		Concise:      true,
+	}
+	if errs := req.Validate(); len(errs) != 0 {
+		t.Errorf("expected no validation errors, got %v", errs)
+	}
 }

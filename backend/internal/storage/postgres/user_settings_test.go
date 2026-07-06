@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 
 	"leetgame/internal/models"
@@ -50,5 +52,15 @@ func TestDefaultHideDifficulty(t *testing.T) {
 	}
 	if !defaults.HideDifficulty {
 		t.Error("default HideDifficulty must be true")
+	}
+}
+
+func TestUserSettings_ConciseModeJSONTag(t *testing.T) {
+	b, err := json.Marshal(models.UserSettings{ConciseMode: true})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !strings.Contains(string(b), `"concise_mode":true`) {
+		t.Errorf("expected concise_mode json tag, got %s", b)
 	}
 }

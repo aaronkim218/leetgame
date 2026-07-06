@@ -19,6 +19,8 @@ interface Props {
   onHideTitleChange: (value: boolean) => void
   hideDifficulty: boolean
   onHideDifficultyChange: (value: boolean) => void
+  conciseMode: boolean
+  onConciseModeChange: (value: boolean) => void
   onTakeTour?: () => void
   theme: Theme
   onThemeChange: (t: Theme) => void
@@ -37,6 +39,8 @@ export function NavBar({
   onHideTitleChange,
   hideDifficulty,
   onHideDifficultyChange,
+  conciseMode,
+  onConciseModeChange,
   onTakeTour,
   theme,
   onThemeChange,
@@ -53,42 +57,47 @@ export function NavBar({
   }
 
   return (
-    <div className="border-border bg-background flex shrink-0 items-center gap-1 border-b px-4 py-2">
-      {(['practice', 'search'] as const).map((v) => (
+    <div className="border-border bg-background flex shrink-0 items-center gap-1 border-b px-2 py-2 sm:px-4">
+      <div className="flex min-w-0 flex-1 [scrollbar-width:none] items-center gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+        {(['practice', 'search'] as const).map((v) => (
+          <Button
+            key={v}
+            data-tour={`nav-${v}`}
+            variant={view === v ? 'secondary' : 'ghost'}
+            size="sm"
+            className="shrink-0"
+            onClick={() => onNavigate(v)}
+          >
+            {v.charAt(0).toUpperCase() + v.slice(1)}
+          </Button>
+        ))}
+        {session && (
+          <Button
+            data-tour="nav-stats"
+            variant={view === 'stats' ? 'secondary' : 'ghost'}
+            size="sm"
+            className="shrink-0"
+            onClick={() => onNavigate('stats')}
+          >
+            Stats
+          </Button>
+        )}
         <Button
-          key={v}
-          data-tour={`nav-${v}`}
-          variant={view === v ? 'secondary' : 'ghost'}
+          variant={view === 'mission' ? 'secondary' : 'ghost'}
           size="sm"
-          onClick={() => onNavigate(v)}
+          className="shrink-0"
+          onClick={() => onNavigate('mission')}
         >
-          {v.charAt(0).toUpperCase() + v.slice(1)}
+          Mission
         </Button>
-      ))}
-      {session && (
-        <Button
-          data-tour="nav-stats"
-          variant={view === 'stats' ? 'secondary' : 'ghost'}
-          size="sm"
-          onClick={() => onNavigate('stats')}
-        >
-          Stats
-        </Button>
-      )}
-      <Button
-        variant={view === 'mission' ? 'secondary' : 'ghost'}
-        size="sm"
-        onClick={() => onNavigate('mission')}
-      >
-        Mission
-      </Button>
+      </div>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         {!authLoading && (
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className="text-muted-foreground hover:text-foreground px-1 text-2xl leading-none transition-colors"
+                className="text-muted-foreground hover:text-foreground flex h-10 w-10 items-center justify-center text-2xl leading-none transition-colors"
                 title="Practice stages"
               >
                 ⚙
@@ -102,9 +111,18 @@ export function NavBar({
                 onHideTitleChange={onHideTitleChange}
                 hideDifficulty={hideDifficulty}
                 onHideDifficultyChange={onHideDifficultyChange}
+                conciseMode={conciseMode}
+                onConciseModeChange={onConciseModeChange}
                 onTakeTour={onTakeTour}
                 theme={theme}
                 onThemeChange={onThemeChange}
+                signedInAs={
+                  session
+                    ? ((session.user.user_metadata?.name as string) ??
+                      session.user.email)
+                    : undefined
+                }
+                onSignOut={session ? () => void handleSignOut() : undefined}
               />
             </PopoverContent>
           </Popover>
@@ -138,6 +156,7 @@ export function NavBar({
             <Button
               variant="ghost"
               size="sm"
+              className="hidden sm:inline-flex"
               onClick={() => void handleSignOut()}
             >
               Sign out

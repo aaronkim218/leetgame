@@ -325,7 +325,11 @@ export function SearchPage({
           !error &&
           hasSearched &&
           results.length === 0 && (
-            <p className="text-muted-foreground text-sm">No problems found.</p>
+            <p className="text-muted-foreground text-sm">
+              No problems found.
+              {(difficulties.length > 0 || tags.length > 0) &&
+                ' Try clearing your filters.'}
+            </p>
           )}
         {showSaved && savedProblems.length === 0 && (
           <p className="text-muted-foreground text-sm">
@@ -336,6 +340,14 @@ export function SearchPage({
           (p) => (
             <div
               key={p.id}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.currentTarget.click()
+                }
+              }}
               onClick={() =>
                 onSelectProblem(p, {
                   q: showSaved ? '' : q,
@@ -351,7 +363,7 @@ export function SearchPage({
                   ).findIndex((r) => r.id === p.id),
                 })
               }
-              className="border-border bg-muted hover:bg-secondary mb-2 cursor-pointer rounded-md border p-4 transition-colors"
+              className="border-border bg-muted hover:bg-secondary focus-visible:ring-ring mb-2 cursor-pointer rounded-md border p-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               <div className="mb-1.5 flex items-center gap-2.5">
                 {p.leetcode_id != null && (

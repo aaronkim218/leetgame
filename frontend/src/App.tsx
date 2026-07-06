@@ -9,6 +9,7 @@ import type {
 } from './types'
 import { defaultSearchState } from './types'
 import {
+  ApiError,
   getRandomProblem,
   getRandomProblemFiltered,
   searchProblems,
@@ -86,12 +87,14 @@ export default function App() {
     activeStages,
     hideTitle,
     hideDifficulty,
+    conciseMode,
     activeTopics,
     tourDone,
     settingsReady,
     persistStages,
     persistHideTitle,
     persistHideDifficulty,
+    persistConciseMode,
     persistTopics,
     persistTourDone,
     recordAndUpdateStreak,
@@ -194,6 +197,10 @@ export default function App() {
     persistHideDifficulty(value)
   }
 
+  const handleConciseModeChange = (value: boolean) => {
+    persistConciseMode(value)
+  }
+
   const loadRandomProblem = async () => {
     try {
       setError(null)
@@ -240,20 +247,27 @@ export default function App() {
         searchPlaylist.pageSize,
       )
 
-      if (res.problems.length === 0) {
+      // skip past the current problem if the fetched page contains it —
+      // e.g. a playlist entered via "Enter Playlist" starts with an empty
+      // results cache, so page 1 would otherwise re-serve the same problem
+      const currentIdx = problem
+        ? res.problems.findIndex((p) => p.id === problem.id)
+        : -1
+      const startIdx = currentIdx + 1
+      if (startIdx >= res.problems.length) {
         setPlaylistExhausted(true)
         setError(null)
         return
       }
 
       if (snap) pushToStack(snap)
-      setProblem(res.problems[0])
+      setProblem(res.problems[startIdx])
       setSearchPlaylist({
         ...searchPlaylist,
         page: res.page,
         pageSize: res.page_size,
         results: res.problems,
-        selectedIndex: 0,
+        selectedIndex: startIdx,
       })
       resetPracticeState()
       setPlaylistExhausted(false)
@@ -309,7 +323,13 @@ export default function App() {
       setProblem(p)
       resetPracticeState()
       setPlaylistExhausted(false)
-    } catch {
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        // no other problem matches the filters — the set is done
+        setPlaylistExhausted(true)
+        setError(null)
+        return
+      }
       setError(
         'Failed to load a random filtered problem. Is the backend running?',
       )
@@ -359,7 +379,12 @@ export default function App() {
       })
       resetPracticeState()
       setView('practice')
-    } catch {
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
+        setError('No problems match those filters.')
+        setView('practice')
+        return
+      }
       setError(
         'Failed to load a problem with those filters. Is the backend running?',
       )
@@ -480,6 +505,7 @@ export default function App() {
         message,
         hintRequested,
         answerRequested,
+        conciseMode,
         controller.signal,
       )) {
         if (event.type === 'token') {
@@ -653,6 +679,8 @@ export default function App() {
         onHideTitleChange={handleHideTitleChange}
         hideDifficulty={hideDifficulty}
         onHideDifficultyChange={handleHideDifficultyChange}
+        conciseMode={conciseMode}
+        onConciseModeChange={handleConciseModeChange}
         onTakeTour={handleStartTour}
         theme={theme}
         onThemeChange={setTheme}

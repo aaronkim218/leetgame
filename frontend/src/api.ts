@@ -12,6 +12,16 @@ import { supabase } from './lib/supabase'
 
 const API_URL = import.meta.env.VITE_API_URL ?? ''
 
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const {
     data: { session },
@@ -48,7 +58,10 @@ export async function getRandomProblemFiltered(
     },
   )
   if (!res.ok)
-    throw new Error(`Failed to fetch filtered random problem: ${res.status}`)
+    throw new ApiError(
+      `Failed to fetch filtered random problem: ${res.status}`,
+      res.status,
+    )
   return res.json()
 }
 
@@ -95,6 +108,7 @@ export async function* streamChat(
   message: string,
   hintRequested: boolean,
   answerRequested: boolean,
+  concise: boolean,
   signal?: AbortSignal,
 ): AsyncGenerator<
   | { type: 'token'; content: string }
@@ -115,6 +129,7 @@ export async function* streamChat(
       message,
       hint_requested: hintRequested,
       answer_requested: answerRequested,
+      concise,
     }),
     signal,
   })
@@ -188,6 +203,7 @@ export async function getSettings(): Promise<{
   active_stages: ActiveStage[]
   hide_title: boolean
   hide_difficulty: boolean
+  concise_mode: boolean
   active_topics: string[]
   tour_done: boolean
 }> {
@@ -202,6 +218,7 @@ export async function updateSettings(
   activeStages: ActiveStage[],
   hideTitle: boolean,
   hideDifficulty: boolean,
+  conciseMode: boolean,
   activeTopics: string[],
   tourDone: boolean,
 ): Promise<void> {
@@ -212,6 +229,7 @@ export async function updateSettings(
       active_stages: activeStages,
       hide_title: hideTitle,
       hide_difficulty: hideDifficulty,
+      concise_mode: conciseMode,
       active_topics: activeTopics,
       tour_done: tourDone,
     }),
