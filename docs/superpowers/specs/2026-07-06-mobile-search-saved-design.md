@@ -45,11 +45,13 @@ bookmark problems for later, and practice through a filtered set — mirroring
 
 ## 3. Architecture
 
-### `src/api/client.ts`
+### `src/api/errors.ts` (new)
 
-Add `ApiError extends Error` carrying `status: number`. Needed to
-distinguish end-of-set 404 from other failures. Only the new/changed
-call sites use it; existing functions keep their plain-Error behavior.
+`ApiError extends Error` carrying `status: number`. Needed to distinguish
+end-of-set 404 from other failures. Lives in its own module (not
+`client.ts`) so consumers like the practice-session hook don't pull in the
+supabase import chain in tests. Only the new/changed call sites use it;
+existing functions keep their plain-Error behavior.
 
 ### `src/api/problems.ts`
 
