@@ -41,14 +41,14 @@
 - Consumes: `API_URL`, `authHeaders` from `./client`; `Problem` from `../types`.
 - Produces: `class ApiError extends Error { status: number }` (from `src/api/errors.ts`); `searchProblems(q: string, difficulties: string[], tags: string[], tagMatch: 'and' | 'or', page: number, pageSize: number, signal?: AbortSignal): Promise<ProblemSearchResponse>`; `getRandomProblemFiltered(q: string, difficulties: string[], tags: string[], tagMatch: 'and' | 'or', excludeId?: string): Promise<Problem>` (throws `ApiError`); `interface ProblemSearchResponse { problems: Problem[]; page: number; page_size: number; total: number }`; `interface PlaylistFilters { q: string; difficulties: string[]; tags: string[]; tagMatch: 'and' | 'or' }`; `const EMPTY_FILTERS: PlaylistFilters`.
 
-- [ ] **Step 1: Create the branch**
+- [x] **Step 1: Create the branch**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
 git checkout -b feat/mobile-search
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `mobile/src/api/errors.test.ts`:
 
@@ -151,12 +151,12 @@ test('getRandomProblemFiltered throws ApiError with status on non-OK', async () 
 })
 ```
 
-- [ ] **Step 3: Run to verify they fail**
+- [x] **Step 3: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/api`
 Expected: FAIL — `./errors` module and the two exports don't exist.
 
-- [ ] **Step 4: Implement**
+- [x] **Step 4: Implement**
 
 Create `mobile/src/api/errors.ts`:
 
@@ -253,12 +253,12 @@ export async function getRandomProblemFiltered(
 }
 ```
 
-- [ ] **Step 5: Run to verify they pass**
+- [x] **Step 5: Run to verify they pass**
 
 Run: `cd mobile && npx jest src/api && npx tsc --noEmit`
 Expected: PASS, tsc clean.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame/mobile
@@ -282,7 +282,7 @@ git commit -m "feat(mobile): search and filtered-random API with status-carrying
 - Consumes: `API_URL`, `authHeaders` from `../api/client`; `Problem` from `../types`; `Session` type from `@supabase/supabase-js`.
 - Produces: `getSavedProblems(): Promise<Problem[]>`, `saveProblem(problemId: string): Promise<void>`, `unsaveProblem(problemId: string): Promise<void>`; `useSaved(session: Session | null): { savedProblems: Problem[]; savedIds: Set<string>; save: (problem: Problem) => Promise<void>; unsave: (problemId: string) => Promise<void>; isSaved: (problemId: string) => boolean }`. Task 6 consumes the hook.
 
-- [ ] **Step 1: Write the failing API tests**
+- [x] **Step 1: Write the failing API tests**
 
 Create `mobile/src/api/saved.test.ts`:
 
@@ -339,12 +339,12 @@ test('saveProblem throws on non-OK', async () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/api/saved`
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Create `mobile/src/api/saved.ts`**
+- [x] **Step 3: Create `mobile/src/api/saved.ts`**
 
 ```ts
 import type { Problem } from '../types'
@@ -378,7 +378,7 @@ export async function unsaveProblem(problemId: string): Promise<void> {
 Run: `cd mobile && npx jest src/api/saved`
 Expected: PASS.
 
-- [ ] **Step 4: Write the failing hook tests**
+- [x] **Step 4: Write the failing hook tests**
 
 Create `mobile/src/saved/use-saved.test.tsx`:
 
@@ -455,12 +455,12 @@ test('failed save refetches the authoritative list', async () => {
 })
 ```
 
-- [ ] **Step 5: Run to verify they fail**
+- [x] **Step 5: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/saved`
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 6: Create `mobile/src/saved/use-saved.ts`**
+- [x] **Step 6: Create `mobile/src/saved/use-saved.ts`**
 
 ```ts
 import { useEffect, useMemo, useState } from 'react'
@@ -519,12 +519,12 @@ export function useSaved(session: Session | null): {
 }
 ```
 
-- [ ] **Step 7: Run the full suite + typecheck**
+- [x] **Step 7: Run the full suite + typecheck**
 
 Run: `cd mobile && npx jest && npx tsc --noEmit`
 Expected: all PASS, tsc clean.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame/mobile
@@ -546,7 +546,7 @@ git commit -m "feat(mobile): saved-problems API and useSaved hook"
 - Consumes: `getRandomProblemFiltered` (Task 1), `ApiError` from `../api/errors` (Task 1), `PlaylistFilters` from `../types`.
 - Produces: hook return gains `exhausted: boolean`, `playlistFilters: PlaylistFilters | null`, `startPlaylist(filters: PlaylistFilters, initialProblem?: Problem): Promise<void>`, `restartPlaylist(): Promise<void>`; `problemSource` type widens to `'random' | 'smart' | 'playlist'`; `loadNext()` in playlist mode draws another match excluding the current problem. Tasks 5–6 consume these.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `mobile/src/practice/use-practice-session.test.tsx`: extend the `jest.mock('../api/problems', ...)` factory with `getRandomProblemFiltered: jest.fn(async () => problem)`, add it to the mocked import line, and add `;(getRandomProblemFiltered as jest.Mock).mockClear()` plus `.mockImplementation(async () => problem)` reset in `beforeEach` (the reject-based tests below change it). Then append:
 
@@ -724,12 +724,12 @@ test('entering smart mode clears playlist state', async () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/practice/use-practice-session`
 Expected: FAIL — `startPlaylist`, `restartPlaylist`, `exhausted`, `playlistFilters` are undefined.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `mobile/src/practice/use-practice-session.ts`:
 
@@ -845,12 +845,12 @@ import type {
     restartPlaylist,
 ```
 
-- [ ] **Step 4: Run to verify they pass**
+- [x] **Step 4: Run to verify they pass**
 
 Run: `cd mobile && npx jest src/practice && npx tsc --noEmit`
 Expected: PASS (including all pre-existing smart-mode and race tests), tsc clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame/mobile
@@ -876,7 +876,7 @@ git commit -m "feat(mobile): playlist problem source with exclude-current draws 
 - Consumes: `PlaylistFilters`, `Problem` from `../types`; `useTheme` from `../theme/theme-context`.
 - Produces: `setPendingPlaylist(p: { filters: PlaylistFilters; problem?: Problem }): void` and `takePendingPlaylist(): { filters: PlaylistFilters; problem?: Problem } | null` (one-shot); `playlistSummary(filters: PlaylistFilters): string`; `PlaylistBanner({ filters, onExit }: { filters: PlaylistFilters; onExit: () => void })`; `EndOfSet({ onRestart, onRandom }: { onRestart: () => void; onRandom: () => void })`. Tasks 5–6 consume these.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `mobile/src/practice/pending-playlist.test.ts`:
 
@@ -971,12 +971,12 @@ test('renders copy and fires both callbacks', async () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/practice/pending-playlist src/components/playlist-banner src/components/end-of-set`
 Expected: FAIL — modules do not exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Create `mobile/src/practice/pending-playlist.ts`:
 
@@ -1146,12 +1146,12 @@ export function EndOfSet({
 }
 ```
 
-- [ ] **Step 4: Run to verify they pass**
+- [x] **Step 4: Run to verify they pass**
 
 Run: `cd mobile && npx jest src/practice/pending-playlist src/components/playlist-banner src/components/end-of-set && npx tsc --noEmit`
 Expected: PASS, tsc clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame/mobile
@@ -1172,7 +1172,7 @@ git commit -m "feat(mobile): pending-playlist handoff, playlist banner, end-of-s
 - Consumes: `takePendingPlaylist` (Task 4), `PlaylistBanner`/`EndOfSet` (Task 4), `startPlaylist`/`restartPlaylist`/`exhausted`/`playlistFilters` (Task 3).
 - Produces: the Practice screen reacts to a `playlist` route param nonce (set by Task 6's Search screen). NO `/search` header button in this task — that route doesn't exist yet and typedRoutes would reject the literal (Task 6 adds it with the route file).
 
-- [ ] **Step 1: Implement the wiring**
+- [x] **Step 1: Implement the wiring**
 
 Edit `mobile/src/app/index.tsx`:
 
@@ -1279,12 +1279,12 @@ import { takePendingPlaylist } from '@/practice/pending-playlist'
 
 (The header row stays outside this conditional. "existing children unchanged" means: keep the SmartBanner block, the new PlaylistBanner block, ProblemView, StageBanner, ChatThread exactly as they are — only the wrapper moves.)
 
-- [ ] **Step 2: Run the full suite + typecheck**
+- [x] **Step 2: Run the full suite + typecheck**
 
 Run: `cd mobile && npx jest && npx tsc --noEmit`
 Expected: all PASS, tsc clean. (index.tsx has no unit test — simulator-verified in Task 7.)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame/mobile
@@ -1309,7 +1309,7 @@ git commit -m "feat(mobile): practice screen playlist wiring with banner and end
 - Consumes: `searchProblems`/`getProblemTags` (`@/api/problems`), `useSaved` (`@/saved/use-saved`), `setPendingPlaylist` (`@/practice/pending-playlist`), `DifficultyBadge` (`@/components/difficulty-badge`), `EMPTY_FILTERS`/`PlaylistFilters`/`Problem`/`ProblemTag` (`@/types`), `useAuth`, `useTheme`, `useRouter`.
 - Produces: the `/search` route; selection hands off via `setPendingPlaylist` + `router.dismissTo({ pathname: '/', params: { playlist: String(Date.now()) } })` (consumed by Task 5's effect).
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `mobile/src/screens/search-screen.test.tsx`:
 
@@ -1513,12 +1513,12 @@ test('adding a tag from the options sends it to the API', async () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/screens/search-screen`
 Expected: FAIL — `./search-screen` module does not exist.
 
-- [ ] **Step 3: Create `mobile/src/screens/search-screen.tsx`**
+- [x] **Step 3: Create `mobile/src/screens/search-screen.tsx`**
 
 ```tsx
 import { useEffect, useRef, useState } from 'react'
@@ -2037,7 +2037,7 @@ export default function SearchScreen() {
 }
 ```
 
-- [ ] **Step 4: Create the route and register it**
+- [x] **Step 4: Create the route and register it**
 
 Create `mobile/src/app/search.tsx`:
 
@@ -2051,7 +2051,7 @@ In `mobile/src/app/_layout.tsx`, add after the `stats` screen line:
       <Stack.Screen name="search" options={{ title: 'Search' }} />
 ```
 
-- [ ] **Step 5: Add the header search button**
+- [x] **Step 5: Add the header search button**
 
 In `mobile/src/app/index.tsx`, add immediately BEFORE the stats `<Link>` in the header row:
 
@@ -2067,12 +2067,12 @@ In `mobile/src/app/index.tsx`, add immediately BEFORE the stats `<Link>` in the 
         </Link>
 ```
 
-- [ ] **Step 6: Run the tests, full suite, and typecheck**
+- [x] **Step 6: Run the tests, full suite, and typecheck**
 
 Run: `cd mobile && npx jest src/screens/search-screen && npx jest && npx tsc --noEmit`
 Expected: all PASS, tsc clean (the `/search` literal typechecks because the route file exists).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame/mobile
@@ -2090,14 +2090,14 @@ git commit -m "feat(mobile): search screen with filters, saved view, and playlis
 
 Executed by the controller in the main session using the `rn-agentic-loop` skill (one simulator; app-driving is serial). Metro: `npx expo start` in `mobile/`, then `xcrun simctl openurl booted "exp://127.0.0.1:8081"`. Dev sign-in credentials in `frontend/.env.local`. Declare each receipt BEFORE acting; runtime state, never screenshots alone.
 
-- [ ] **Freshness:** `search-button` (new in this branch) mounted in the fiber tree.
-- [ ] **Search:** tap `search-button` → route `/search`; typing in `search-query` fires ONE debounced `GET /api/problems?q=…` (network receipt; observer double-logs each request); difficulty/tag filters appear in the query string; pagination fires `page=2`.
-- [ ] **Selection → playlist:** tapping a result lands on Practice with THAT problem (fiber receipt: problem title/slug in session state — no network fetch for the problem itself), `playlist-banner` mounted with the filter summary, route params carry a `playlist` nonce.
-- [ ] **Next-in-playlist:** complete or skip to next (completion footer "Next Problem") → `GET /api/problems/random?…&exclude_id=<current>` fires with the playlist filters.
-- [ ] **End of set:** filter down to a 1-problem set (narrow q), enter it, next → NO error, `end-of-set` mounts; `end-of-set-restart` re-fetches without `exclude_id` and stays in playlist; `end-of-set-random` → unfiltered `GET /api/problems/random` + banner unmounts.
-- [ ] **Saved round-trip:** star a problem → `POST /api/saved/<id>` (server receipt: curl `GET /api/saved` with dev token shows it); appears in the Saved view; tapping it practices it with the "Playlist" (empty-filters) banner; unstar → `DELETE` + gone from server. Restore the account's saved list to its pre-test state.
-- [ ] **Anonymous:** sign out → search + playlist still work; no stars, no Saved toggle in the fiber tree; no `/api/saved` requests fire.
-- [ ] Append verification results to this plan file and commit.
+- [x] **Freshness:** `search-button` (new in this branch) mounted in the fiber tree.
+- [x] **Search:** tap `search-button` → route `/search`; typing in `search-query` fires ONE debounced `GET /api/problems?q=…` (network receipt; observer double-logs each request); difficulty/tag filters appear in the query string; pagination fires `page=2`.
+- [x] **Selection → playlist:** tapping a result lands on Practice with THAT problem (fiber receipt: problem title/slug in session state — no network fetch for the problem itself), `playlist-banner` mounted with the filter summary, route params carry a `playlist` nonce.
+- [x] **Next-in-playlist:** complete or skip to next (completion footer "Next Problem") → `GET /api/problems/random?…&exclude_id=<current>` fires with the playlist filters.
+- [x] **End of set:** filter down to a 1-problem set (narrow q), enter it, next → NO error, `end-of-set` mounts; `end-of-set-restart` re-fetches without `exclude_id` and stays in playlist; `end-of-set-random` → unfiltered `GET /api/problems/random` + banner unmounts.
+- [x] **Saved round-trip:** star a problem → `POST /api/saved/<id>` (server receipt: curl `GET /api/saved` with dev token shows it); appears in the Saved view; tapping it practices it with the "Playlist" (empty-filters) banner; unstar → `DELETE` + gone from server. Restore the account's saved list to its pre-test state.
+- [x] **Anonymous:** sign out → search + playlist still work; no stars, no Saved toggle in the fiber tree; no `/api/saved` requests fire.
+- [x] Append verification results to this plan file and commit.
 
 ---
 
@@ -2106,3 +2106,15 @@ Executed by the controller in the main session using the `rn-agentic-loop` skill
 - Task order matters: 1 → 2 → 3 → 4 → 5 → 6 → 7. Task 5 must NOT reference `/search` (route arrives in Task 6). Task 6 adds the header button together with the route file.
 - Tasks 1–6 are subagent-friendly; Task 7 is app-driving and runs serially in the main session.
 - The search-screen tests use real timers with generous `waitFor` timeouts around the 300 ms debounce; if they flake, prefer raising the timeout over switching to fake timers (fake timers fight RNTL's internal async handling).
+
+---
+
+## Task 7 verification results (2026-07-06, iPhone 17 Pro sim / Expo Go, LIVE Render backend, dev account)
+
+- **Freshness:** PASS — `search-button` (new in this branch) mounted after relaunch.
+- **Search:** PASS — `/search` route; ONE debounced `GET /api/problems?q=two+sum&page=1&page_size=12` for the typed query (empty filters omitted; observer double-logs each request); difficulty chip → `&difficulty=Easy` with page reset to 1; results render with #id/title/difficulty/tags.
+- **Selection → playlist:** PASS — tapping the Two Sum result fired ZERO network requests (problem crossed in memory via pending-playlist), landed on `index` with `params.playlist = "1783355553654"`, `playlist-banner` mounted with summary `"two sum" · Easy`, and the mounted ProblemView carried the Two Sum description (fiber receipt).
+- **Next-in-playlist + end of set:** PASS — 1-problem set (`q=median of two sorted`, 1 stage via settings): after completion, Next fired `GET /api/problems/random?q=median+of+two+sorted&exclude_id=<current>` → 404 → `end-of-set` mounted with NO error; `end-of-set-restart` refetched WITHOUT `exclude_id` (200) and stayed in playlist; `playlist-exit` fired unfiltered `/api/problems/random` and unmounted the banner.
+- **Saved round-trip:** PASS — star → `POST /api/saved/<id>` 204 + server GET showed `['Two Sum']`; Saved view listed "1 saved problem"; tapping it practiced with the banner reading exactly `Playlist` (empty-filters summary); unstar → DELETE 204 + server GET `[]` (baseline restored).
+- **Anonymous:** PASS — after sign-out, the search mount fired tags+problems but NO `/api/saved`; no `search-saved-toggle` or star elements in the AX tree; search still worked.
+- **Cleanup:** account settings PUT back to the pre-test snapshot (verified byte-equal); saved list back to baseline (empty); sim left signed in.
