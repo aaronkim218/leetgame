@@ -10,6 +10,7 @@ export async function* streamChat(
   message: string,
   hintRequested: boolean,
   answerRequested: boolean,
+  concise: boolean,
   signal?: AbortSignal,
 ): AsyncGenerator<
   | { type: 'token'; content: string }
@@ -26,6 +27,7 @@ export async function* streamChat(
       message,
       hint_requested: hintRequested,
       answer_requested: answerRequested,
+      concise,
     }),
     signal,
   })

@@ -86,6 +86,7 @@ export function usePracticeSession({
           message,
           hint,
           answer,
+          false,
           controller.signal,
         )) {
           if (event.type === 'token') {
