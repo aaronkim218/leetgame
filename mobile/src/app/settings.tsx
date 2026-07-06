@@ -137,7 +137,7 @@ export default function SettingsScreen() {
       <SettingRow
         testID="settings-concise-mode"
         label="Concise mode"
-        description="Shorter interviewer replies"
+        description="Less back-and-forth — brief correct answers advance the stage"
         checked={conciseMode}
         onPress={() => persistConciseMode(!conciseMode)}
       />
