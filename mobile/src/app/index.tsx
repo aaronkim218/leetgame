@@ -29,12 +29,14 @@ export default function PracticeScreen() {
     activeStages,
     hideTitle,
     hideDifficulty,
+    conciseMode,
     refreshStreak,
   } = useAuth()
 
   const practice = usePracticeSession({
     activeStages,
     activeTopics: NEETCODE_TOPICS,
+    conciseMode,
     onComplete: () => {
       if (session) refreshStreak()
     },

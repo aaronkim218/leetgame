@@ -6,12 +6,14 @@ import { streamChat } from '../api/chat'
 interface Opts {
   activeStages: ActiveStage[]
   activeTopics: string[]
+  conciseMode: boolean
   onComplete: () => void
 }
 
 export function usePracticeSession({
   activeStages,
   activeTopics,
+  conciseMode,
   onComplete,
 }: Opts) {
   const [problem, setProblem] = useState<Problem | null>(null)
@@ -86,7 +88,7 @@ export function usePracticeSession({
           message,
           hint,
           answer,
-          false,
+          conciseMode,
           controller.signal,
         )) {
           if (event.type === 'token') {
@@ -111,7 +113,7 @@ export function usePracticeSession({
         setStreamingMessage('')
       }
     },
-    [problem, history, stage, onComplete],
+    [problem, history, stage, conciseMode, onComplete],
   )
 
   return {

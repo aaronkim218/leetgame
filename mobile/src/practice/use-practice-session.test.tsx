@@ -19,6 +19,7 @@ jest.mock('../api/chat', () => ({
 
 beforeEach(() => {
   mockStreamScript.length = 0
+  mockStreamChat.mockClear()
   mockStreamChat.mockImplementation(async function* () {
     for (const e of mockStreamScript) yield e
   })
@@ -29,6 +30,7 @@ test('loadRandom sets the problem and starts at the first active stage', async (
     usePracticeSession({
       activeStages: ['pattern', 'algorithm'],
       activeTopics: [],
+      conciseMode: false,
       onComplete: jest.fn(),
     }),
   )
@@ -49,6 +51,7 @@ test('submit streams tokens then advances stage', async () => {
     usePracticeSession({
       activeStages: ['pattern', 'algorithm'],
       activeTopics: [],
+      conciseMode: false,
       onComplete: jest.fn(),
     }),
   )
@@ -72,6 +75,7 @@ test('calls onComplete when stage resolves to complete', async () => {
     usePracticeSession({
       activeStages: ['pattern'],
       activeTopics: [],
+      conciseMode: false,
       onComplete,
     }),
   )
@@ -83,4 +87,24 @@ test('calls onComplete when stage resolves to complete', async () => {
   })
   await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1))
   expect(result.current.stage).toBe('complete')
+})
+
+test('submit passes conciseMode to streamChat', async () => {
+  mockStreamScript.push({ type: 'done', stage: 'complete', message: 'ok' })
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: true,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.loadRandom()
+  })
+  await act(async () => {
+    await result.current.submit('hi')
+  })
+  // streamChat(problemId, stage, activeStages, history, message, hint, answer, concise, signal)
+  expect(mockStreamChat.mock.calls[0][7]).toBe(true)
 })
