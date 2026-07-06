@@ -1,6 +1,17 @@
 import { useCallback, useRef, useState } from 'react'
-import type { Problem, ChatMessage, Stage, ActiveStage } from '../types'
-import { getRandomProblem, getSmartPracticeProblem } from '../api/problems'
+import type {
+  Problem,
+  ChatMessage,
+  Stage,
+  ActiveStage,
+  PlaylistFilters,
+} from '../types'
+import {
+  getRandomProblem,
+  getSmartPracticeProblem,
+  getRandomProblemFiltered,
+} from '../api/problems'
+import { ApiError } from '../api/errors'
 import { streamChat } from '../api/chat'
 
 interface Opts {
@@ -22,12 +33,14 @@ export function usePracticeSession({
   const [streamingMessage, setStreamingMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [problemSource, setProblemSource] = useState<'random' | 'smart'>(
-    'random',
-  )
+  const [problemSource, setProblemSource] = useState<
+    'random' | 'smart' | 'playlist'
+  >('random')
+  const [exhausted, setExhausted] = useState(false)
   const sessionStagesRef = useRef<ActiveStage[]>(activeStages)
   const abortRef = useRef<AbortController | null>(null)
   const loadSeqRef = useRef(0)
+  const playlistFiltersRef = useRef<PlaylistFilters | null>(null)
 
   const startSession = useCallback(
     (p: Problem) => {
@@ -50,6 +63,8 @@ export function usePracticeSession({
       if (seq !== loadSeqRef.current) return
       startSession(p)
       setProblemSource('random')
+      playlistFiltersRef.current = null
+      setExhausted(false)
     } catch {
       if (seq !== loadSeqRef.current) return
       setError('Failed to load a problem. Is the backend running?')
@@ -64,15 +79,72 @@ export function usePracticeSession({
       if (seq !== loadSeqRef.current) return
       startSession(p)
       setProblemSource('smart')
+      playlistFiltersRef.current = null
+      setExhausted(false)
     } catch {
       if (seq !== loadSeqRef.current) return
       setError('Failed to load a problem. Is the backend running?')
     }
   }, [startSession, activeStages, activeTopics])
 
+  const loadPlaylistProblem = useCallback(
+    async (excludeId?: string) => {
+      const filters = playlistFiltersRef.current
+      if (!filters) return
+      const seq = ++loadSeqRef.current
+      setError(null)
+      try {
+        const p = await getRandomProblemFiltered(
+          filters.q,
+          filters.difficulties,
+          filters.tags,
+          filters.tagMatch,
+          excludeId,
+        )
+        if (seq !== loadSeqRef.current) return
+        startSession(p)
+        setProblemSource('playlist')
+        setExhausted(false)
+      } catch (e) {
+        if (seq !== loadSeqRef.current) return
+        if (e instanceof ApiError && e.status === 404) {
+          setExhausted(true)
+        } else {
+          setError('Failed to load a problem. Is the backend running?')
+        }
+      }
+    },
+    [startSession],
+  )
+
+  const startPlaylist = useCallback(
+    (filters: PlaylistFilters, initialProblem?: Problem) => {
+      playlistFiltersRef.current = filters
+      setExhausted(false)
+      if (initialProblem) {
+        ++loadSeqRef.current
+        startSession(initialProblem)
+        setProblemSource('playlist')
+        return Promise.resolve()
+      }
+      return loadPlaylistProblem()
+    },
+    [startSession, loadPlaylistProblem],
+  )
+
+  const restartPlaylist = useCallback(
+    () => loadPlaylistProblem(),
+    [loadPlaylistProblem],
+  )
+
   const loadNext = useCallback(
-    () => (problemSource === 'smart' ? loadSmart() : loadRandom()),
-    [problemSource, loadSmart, loadRandom],
+    () =>
+      problemSource === 'smart'
+        ? loadSmart()
+        : problemSource === 'playlist'
+          ? loadPlaylistProblem(problem?.id)
+          : loadRandom(),
+    [problemSource, loadSmart, loadRandom, loadPlaylistProblem, problem],
   )
 
   const submit = useCallback(
@@ -144,9 +216,13 @@ export function usePracticeSession({
     error,
     sessionActiveStages: sessionStagesRef.current,
     problemSource,
+    exhausted,
+    playlistFilters: playlistFiltersRef.current,
     loadRandom,
     loadSmart,
     loadNext,
+    startPlaylist,
+    restartPlaylist,
     submit,
   }
 }

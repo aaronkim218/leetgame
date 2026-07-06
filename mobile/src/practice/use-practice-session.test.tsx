@@ -14,9 +14,15 @@ const problem = {
 jest.mock('../api/problems', () => ({
   getRandomProblem: jest.fn(async () => problem),
   getSmartPracticeProblem: jest.fn(async () => problem),
+  getRandomProblemFiltered: jest.fn(async () => problem),
 }))
 
-import { getRandomProblem, getSmartPracticeProblem } from '../api/problems'
+import {
+  getRandomProblem,
+  getSmartPracticeProblem,
+  getRandomProblemFiltered,
+} from '../api/problems'
+import { ApiError } from '../api/errors'
 
 const mockStreamScript: Array<{ type: string; [k: string]: unknown }> = []
 const mockStreamChat = jest.fn()
@@ -32,6 +38,10 @@ beforeEach(() => {
   })
   ;(getRandomProblem as jest.Mock).mockClear()
   ;(getSmartPracticeProblem as jest.Mock).mockClear()
+  ;(getRandomProblemFiltered as jest.Mock).mockClear()
+  ;(getRandomProblemFiltered as jest.Mock).mockImplementation(
+    async () => problem,
+  )
 })
 
 test('loadRandom sets the problem and starts at the first active stage', async () => {
@@ -190,4 +200,174 @@ test('a newer load supersedes a stale in-flight load', async () => {
   })
   expect(result.current.problem?.id).toBe('p-random')
   expect(result.current.problemSource).toBe('random')
+})
+
+const FILTERS = {
+  q: 'sum',
+  difficulties: ['Easy'],
+  tags: ['Array'],
+  tagMatch: 'and' as const,
+}
+
+test('startPlaylist with an initial problem starts there without fetching', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  const initial = { ...problem, id: 'p-init' }
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, initial)
+  })
+  expect(result.current.problem?.id).toBe('p-init')
+  expect(result.current.problemSource).toBe('playlist')
+  expect(result.current.playlistFilters).toEqual(FILTERS)
+  expect(getRandomProblemFiltered).not.toHaveBeenCalled()
+})
+
+test('startPlaylist without a problem fetches a filtered random one', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS)
+  })
+  expect(result.current.problemSource).toBe('playlist')
+  expect(getRandomProblemFiltered).toHaveBeenCalledWith(
+    'sum',
+    ['Easy'],
+    ['Array'],
+    'and',
+    undefined,
+  )
+})
+
+test('loadNext in playlist mode excludes the current problem', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(getRandomProblemFiltered).toHaveBeenLastCalledWith(
+    'sum',
+    ['Easy'],
+    ['Array'],
+    'and',
+    'p-cur',
+  )
+  expect(result.current.problemSource).toBe('playlist')
+})
+
+test('a 404 on next marks the set exhausted without an error', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
+  ;(getRandomProblemFiltered as jest.Mock).mockRejectedValueOnce(
+    new ApiError('no match', 404),
+  )
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(result.current.exhausted).toBe(true)
+  expect(result.current.error).toBeNull()
+  expect(result.current.problem?.id).toBe('p-cur')
+})
+
+test('restartPlaylist refetches without exclude and clears exhausted', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
+  ;(getRandomProblemFiltered as jest.Mock).mockRejectedValueOnce(
+    new ApiError('no match', 404),
+  )
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(result.current.exhausted).toBe(true)
+  await act(async () => {
+    await result.current.restartPlaylist()
+  })
+  expect(result.current.exhausted).toBe(false)
+  expect(getRandomProblemFiltered).toHaveBeenLastCalledWith(
+    'sum',
+    ['Easy'],
+    ['Array'],
+    'and',
+    undefined,
+  )
+})
+
+test('loadRandom exits the playlist and clears its state', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
+  await act(async () => {
+    await result.current.loadRandom()
+  })
+  expect(result.current.problemSource).toBe('random')
+  expect(result.current.playlistFilters).toBeNull()
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(getRandomProblem).toHaveBeenCalledTimes(2)
+})
+
+test('entering smart mode clears playlist state', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
+  await act(async () => {
+    await result.current.loadSmart()
+  })
+  expect(result.current.problemSource).toBe('smart')
+  expect(result.current.playlistFilters).toBeNull()
 })
