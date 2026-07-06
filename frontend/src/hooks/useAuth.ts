@@ -67,6 +67,7 @@ export function useAuth() {
   }
 
   useEffect(() => {
+    let settingsSeq = 0
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -74,6 +75,7 @@ export function useAuth() {
       setAuthLoading(false)
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         if (session) {
+          const seq = ++settingsSeq
           setSettingsLoaded(false)
           getStreak()
             .then(({ streak, last_practiced_at }) => {
@@ -91,6 +93,7 @@ export function useAuth() {
                 active_topics,
                 tour_done,
               }) => {
+                if (seq !== settingsSeq) return
                 setActiveStages(active_stages)
                 setHideTitle(hide_title)
                 setHideDifficulty(hide_difficulty)
@@ -101,8 +104,11 @@ export function useAuth() {
               },
             )
             .catch(() => {})
-            .finally(() => setSettingsReady(true))
+            .finally(() => {
+              if (seq === settingsSeq) setSettingsReady(true)
+            })
         } else {
+          settingsSeq++
           setStreak(null)
           setLastPracticedAt(null)
           applyLocalSettings()
@@ -110,6 +116,7 @@ export function useAuth() {
           setSettingsReady(true)
         }
       } else if (event === 'SIGNED_OUT') {
+        settingsSeq++
         setStreak(null)
         setLastPracticedAt(null)
         setActiveTopics(NEETCODE_TOPICS)

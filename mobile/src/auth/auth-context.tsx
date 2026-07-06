@@ -58,11 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   useEffect(() => {
+    let settingsSeq = 0
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, sess) => {
       setSession(sess)
       if (sess) {
+        const seq = ++settingsSeq
         setSettingsLoaded(false)
         getStreak()
           .then(({ streak, last_practiced_at }) => {
@@ -72,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .catch(() => {})
         getSettings()
           .then((s) => {
+            if (seq !== settingsSeq) return
             setActiveStages(s.active_stages)
             setHideTitle(s.hide_title)
             setHideDifficulty(s.hide_difficulty)
@@ -81,8 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSettingsLoaded(true)
           })
           .catch(() => {})
-          .finally(() => setAuthReady(true))
+          .finally(() => {
+            if (seq === settingsSeq) setAuthReady(true)
+          })
       } else {
+        settingsSeq++
         setStreak(null)
         setLastPracticedAt(null)
         setActiveStages(DEFAULT_STAGES)

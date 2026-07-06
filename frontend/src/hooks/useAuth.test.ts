@@ -81,6 +81,41 @@ describe('settings clobber gate', () => {
     )
   })
 
+  it('a stale settings fetch from a previous sign-in cannot re-arm the gate', async () => {
+    let resolveStale: (v: unknown) => void = () => {}
+    vi.mocked(getSettings)
+      .mockImplementationOnce(
+        () => new Promise((resolve) => (resolveStale = resolve)) as never,
+      )
+      .mockRejectedValueOnce(new Error('network'))
+    const { result } = renderHook(() => useAuth())
+    act(() => {
+      authState.callback('SIGNED_IN', fakeSession) // user A, fetch stays pending
+    })
+    act(() => {
+      authState.callback('SIGNED_OUT', null)
+    })
+    act(() => {
+      authState.callback('SIGNED_IN', fakeSession) // user B, fetch rejects
+    })
+    await waitFor(() => expect(result.current.settingsReady).toBe(true))
+    await act(async () => {
+      resolveStale({
+        active_stages: ['edge_cases'],
+        hide_title: false,
+        hide_difficulty: false,
+        concise_mode: true,
+        active_topics: ['Trie'],
+        tour_done: false,
+      }) // user A's stale payload arrives late
+    })
+    expect(result.current.conciseMode).toBe(false) // stale payload NOT applied
+    act(() => {
+      result.current.persistStages(['pattern'])
+    })
+    expect(updateSettings).not.toHaveBeenCalled() // gate NOT re-armed
+  })
+
   it('anonymous toggle still writes localStorage and never PUTs', async () => {
     const { result } = renderHook(() => useAuth())
     act(() => {

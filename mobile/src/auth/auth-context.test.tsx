@@ -151,6 +151,53 @@ test('failed settings load: toggle updates state but skips the PUT', async () =>
   expect(updateSettings).not.toHaveBeenCalled()
 })
 
+test('a stale settings fetch from a previous sign-in cannot re-arm the gate', async () => {
+  ;(updateSettings as jest.Mock).mockClear()
+  let resolveStale: (v: unknown) => void = () => {}
+  ;(getSettings as jest.Mock)
+    .mockImplementationOnce(
+      () => new Promise((resolve) => (resolveStale = resolve)),
+    )
+    .mockRejectedValueOnce(new Error('network'))
+  ;(getStreak as jest.Mock).mockResolvedValue({
+    streak: 1,
+    last_practiced_at: null,
+  })
+  const { getByTestId } = await render(
+    <AuthProvider>
+      <PersistProbe />
+    </AuthProvider>,
+  )
+  await act(async () => {
+    authState.callback('SIGNED_IN', { access_token: 't' }) // user A, fetch stays pending
+  })
+  await act(async () => {
+    authState.callback('SIGNED_OUT', null)
+  })
+  await act(async () => {
+    authState.callback('SIGNED_IN', { access_token: 't' }) // user B, fetch rejects
+  })
+  expect(getByTestId('concise').children[0]).toBe('false')
+
+  await act(async () => {
+    resolveStale({
+      active_stages: ['edge_cases'],
+      hide_title: false,
+      hide_difficulty: false,
+      concise_mode: true,
+      active_topics: ['Trie'],
+      tour_done: false,
+    }) // user A's stale payload arrives late
+  })
+  expect(getByTestId('concise').children[0]).toBe('false') // stale payload NOT applied
+
+  await act(async () => {
+    fireEvent.press(getByTestId('toggle-concise'))
+  })
+  expect(getByTestId('concise').children[0]).toBe('true')
+  expect(updateSettings).not.toHaveBeenCalled() // gate NOT re-armed
+})
+
 test('persistTopics PUTs the new topics with other settings round-tripped', async () => {
   ;(updateSettings as jest.Mock).mockClear()
   ;(getSettings as jest.Mock).mockResolvedValue({
