@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Link, useLocalSearchParams, type Href } from 'expo-router'
+import { Link, useLocalSearchParams } from 'expo-router'
 import { useAuth } from '@/auth/auth-context'
 import { useTheme } from '@/theme/theme-context'
 import { usePracticeSession } from '@/practice/use-practice-session'
@@ -108,8 +108,7 @@ export default function PracticeScreen() {
           paddingVertical: 8,
         }}
       >
-        {/* cast needed until the /stats screen exists (next task); then use href="/stats" */}
-        <Link href={'/stats' as Href} asChild>
+        <Link href="/stats" asChild>
           <Pressable
             testID="stats-button"
             accessibilityLabel="Stats"
