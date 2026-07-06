@@ -22,6 +22,9 @@ export function usePracticeSession({
   const [streamingMessage, setStreamingMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [problemSource, setProblemSource] = useState<'random' | 'smart'>(
+    'random',
+  )
   const sessionStagesRef = useRef<ActiveStage[]>(activeStages)
   const abortRef = useRef<AbortController | null>(null)
 
@@ -42,6 +45,7 @@ export function usePracticeSession({
     setError(null)
     try {
       startSession(await getRandomProblem())
+      setProblemSource('random')
     } catch {
       setError('Failed to load a problem. Is the backend running?')
     }
@@ -51,10 +55,16 @@ export function usePracticeSession({
     setError(null)
     try {
       startSession(await getSmartPracticeProblem(activeStages, activeTopics))
+      setProblemSource('smart')
     } catch {
       setError('Failed to load a problem. Is the backend running?')
     }
   }, [startSession, activeStages, activeTopics])
+
+  const loadNext = useCallback(
+    () => (problemSource === 'smart' ? loadSmart() : loadRandom()),
+    [problemSource, loadSmart, loadRandom],
+  )
 
   const submit = useCallback(
     async (message: string, opts?: { hint?: boolean; answer?: boolean }) => {
@@ -124,8 +134,10 @@ export function usePracticeSession({
     loading,
     error,
     sessionActiveStages: sessionStagesRef.current,
+    problemSource,
     loadRandom,
     loadSmart,
+    loadNext,
     submit,
   }
 }

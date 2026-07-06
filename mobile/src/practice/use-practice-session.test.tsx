@@ -16,6 +16,8 @@ jest.mock('../api/problems', () => ({
   getSmartPracticeProblem: jest.fn(async () => problem),
 }))
 
+import { getRandomProblem, getSmartPracticeProblem } from '../api/problems'
+
 const mockStreamScript: Array<{ type: string; [k: string]: unknown }> = []
 const mockStreamChat = jest.fn()
 jest.mock('../api/chat', () => ({
@@ -28,6 +30,8 @@ beforeEach(() => {
   mockStreamChat.mockImplementation(async function* () {
     for (const e of mockStreamScript) yield e
   })
+  ;(getRandomProblem as jest.Mock).mockClear()
+  ;(getSmartPracticeProblem as jest.Mock).mockClear()
 })
 
 test('loadRandom sets the problem and starts at the first active stage', async () => {
@@ -112,4 +116,52 @@ test('submit passes conciseMode to streamChat', async () => {
   })
   // streamChat(problemId, stage, activeStages, history, message, hint, answer, concise, signal)
   expect(mockStreamChat.mock.calls[0][7]).toBe(true)
+})
+
+test('loadSmart marks the session smart and loadNext stays smart', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern', 'algorithm'],
+      activeTopics: ['Array'],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.loadSmart()
+  })
+  expect(result.current.problemSource).toBe('smart')
+
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(getSmartPracticeProblem).toHaveBeenCalledTimes(2)
+  expect(getSmartPracticeProblem).toHaveBeenLastCalledWith(
+    ['pattern', 'algorithm'],
+    ['Array'],
+  )
+  expect(getRandomProblem).not.toHaveBeenCalled()
+})
+
+test('loadRandom returns the session to random mode', async () => {
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      activeStages: ['pattern'],
+      activeTopics: [],
+      conciseMode: false,
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.loadSmart()
+  })
+  await act(async () => {
+    await result.current.loadRandom()
+  })
+  expect(result.current.problemSource).toBe('random')
+
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(getRandomProblem).toHaveBeenCalledTimes(2)
 })
