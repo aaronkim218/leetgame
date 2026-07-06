@@ -3,7 +3,11 @@ jest.mock('./client', () => ({
   authHeaders: jest.fn(async () => ({ Authorization: 'Bearer t' })),
 }))
 
-import { getRandomProblem, getSmartPracticeProblem } from './problems'
+import {
+  getRandomProblem,
+  getSmartPracticeProblem,
+  getProblemTags,
+} from './problems'
 
 const problem = {
   id: 'p1',
@@ -37,4 +41,18 @@ test('getSmartPracticeProblem encodes active stages and topics', async () => {
   expect(url).toContain('/api/problems/smart?')
   expect(url).toContain('active_stages=pattern%2Ctc_sc')
   expect(url).toContain('active_topics=Array%2CGraph')
+})
+
+test('getProblemTags hits the tags endpoint with auth header', async () => {
+  const tags = [{ name: 'Array', count: 12 }]
+  globalThis.fetch = jest.fn(async () => ({
+    ok: true,
+    json: async () => tags,
+  })) as unknown as typeof fetch
+  const result = await getProblemTags()
+  expect(result).toEqual(tags)
+  expect(globalThis.fetch).toHaveBeenCalledWith(
+    'https://api.test/api/problems/tags',
+    { headers: { Authorization: 'Bearer t' } },
+  )
 })

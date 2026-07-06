@@ -1,4 +1,4 @@
-import type { Problem, ActiveStage } from '../types'
+import type { Problem, ActiveStage, ProblemTag } from '../types'
 import { API_URL, authHeaders } from './client'
 
 export async function getRandomProblem(): Promise<Problem> {
@@ -22,5 +22,13 @@ export async function getSmartPracticeProblem(
   )
   if (!res.ok)
     throw new Error(`Failed to fetch smart practice problem: ${res.status}`)
+  return res.json()
+}
+
+export async function getProblemTags(): Promise<ProblemTag[]> {
+  const res = await fetch(`${API_URL}/api/problems/tags`, {
+    headers: await authHeaders(),
+  })
+  if (!res.ok) throw new Error(`Failed to fetch tags: ${res.status}`)
   return res.json()
 }

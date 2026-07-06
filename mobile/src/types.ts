@@ -37,6 +37,11 @@ export interface TopicProficiency {
   updated_at: string
 }
 
+export interface ProblemTag {
+  name: string
+  count: number
+}
+
 export const NEETCODE_TOPICS: string[] = [
   'Array',
   'Hash Table',
