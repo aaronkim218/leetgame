@@ -186,6 +186,7 @@ export default function PracticeScreen() {
         <EndOfSet
           onRestart={() => void practice.restartPlaylist()}
           onRandom={() => void practice.loadRandom()}
+          error={practice.error}
         />
       ) : (
         <>

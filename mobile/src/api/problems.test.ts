@@ -139,3 +139,15 @@ test('getRandomProblemFiltered throws ApiError with status on non-OK', async () 
   expect(err).toBeInstanceOf(ApiError)
   expect((err as ApiError).status).toBe(404)
 })
+
+test('searchProblems throws a plain Error (not ApiError) on non-OK', async () => {
+  globalThis.fetch = jest.fn(async () => ({
+    ok: false,
+    status: 500,
+  })) as unknown as typeof fetch
+  const err = await searchProblems('', [], [], 'and', 1, 12).catch(
+    (e: unknown) => e,
+  )
+  expect(err).toBeInstanceOf(Error)
+  expect(err).not.toBeInstanceOf(ApiError)
+})

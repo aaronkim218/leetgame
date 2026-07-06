@@ -18,9 +18,15 @@ export function useSaved(session: Session | null): {
       setSavedProblems([])
       return
     }
+    let cancelled = false
     getSavedProblems()
-      .then(setSavedProblems)
+      .then((p) => {
+        if (!cancelled) setSavedProblems(p)
+      })
       .catch(() => {})
+    return () => {
+      cancelled = true
+    }
   }, [userId])
 
   const savedIds = useMemo(

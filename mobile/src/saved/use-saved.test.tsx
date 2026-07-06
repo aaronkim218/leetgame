@@ -73,3 +73,22 @@ test('failed save refetches the authoritative list', async () => {
   await waitFor(() => expect(getSavedProblems).toHaveBeenCalledTimes(2))
   await waitFor(() => expect(result.current.savedProblems).toEqual([]))
 })
+
+test('ignores a stale fetch response after userId changes to signed out', async () => {
+  let resolveFetch: (p: (typeof problem)[]) => void = () => {}
+  ;(getSavedProblems as jest.Mock).mockReturnValue(
+    new Promise((resolve) => {
+      resolveFetch = resolve
+    }),
+  )
+  const { result, rerender } = await renderHook(
+    ({ s }: { s: Session | null }) => useSaved(s),
+    { initialProps: { s: session } },
+  )
+  await rerender({ s: null })
+  expect(result.current.savedProblems).toEqual([])
+  await act(async () => {
+    resolveFetch([problem])
+  })
+  expect(result.current.savedProblems).toEqual([])
+})
