@@ -95,7 +95,11 @@ export default function PracticeScreen() {
         }}
       >
         <Link href="/settings" asChild>
-          <Pressable testID="settings-button">
+          <Pressable
+            testID="settings-button"
+            accessibilityLabel="Settings"
+            accessibilityRole="button"
+          >
             <Text style={{ fontSize: 18 }}>⚙️</Text>
           </Pressable>
         </Link>
