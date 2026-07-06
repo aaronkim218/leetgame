@@ -18,6 +18,9 @@ import { ChatThread } from '@/components/chat-thread'
 import { InputBar } from '@/components/input-bar'
 import { CompletionFooter } from '@/components/completion-footer'
 import { SmartBanner } from '@/components/smart-banner'
+import { PlaylistBanner } from '@/components/playlist-banner'
+import { EndOfSet } from '@/components/end-of-set'
+import { takePendingPlaylist } from '@/practice/pending-playlist'
 import { type ActiveStage } from '@/types'
 
 export default function PracticeScreen() {
@@ -44,9 +47,14 @@ export default function PracticeScreen() {
     },
   })
 
-  const { smart } = useLocalSearchParams<{ smart?: string }>()
+  const { smart, playlist } = useLocalSearchParams<{
+    smart?: string
+    playlist?: string
+  }>()
   const smartValue = Array.isArray(smart) ? smart[0] : smart
+  const playlistValue = Array.isArray(playlist) ? playlist[0] : playlist
   const lastSmartRef = useRef<string | null>(null)
+  const lastPlaylistRef = useRef<string | null>(null)
   useEffect(() => {
     if (authReady && smartValue && smartValue !== lastSmartRef.current) {
       lastSmartRef.current = smartValue
@@ -56,7 +64,24 @@ export default function PracticeScreen() {
   }, [smartValue, authReady])
 
   useEffect(() => {
-    if (authReady && !practice.problem && !smartValue)
+    if (
+      authReady &&
+      playlistValue &&
+      playlistValue !== lastPlaylistRef.current
+    ) {
+      lastPlaylistRef.current = playlistValue
+      const pending = takePendingPlaylist()
+      if (pending) {
+        void practice.startPlaylist(pending.filters, pending.problem)
+      } else if (!practice.problem) {
+        void practice.loadRandom()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playlistValue, authReady])
+
+  useEffect(() => {
+    if (authReady && !practice.problem && !smartValue && !playlistValue)
       void practice.loadRandom()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authReady])
@@ -148,45 +173,63 @@ export default function PracticeScreen() {
         </Link>
       </View>
 
-      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-        {practice.problemSource === 'smart' && (
-          <SmartBanner onExit={() => void practice.loadRandom()} />
-        )}
-        <ProblemView
-          problem={practice.problem}
-          hideTitle={hideTitle}
-          hideDifficulty={hideDifficulty}
-        />
-        <StageBanner
-          stage={practice.stage}
-          sessionActiveStages={practice.sessionActiveStages}
-        />
-        <ChatThread
-          history={practice.history}
-          loading={practice.loading}
-          streamingMessage={practice.streamingMessage}
-          error={practice.error}
-        />
-      </ScrollView>
-
-      {isComplete ? (
-        <CompletionFooter
-          onNext={() => void practice.loadNext()}
-          onSmart={() => void practice.loadSmart()}
+      {practice.exhausted ? (
+        <EndOfSet
+          onRestart={() => void practice.restartPlaylist()}
+          onRandom={() => void practice.loadRandom()}
         />
       ) : (
-        <InputBar
-          disabled={practice.loading}
-          placeholder={
-            STAGE_PLACEHOLDER[practice.stage as ActiveStage] ??
-            'Describe your approach…'
-          }
-          onSubmit={(text) => void practice.submit(text)}
-          onHint={() => void practice.submit('Give me a hint', { hint: true })}
-          onAnswer={() =>
-            void practice.submit('Give me the answer', { answer: true })
-          }
-        />
+        <>
+          <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+            {practice.problemSource === 'smart' && (
+              <SmartBanner onExit={() => void practice.loadRandom()} />
+            )}
+            {practice.problemSource === 'playlist' &&
+              practice.playlistFilters && (
+                <PlaylistBanner
+                  filters={practice.playlistFilters}
+                  onExit={() => void practice.loadRandom()}
+                />
+              )}
+            <ProblemView
+              problem={practice.problem}
+              hideTitle={hideTitle}
+              hideDifficulty={hideDifficulty}
+            />
+            <StageBanner
+              stage={practice.stage}
+              sessionActiveStages={practice.sessionActiveStages}
+            />
+            <ChatThread
+              history={practice.history}
+              loading={practice.loading}
+              streamingMessage={practice.streamingMessage}
+              error={practice.error}
+            />
+          </ScrollView>
+
+          {isComplete ? (
+            <CompletionFooter
+              onNext={() => void practice.loadNext()}
+              onSmart={() => void practice.loadSmart()}
+            />
+          ) : (
+            <InputBar
+              disabled={practice.loading}
+              placeholder={
+                STAGE_PLACEHOLDER[practice.stage as ActiveStage] ??
+                'Describe your approach…'
+              }
+              onSubmit={(text) => void practice.submit(text)}
+              onHint={() =>
+                void practice.submit('Give me a hint', { hint: true })
+              }
+              onAnswer={() =>
+                void practice.submit('Give me the answer', { answer: true })
+              }
+            />
+          )}
+        </>
       )}
     </SafeAreaView>
   )
