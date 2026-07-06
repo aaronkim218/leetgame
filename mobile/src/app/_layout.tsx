@@ -22,6 +22,7 @@ function ThemedStack() {
       <Stack.Screen name="account" options={{ title: 'Account' }} />
       <Stack.Screen name="settings" options={{ title: 'Settings' }} />
       <Stack.Screen name="stats" options={{ title: 'Stats' }} />
+      <Stack.Screen name="search" options={{ title: 'Search' }} />
     </Stack>
   )
 }

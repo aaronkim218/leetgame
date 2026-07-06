@@ -133,6 +133,15 @@ export default function PracticeScreen() {
           paddingVertical: 8,
         }}
       >
+        <Link href="/search" asChild>
+          <Pressable
+            testID="search-button"
+            accessibilityLabel="Search"
+            accessibilityRole="button"
+          >
+            <Text style={{ fontSize: 18 }}>🔍</Text>
+          </Pressable>
+        </Link>
         <Link href="/stats" asChild>
           <Pressable
             testID="stats-button"
