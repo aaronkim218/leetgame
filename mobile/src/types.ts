@@ -15,11 +15,7 @@ export interface ChatMessage {
 }
 
 export type ActiveStage =
-  | 'edge_cases'
-  | 'brute_force'
-  | 'pattern'
-  | 'algorithm'
-  | 'tc_sc'
+  'edge_cases' | 'brute_force' | 'pattern' | 'algorithm' | 'tc_sc'
 
 export type Stage = ActiveStage | 'complete'
 
@@ -42,10 +38,27 @@ export interface TopicProficiency {
 }
 
 export const NEETCODE_TOPICS: string[] = [
-  'Array', 'Hash Table', 'Two Pointers', 'Sliding Window', 'Stack',
-  'Binary Search', 'Linked List', 'Tree', 'Binary Tree', 'Binary Search Tree',
-  'Trie', 'Heap (Priority Queue)', 'Backtracking', 'Graph',
-  'Depth-First Search', 'Breadth-First Search', 'Union Find',
-  'Dynamic Programming', 'Greedy', 'Intervals', 'Math', 'Bit Manipulation',
+  'Array',
+  'Hash Table',
+  'Two Pointers',
+  'Sliding Window',
+  'Stack',
+  'Binary Search',
+  'Linked List',
+  'Tree',
+  'Binary Tree',
+  'Binary Search Tree',
+  'Trie',
+  'Heap (Priority Queue)',
+  'Backtracking',
+  'Graph',
+  'Depth-First Search',
+  'Breadth-First Search',
+  'Union Find',
+  'Dynamic Programming',
+  'Greedy',
+  'Intervals',
+  'Math',
+  'Bit Manipulation',
   'Matrix',
 ]

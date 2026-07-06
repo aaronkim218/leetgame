@@ -24,8 +24,21 @@ export function ProblemView({
         gap: 8,
       }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={{ color: theme.foreground, fontSize: 18, fontWeight: '700', flexShrink: 1 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Text
+          style={{
+            color: theme.foreground,
+            fontSize: 18,
+            fontWeight: '700',
+            flexShrink: 1,
+          }}
+        >
           {hideTitle ? 'Hidden problem' : problem.title}
         </Text>
         {!hideDifficulty && <DifficultyBadge difficulty={problem.difficulty} />}

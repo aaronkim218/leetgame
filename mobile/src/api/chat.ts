@@ -50,7 +50,8 @@ export async function* streamChat(
       if (!type || !data) continue
       const parsed = JSON.parse(data)
       if (type === 'token') yield { type: 'token', content: parsed.content }
-      else if (type === 'done') yield { type: 'done', stage: parsed.stage, message: parsed.message }
+      else if (type === 'done')
+        yield { type: 'done', stage: parsed.stage, message: parsed.message }
       else if (type === 'error') throw new Error('LLM evaluation failed')
     }
     if (done) break

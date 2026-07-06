@@ -45,12 +45,19 @@ export default function AccountScreen() {
   return (
     <View
       testID="account-screen"
-      style={{ flex: 1, backgroundColor: theme.background, padding: 16, gap: 12 }}
+      style={{
+        flex: 1,
+        backgroundColor: theme.background,
+        padding: 16,
+        gap: 12,
+      }}
     >
       <Text style={{ color: theme.foreground, fontSize: 16 }}>
         {session.user.email}
       </Text>
-      <Text style={{ color: theme.mutedForeground }}>Streak: {streak ?? 0}</Text>
+      <Text style={{ color: theme.mutedForeground }}>
+        Streak: {streak ?? 0}
+      </Text>
       <Pressable
         testID="account-sign-out"
         onPress={async () => {

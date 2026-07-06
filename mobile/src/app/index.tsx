@@ -108,7 +108,9 @@ export default function PracticeScreen() {
             testID="streak-indicator"
             style={{
               color:
-                streakStatus === 'solid' ? theme.primary : theme.mutedForeground,
+                streakStatus === 'solid'
+                  ? theme.primary
+                  : theme.mutedForeground,
             }}
           >
             🔥 {streak}

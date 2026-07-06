@@ -6,8 +6,13 @@ jest.mock('./client', () => ({
 import { getRandomProblem, getSmartPracticeProblem } from './problems'
 
 const problem = {
-  id: 'p1', slug: 's', title: 'T', description: 'D',
-  difficulty: 'Easy', topic_tags: [], leetcode_id: 1,
+  id: 'p1',
+  slug: 's',
+  title: 'T',
+  description: 'D',
+  difficulty: 'Easy',
+  topic_tags: [],
+  leetcode_id: 1,
 }
 
 beforeEach(() => {

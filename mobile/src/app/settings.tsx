@@ -99,16 +99,13 @@ export default function SettingsScreen() {
               style={{
                 paddingHorizontal: 12,
                 paddingVertical: 6,
-                backgroundColor:
-                  preference === t ? theme.muted : 'transparent',
+                backgroundColor: preference === t ? theme.muted : 'transparent',
               }}
             >
               <Text
                 style={{
                   color:
-                    preference === t
-                      ? theme.foreground
-                      : theme.mutedForeground,
+                    preference === t ? theme.foreground : theme.mutedForeground,
                   fontSize: 13,
                   fontWeight: preference === t ? '600' : '400',
                   textTransform: 'capitalize',

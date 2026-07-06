@@ -22,7 +22,13 @@ export function StageBanner({
         paddingVertical: 10,
       }}
     >
-      <Text style={{ color: complete ? '#16a34a' : theme.foreground, fontWeight: '600', fontSize: 13 }}>
+      <Text
+        style={{
+          color: complete ? '#16a34a' : theme.foreground,
+          fontWeight: '600',
+          fontSize: 13,
+        }}
+      >
         {complete
           ? 'Nice work! Review your session below.'
           : getStageBanner(stage, sessionActiveStages)}

@@ -18,10 +18,20 @@ export function ChatThread({
   return (
     <View style={{ padding: 16, gap: 0 }}>
       {history.map((m, i) => (
-        <MessageBubble key={`${i}-${m.role}`} role={m.role} content={m.content} />
+        <MessageBubble
+          key={`${i}-${m.role}`}
+          role={m.role}
+          content={m.content}
+        />
       ))}
       {loading && !streamingMessage && (
-        <Text style={{ color: theme.mutedForeground, fontStyle: 'italic', fontSize: 12 }}>
+        <Text
+          style={{
+            color: theme.mutedForeground,
+            fontStyle: 'italic',
+            fontSize: 12,
+          }}
+        >
           Thinking…
         </Text>
       )}

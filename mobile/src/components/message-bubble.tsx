@@ -24,7 +24,13 @@ export function MessageBubble({
       }}
     >
       {isUser ? (
-        <Text style={{ color: theme.primaryForeground, fontSize: 14, lineHeight: 21 }}>
+        <Text
+          style={{
+            color: theme.primaryForeground,
+            fontSize: 14,
+            lineHeight: 21,
+          }}
+        >
           {content}
         </Text>
       ) : (

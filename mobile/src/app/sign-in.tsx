@@ -15,7 +15,10 @@ export default function SignInScreen() {
   const submit = async () => {
     setBusy(true)
     setError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
     setBusy(false)
     if (error) setError(error.message)
     else router.back()
@@ -32,7 +35,12 @@ export default function SignInScreen() {
   return (
     <View
       testID="sign-in-screen"
-      style={{ flex: 1, backgroundColor: theme.background, padding: 16, gap: 12 }}
+      style={{
+        flex: 1,
+        backgroundColor: theme.background,
+        padding: 16,
+        gap: 12,
+      }}
     >
       <TextInput
         testID="sign-in-email"

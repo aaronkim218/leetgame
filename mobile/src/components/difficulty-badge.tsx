@@ -10,7 +10,9 @@ export function DifficultyBadge({
 }) {
   const theme = useTheme()
   return (
-    <Text style={{ color: theme[key[difficulty]], fontWeight: '600', fontSize: 13 }}>
+    <Text
+      style={{ color: theme[key[difficulty]], fontWeight: '600', fontSize: 13 }}
+    >
       {difficulty}
     </Text>
   )

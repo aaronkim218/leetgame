@@ -2,8 +2,13 @@ import { renderHook, act, waitFor } from '@testing-library/react-native'
 import { usePracticeSession } from './use-practice-session'
 
 const problem = {
-  id: 'p1', slug: 's', title: 'T', description: 'D',
-  difficulty: 'Easy' as const, topic_tags: [], leetcode_id: 1,
+  id: 'p1',
+  slug: 's',
+  title: 'T',
+  description: 'D',
+  difficulty: 'Easy' as const,
+  topic_tags: [],
+  leetcode_id: 1,
 }
 
 jest.mock('../api/problems', () => ({

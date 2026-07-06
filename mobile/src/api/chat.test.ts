@@ -36,7 +36,16 @@ test('yields tokens then done, splitting across chunk boundaries', async () => {
   })
 
   const events = []
-  for await (const e of streamChat('p1', 'pattern', ['pattern', 'algorithm'], [], 'hi', false, false, false)) {
+  for await (const e of streamChat(
+    'p1',
+    'pattern',
+    ['pattern', 'algorithm'],
+    [],
+    'hi',
+    false,
+    false,
+    false,
+  )) {
     events.push(e)
   }
 
@@ -53,7 +62,16 @@ test('throws when the server emits an error event', async () => {
     body: streamFrom(['event: error\ndata: {}\n\n']),
   })
   await expect(async () => {
-    for await (const _ of streamChat('p1', 'pattern', ['pattern'], [], 'hi', false, false, false)) {
+    for await (const _ of streamChat(
+      'p1',
+      'pattern',
+      ['pattern'],
+      [],
+      'hi',
+      false,
+      false,
+      false,
+    )) {
       void _
     }
   }).rejects.toThrow('LLM evaluation failed')
@@ -62,9 +80,20 @@ test('throws when the server emits an error event', async () => {
 test('sends the correct request body', async () => {
   mockFetch.mockResolvedValueOnce({
     ok: true,
-    body: streamFrom(['event: done\ndata: {"stage":"complete","message":"m"}\n\n']),
+    body: streamFrom([
+      'event: done\ndata: {"stage":"complete","message":"m"}\n\n',
+    ]),
   })
-  for await (const _ of streamChat('p1', 'pattern', ['pattern'], [{ role: 'user', content: 'prev' }], 'hi', true, false, true)) {
+  for await (const _ of streamChat(
+    'p1',
+    'pattern',
+    ['pattern'],
+    [{ role: 'user', content: 'prev' }],
+    'hi',
+    true,
+    false,
+    true,
+  )) {
     void _
   }
   const [, init] = mockFetch.mock.calls[0]
