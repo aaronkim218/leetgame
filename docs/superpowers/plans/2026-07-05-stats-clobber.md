@@ -36,14 +36,14 @@
 - Consumes: existing `getSettings`/`updateSettings` from `frontend/src/api.ts`; `supabase` from `frontend/src/lib/supabase.ts`.
 - Produces: no public-interface change. `useAuth()`'s return value is unchanged; internally, all six persist functions (`persistStages`, `persistHideTitle`, `persistHideDifficulty`, `persistConciseMode`, `persistTopics`, `persistTourDone`) skip the PUT while `settingsLoaded` is false.
 
-- [ ] **Step 1: Create the branch**
+- [x] **Step 1: Create the branch**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
 git checkout -b feat/stats-clobber
 ```
 
-- [ ] **Step 2: Write the failing tests**
+- [x] **Step 2: Write the failing tests**
 
 Create `frontend/src/hooks/useAuth.test.ts`:
 
@@ -148,12 +148,12 @@ describe('settings clobber gate', () => {
 
 Note: if `vi.mocked(getSettings).mockResolvedValue(...)` produces a type error because the real `getSettings` return type has a different field order or extra fields, match the mock object to the real `Settings` response type declared in `frontend/src/api.ts` — do not loosen types with `any`.
 
-- [ ] **Step 3: Run the tests to verify they fail**
+- [x] **Step 3: Run the tests to verify they fail**
 
 Run: `cd frontend && npm test -- src/hooks/useAuth.test.ts`
 Expected: the "failed settings load" test FAILS (updateSettings IS called today); the other two PASS (they document existing behavior and guard against regression).
 
-- [ ] **Step 4: Implement the gate in `useAuth.ts`**
+- [x] **Step 4: Implement the gate in `useAuth.ts`**
 
 Four edits:
 
@@ -261,12 +261,12 @@ Apply the same `if (!settingsLoaded) return` first line inside `if (session)` to
 
 Do NOT add `settingsLoaded` to the hook's return object.
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 Run: `cd frontend && npm test`
 Expected: all tests PASS (including the pre-existing `useSessionStack` suite).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
@@ -287,7 +287,7 @@ git commit -m "fix(web): gate settings PUT on successful load to prevent clobber
 - Consumes: existing `getSettings`/`updateSettings` from `mobile/src/api/settings.ts`.
 - Produces: `AuthValue` gains `activeTopics: string[]` and `persistTopics: (topics: string[]) => void`. All persist functions now skip the PUT until the internal `settingsLoaded` flag is set. Tasks 5 and 6 consume `activeTopics`/`persistTopics`.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Append to `mobile/src/auth/auth-context.test.tsx`. First extend `PersistProbe` (replace the existing component definition) so it can drive topics:
 
@@ -380,12 +380,12 @@ test('persistTopics PUTs the new topics with other settings round-tripped', asyn
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/auth`
 Expected: FAIL — `persistTopics`/`activeTopics` do not exist on the context (TypeScript/render error), and the failed-load test fails because `updateSettings` IS called.
 
-- [ ] **Step 3: Implement in `auth-context.tsx`**
+- [x] **Step 3: Implement in `auth-context.tsx`**
 
 3a. `AuthValue` interface — add after `conciseMode: boolean`:
 
@@ -446,12 +446,12 @@ and after `persistConciseMode: (value: boolean) => void`:
 
 3e. Provider value — add `activeTopics` (after `conciseMode`) and `persistTopics` (after `persistConciseMode`).
 
-- [ ] **Step 4: Run to verify they pass**
+- [x] **Step 4: Run to verify they pass**
 
 Run: `cd mobile && npx jest && npx tsc --noEmit`
 Expected: full suite PASS, tsc clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
@@ -475,7 +475,7 @@ git commit -m "fix(mobile): gate settings PUT on successful load; expose activeT
 - Consumes: `API_URL`, `authHeaders` from `mobile/src/api/client.ts`; `TopicProficiency` from `mobile/src/types.ts` (already exists: `{ user_id, topic, stage, score, updated_at }`).
 - Produces: `getProficiency(): Promise<TopicProficiency[]>`, `getProblemTags(): Promise<ProblemTag[]>`, `interface ProblemTag { name: string; count: number }`. Task 6 consumes all three. (`getSmartPracticeProblem` already exists — do not touch it.)
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 Create `mobile/src/api/proficiency.test.ts`:
 
@@ -538,12 +538,12 @@ test('getProblemTags hits the tags endpoint with auth header', async () => {
 
 (Put the extra `import` at the top of the file merged into the existing import from `'./problems'`.)
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/api`
 Expected: FAIL — `./proficiency` module and `getProblemTags` export don't exist.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 Add to `mobile/src/types.ts` (after `TopicProficiency`):
 
@@ -581,12 +581,12 @@ export async function getProblemTags(): Promise<ProblemTag[]> {
 }
 ```
 
-- [ ] **Step 4: Run to verify they pass**
+- [x] **Step 4: Run to verify they pass**
 
 Run: `cd mobile && npx jest src/api && npx tsc --noEmit`
 Expected: PASS, tsc clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
@@ -607,7 +607,7 @@ git commit -m "feat(mobile): add proficiency and problem-tags API functions"
 - Consumes: existing `getRandomProblem`, `getSmartPracticeProblem` from `mobile/src/api/problems.ts`.
 - Produces: hook return gains `problemSource: 'random' | 'smart'` and `loadNext: () => Promise<void>`. `loadSmart()` marks the session smart; `loadNext()` re-fetches from the current source; `loadRandom()` returns it to random. Task 5 consumes all three.
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 In `mobile/src/practice/use-practice-session.test.tsx`, first extend the existing `beforeEach` to also clear the problem mocks. Add this import line under the existing `jest.mock('../api/problems', ...)` block:
 
@@ -674,12 +674,12 @@ test('loadRandom returns the session to random mode', async () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/practice/use-practice-session`
 Expected: FAIL — `problemSource` and `loadNext` are undefined.
 
-- [ ] **Step 3: Implement**
+- [x] **Step 3: Implement**
 
 In `mobile/src/practice/use-practice-session.ts`:
 
@@ -722,12 +722,12 @@ In `mobile/src/practice/use-practice-session.ts`:
 
 3c. Add `problemSource` and `loadNext` to the returned object (after `sessionActiveStages`).
 
-- [ ] **Step 4: Run to verify they pass**
+- [x] **Step 4: Run to verify they pass**
 
 Run: `cd mobile && npx jest src/practice && npx tsc --noEmit`
 Expected: PASS, tsc clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
@@ -749,7 +749,7 @@ git commit -m "feat(mobile): sticky smart-practice mode with source-aware loadNe
 - Consumes: `problemSource`, `loadNext`, `loadSmart`, `loadRandom` from Task 4; `activeTopics` from Task 2's `useAuth()`; `useLocalSearchParams` from expo-router.
 - Produces: Practice screen reads the `smart` route param (a nonce string set by the Stats screen in Task 6) and enters smart mode when it changes; header gains a `stats-button` linking to `/stats`; `SmartBanner({ onExit }: { onExit: () => void })` component.
 
-- [ ] **Step 1: Write the failing component test**
+- [x] **Step 1: Write the failing component test**
 
 Create `mobile/src/components/smart-banner.test.tsx`:
 
@@ -771,12 +771,12 @@ test('renders the label and fires onExit', async () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify it fails**
+- [x] **Step 2: Run to verify it fails**
 
 Run: `cd mobile && npx jest src/components/smart-banner`
 Expected: FAIL — module `./smart-banner` does not exist.
 
-- [ ] **Step 3: Create `mobile/src/components/smart-banner.tsx`**
+- [x] **Step 3: Create `mobile/src/components/smart-banner.tsx`**
 
 ```tsx
 import { Pressable, Text, View } from 'react-native'
@@ -826,12 +826,12 @@ export function SmartBanner({ onExit }: { onExit: () => void }) {
 }
 ```
 
-- [ ] **Step 4: Run to verify it passes**
+- [x] **Step 4: Run to verify it passes**
 
 Run: `cd mobile && npx jest src/components/smart-banner`
 Expected: PASS. (The uppercase label is styled via `textTransform`, so `getByText('Smart Practice')` matches the source text.)
 
-- [ ] **Step 5: Wire the Practice screen**
+- [x] **Step 5: Wire the Practice screen**
 
 Edit `mobile/src/app/index.tsx`:
 
@@ -912,12 +912,12 @@ import { type ActiveStage } from '@/types'
         />
 ```
 
-- [ ] **Step 6: Full suite + typecheck**
+- [x] **Step 6: Full suite + typecheck**
 
 Run: `cd mobile && npx jest && npx tsc --noEmit`
 Expected: PASS, tsc clean. (index.tsx has no unit test — it is verified on the simulator in Task 7.)
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
@@ -942,7 +942,7 @@ git commit -m "feat(mobile): smart-practice banner, stats header button, user to
 - Consumes: `getProficiency` (Task 3), `getProblemTags` (Task 3), `ProblemTag`/`TopicProficiency` types, `activeTopics`/`persistTopics` from `useAuth()` (Task 2), `router.dismissTo` (expo-router), `useTheme()`.
 - Produces: `toggleTopic(activeTopics: string[], name: string): string[]`; the `/stats` screen; the Stats screen sets the `smart` param consumed by Task 5's effect.
 
-- [ ] **Step 1: Write the failing topic-toggle tests**
+- [x] **Step 1: Write the failing topic-toggle tests**
 
 Create `mobile/src/practice/topic-toggle.test.ts`:
 
@@ -967,12 +967,12 @@ test('refuses to remove the last active topic', () => {
 })
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/practice/topic-toggle`
 Expected: FAIL — module does not exist.
 
-- [ ] **Step 3: Create `mobile/src/practice/topic-toggle.ts`**
+- [x] **Step 3: Create `mobile/src/practice/topic-toggle.ts`**
 
 ```ts
 export function toggleTopic(activeTopics: string[], name: string): string[] {
@@ -986,7 +986,7 @@ export function toggleTopic(activeTopics: string[], name: string): string[] {
 Run: `cd mobile && npx jest src/practice/topic-toggle`
 Expected: PASS.
 
-- [ ] **Step 4: Add the `@/` alias to jest**
+- [x] **Step 4: Add the `@/` alias to jest**
 
 In `mobile/jest.config.js`, add inside `module.exports`:
 
@@ -999,7 +999,7 @@ In `mobile/jest.config.js`, add inside `module.exports`:
 Run: `cd mobile && npx jest`
 Expected: full suite still PASS (mapper is additive).
 
-- [ ] **Step 5: Write the failing Stats screen tests**
+- [x] **Step 5: Write the failing Stats screen tests**
 
 Create `mobile/src/app/stats.test.tsx`:
 
@@ -1119,12 +1119,12 @@ test('fetch failure shows the error state', async () => {
 })
 ```
 
-- [ ] **Step 6: Run to verify they fail**
+- [x] **Step 6: Run to verify they fail**
 
 Run: `cd mobile && npx jest src/app/stats`
 Expected: FAIL — `./stats` module does not exist.
 
-- [ ] **Step 7: Create `mobile/src/app/stats.tsx`**
+- [x] **Step 7: Create `mobile/src/app/stats.tsx`**
 
 ```tsx
 import { useEffect, useState } from 'react'
@@ -1468,7 +1468,7 @@ export default function StatsScreen() {
 }
 ```
 
-- [ ] **Step 8: Register the route**
+- [x] **Step 8: Register the route**
 
 In `mobile/src/app/_layout.tsx`, add after the `settings` screen line:
 
@@ -1476,12 +1476,12 @@ In `mobile/src/app/_layout.tsx`, add after the `settings` screen line:
       <Stack.Screen name="stats" options={{ title: 'Stats' }} />
 ```
 
-- [ ] **Step 9: Run the full suite + typecheck**
+- [x] **Step 9: Run the full suite + typecheck**
 
 Run: `cd mobile && npx jest && npx tsc --noEmit`
 Expected: all PASS, tsc clean.
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 cd /Users/aaronkim/projects/leetgame
@@ -1500,12 +1500,12 @@ This task is executed by the controller in the main session using the `rn-agenti
 
 Receipts to collect (declare each BEFORE acting; runtime state, not screenshots):
 
-- [ ] **Navigation:** tapping `stats-button` → route becomes `/stats`; bars render with real account data (fiber tree shows `stats-topic-card-*`).
-- [ ] **Topics round-trip:** toggling a chip fires `PUT /api/settings`; server GET afterwards shows the edited `active_topics` AND unchanged `active_stages`/`hide_title`/`hide_difficulty`/`concise_mode`/`tour_done`. Restore the account's original topics afterwards.
-- [ ] **Smart practice:** tapping `stats-smart-practice` dismisses to Practice; `GET /api/problems/smart` fires with the account's stages/topics (network receipt); `smart-banner` mounts. "Next Problem" on completion fires the smart endpoint again (source stickiness), `smart-exit` loads a random problem and unmounts the banner.
-- [ ] **Clobber-fix receipts:** the failed-load → no-PUT case is carried by the Task 1/Task 2 unit tests (forcing a settings-only fetch failure on the simulator has no low-effort, non-flaky setup). On-sim, verify the positive path: a settings toggle after a normal load produces exactly one `PUT /api/settings` whose body round-trips the loaded `active_topics`/`tour_done`. Record in the results that the negative control lives in the unit tests.
-- [ ] **Web sanity:** `cd frontend && npm test` green on the branch; optional quick browser check that the settings dropdown still persists after sign-in.
-- [ ] Append verification results to this plan file and commit.
+- [x] **Navigation:** tapping `stats-button` → route becomes `/stats`; bars render with real account data (fiber tree shows `stats-topic-card-*`).
+- [x] **Topics round-trip:** toggling a chip fires `PUT /api/settings`; server GET afterwards shows the edited `active_topics` AND unchanged `active_stages`/`hide_title`/`hide_difficulty`/`concise_mode`/`tour_done`. Restore the account's original topics afterwards.
+- [x] **Smart practice:** tapping `stats-smart-practice` dismisses to Practice; `GET /api/problems/smart` fires with the account's stages/topics (network receipt); `smart-banner` mounts. "Next Problem" on completion fires the smart endpoint again (source stickiness), `smart-exit` loads a random problem and unmounts the banner.
+- [x] **Clobber-fix receipts:** the failed-load → no-PUT case is carried by the Task 1/Task 2 unit tests (forcing a settings-only fetch failure on the simulator has no low-effort, non-flaky setup). On-sim, verify the positive path: a settings toggle after a normal load produces exactly one `PUT /api/settings` whose body round-trips the loaded `active_topics`/`tour_done`. Record in the results that the negative control lives in the unit tests.
+- [x] **Web sanity:** `cd frontend && npm test` green on the branch; optional quick browser check that the settings dropdown still persists after sign-in.
+- [x] Append verification results to this plan file and commit.
 
 ---
 
@@ -1514,3 +1514,15 @@ Receipts to collect (declare each BEFORE acting; runtime state, not screenshots)
 - Tasks 1–6 are subagent-friendly (stateless, fully specified). Task 7 is app-driving and runs serially in the main session.
 - Task order: 1 and 3 are independent; 2 must precede 5 and 6; 4 must precede 5. Run them in numeric order — they are small.
 - Task 5 and 6 both assume Task 2's `useAuth()` shape (`activeTopics`, `persistTopics`) and Task 4's session shape (`problemSource`, `loadNext`).
+
+---
+
+## Task 7 verification results (2026-07-06, iPhone 17 Pro sim / Expo Go, LIVE Render backend, dev account)
+
+- **Freshness (R0):** PASS — `stats-button` (new in this branch) mounted in the fiber tree after relaunch. First launch attempt surfaced a REAL bug: `stats.test.tsx` inside `src/app/` was bundled as a route by expo-router (context regex in `_ctx.ios.js` excludes only `+api`/`+html`/`+middleware`), pulling `@testing-library/react-native` into the app bundle → "Unable to resolve module console". Fixed structurally in b2b9d22: screen moved to `src/screens/stats-screen.tsx`, `src/app/stats.tsx` is a thin re-export, test co-located in `src/screens/`.
+- **Navigation (R1):** PASS — tap `stats-button` → `get_current_route` = `stats`; `GET /api/proficiency` (4.6 KB) + `GET /api/problems/tags` both 200; cards render weakest-first (0% topics above 20% topics), stage labels and red (<40%) bars correct; "Manage topics (23 of 63 active)".
+- **Topics round-trip (R2):** PASS — chip toggle fired exactly one `PUT /api/settings` (observer logs each request twice: start+completion); server GET showed Array removed (22 topics) with active_stages/hide_title/hide_difficulty/concise_mode/tour_done ALL unchanged (tour_done stayed `true` — clobber positive receipt). Re-add appended Array at END (position 22) — web-parity order rule. Stage toggles in Settings (3→1 stages) likewise round-tripped topics/tour_done intact.
+- **Clobber negative control:** carried by unit tests (web `useAuth.test.ts`: failed load → toggle → no PUT; mobile `auth-context.test.tsx` same) — no low-effort non-flaky way to fail only the settings GET on-sim.
+- **Smart practice (R3):** PASS — `stats-smart-practice` → `dismissTo` landed on `index` with `params.smart = "1783325247803"` (nonce); `GET /api/problems/smart?active_stages=pattern&active_topics=<all 23>` 200; `smart-banner` mounted (absent at baseline). Answer-request completed the 1-stage session (chat 200 → streak POST → CompletionFooter). "Next Problem" fired the smart endpoint AGAIN (stickiness; no random request). `smart-exit` → `GET /api/problems/random` 200 + SmartBanner unmounted.
+- **Web (R5):** PASS — `npm test` 13/13 on final HEAD; mobile suite 47/47 + tsc clean at b2b9d22.
+- **Account restored:** server settings PUT back to the pre-test snapshot; verified byte-equal via GET.
