@@ -90,8 +90,9 @@ Consume in `loadNext`:
   catalog edge) or any miss falls through to `loadRandom()` unchanged.
 - **playlist source:** `take(playlistCtx(filters, problem?.id))`. `{ problem }`
   hit: same synchronous swap (source stays `'playlist'`, filters ref untouched)
-  plus successor prefetch. `{ exhausted: true }` hit: `setExhausted(true)`
-  immediately — instant end-of-set from the cached 404. Miss: existing
+  plus successor prefetch. `{ exhausted: true }` hit: `setError(null)` then
+  `setExhausted(true)` immediately — instant end-of-set from the cached 404,
+  with any stale error cleared (matching web's exhausted-hit). Miss: existing
   `loadPlaylistProblem(problem?.id)` unchanged.
 - **smart source:** untouched; never prefetched.
 
