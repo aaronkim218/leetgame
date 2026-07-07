@@ -163,6 +163,7 @@ export function usePracticeSession({
         const cached = take(playlistCtx(filters, problem?.id))
         if (cached) {
           if ('exhausted' in cached) {
+            setError(null)
             setExhausted(true)
             return Promise.resolve()
           }
