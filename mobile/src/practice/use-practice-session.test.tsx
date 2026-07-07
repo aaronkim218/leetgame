@@ -173,7 +173,12 @@ test('loadRandom returns the session to random mode', async () => {
   await act(async () => {
     await result.current.loadNext()
   })
-  expect(getRandomProblem).toHaveBeenCalledTimes(2)
+  // loadRandom's successor prefetch is already cached by the time loadNext
+  // runs, so it's served from cache instead of a second getRandomProblem
+  // call; the assertion that matters is that we didn't fall back to smart.
+  expect(result.current.problemSource).toBe('random')
+  expect(getRandomProblem).toHaveBeenCalledTimes(1)
+  expect(getSmartPracticeProblem).toHaveBeenCalledTimes(1)
 })
 
 test('a newer load supersedes a stale in-flight load', async () => {
@@ -209,7 +214,7 @@ const FILTERS = {
   tagMatch: 'and' as const,
 }
 
-test('startPlaylist with an initial problem starts there without fetching', async () => {
+test('startPlaylist with an initial problem starts there and prefetches the successor', async () => {
   const { result } = await renderHook(() =>
     usePracticeSession({
       activeStages: ['pattern'],
@@ -225,7 +230,16 @@ test('startPlaylist with an initial problem starts there without fetching', asyn
   expect(result.current.problem?.id).toBe('p-init')
   expect(result.current.problemSource).toBe('playlist')
   expect(result.current.playlistFilters).toEqual(FILTERS)
-  expect(getRandomProblemFiltered).not.toHaveBeenCalled()
+  // The initial problem itself isn't fetched, but its successor is
+  // prefetched in the background so a later "Next" is instant.
+  expect(getRandomProblemFiltered).toHaveBeenCalledTimes(1)
+  expect(getRandomProblemFiltered).toHaveBeenCalledWith(
+    'sum',
+    ['Easy'],
+    ['Array'],
+    'and',
+    'p-init',
+  )
 })
 
 test('startPlaylist without a problem fetches a filtered random one', async () => {
@@ -265,13 +279,19 @@ test('loadNext in playlist mode excludes the current problem', async () => {
   await act(async () => {
     await result.current.loadNext()
   })
-  expect(getRandomProblemFiltered).toHaveBeenLastCalledWith(
+  // The request excluding the current problem is the successor prefetch
+  // fired by startPlaylist (call 1); loadNext consumes it from cache and
+  // immediately fires a further successor prefetch (call 2, excluding the
+  // newly-loaded problem instead).
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    1,
     'sum',
     ['Easy'],
     ['Array'],
     'and',
     'p-cur',
   )
+  expect(result.current.problem?.id).toBe('p1')
   expect(result.current.problemSource).toBe('playlist')
 })
 
@@ -284,12 +304,15 @@ test('a 404 on next marks the set exhausted without an error', async () => {
       onComplete: jest.fn(),
     }),
   )
-  await act(async () => {
-    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
-  })
+  // startPlaylist's successor prefetch is the request that now needs to
+  // 404 -- loadNext consumes the cached exhausted result synchronously
+  // rather than hitting the network itself.
   ;(getRandomProblemFiltered as jest.Mock).mockRejectedValueOnce(
     new ApiError('no match', 404),
   )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
   await act(async () => {
     await result.current.loadNext()
   })
@@ -307,12 +330,14 @@ test('restartPlaylist refetches without exclude and clears exhausted', async () 
       onComplete: jest.fn(),
     }),
   )
-  await act(async () => {
-    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
-  })
+  // As above: the successor prefetch fired by startPlaylist is what needs
+  // to 404 so loadNext consumes the cached exhausted result.
   ;(getRandomProblemFiltered as jest.Mock).mockRejectedValueOnce(
     new ApiError('no match', 404),
   )
+  await act(async () => {
+    await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
+  })
   await act(async () => {
     await result.current.loadNext()
   })
@@ -321,7 +346,11 @@ test('restartPlaylist refetches without exclude and clears exhausted', async () 
     await result.current.restartPlaylist()
   })
   expect(result.current.exhausted).toBe(false)
-  expect(getRandomProblemFiltered).toHaveBeenLastCalledWith(
+  // Call 2 is restartPlaylist's own network fetch (no exclude); call 3 is
+  // the successor prefetch it fires on success, so we assert by index
+  // rather than "last called".
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    2,
     'sum',
     ['Easy'],
     ['Array'],
@@ -350,7 +379,11 @@ test('loadRandom exits the playlist and clears its state', async () => {
   await act(async () => {
     await result.current.loadNext()
   })
-  expect(getRandomProblem).toHaveBeenCalledTimes(2)
+  // loadRandom's successor prefetch is already cached by the time loadNext
+  // runs, so it's served from cache instead of a second getRandomProblem
+  // call; the assertion that matters is that the session stayed random.
+  expect(result.current.problemSource).toBe('random')
+  expect(getRandomProblem).toHaveBeenCalledTimes(1)
 })
 
 test('entering smart mode clears playlist state', async () => {
@@ -370,4 +403,144 @@ test('entering smart mode clears playlist state', async () => {
   })
   expect(result.current.problemSource).toBe('smart')
   expect(result.current.playlistFilters).toBeNull()
+})
+
+const problem2 = { ...problem, id: 'p2', title: 'T2' }
+const problem3 = { ...problem, id: 'p3', title: 'T3' }
+
+const sessionOpts = {
+  activeTopics: [],
+  conciseMode: false,
+}
+
+test('loadNext consumes the prefetched problem without a second getRandomProblem call', async () => {
+  ;(getRandomProblemFiltered as jest.Mock)
+    .mockResolvedValueOnce(problem2)
+    .mockResolvedValueOnce(problem3)
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      ...sessionOpts,
+      activeStages: ['pattern'],
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.loadRandom()
+  })
+  await act(async () => {}) // flush the background prefetch
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(result.current.problem?.id).toBe('p2')
+  expect(getRandomProblem).toHaveBeenCalledTimes(1)
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    1,
+    '',
+    [],
+    [],
+    'and',
+    'p1',
+  )
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    2,
+    '',
+    [],
+    [],
+    'and',
+    'p2',
+  )
+})
+
+test('loadNext falls back to the network while the prefetch is still in flight', async () => {
+  ;(getRandomProblemFiltered as jest.Mock).mockImplementation(
+    () => new Promise(() => {}),
+  )
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      ...sessionOpts,
+      activeStages: ['pattern'],
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.loadRandom()
+  })
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(getRandomProblem).toHaveBeenCalledTimes(2)
+})
+
+test('playlist loadNext consumes the prefetched problem with filters intact', async () => {
+  const filters = {
+    q: 'x',
+    difficulties: [],
+    tags: [],
+    tagMatch: 'and' as const,
+  }
+  ;(getRandomProblemFiltered as jest.Mock)
+    .mockResolvedValueOnce(problem) // startPlaylist load
+    .mockResolvedValueOnce(problem2) // prefetch excluding p1
+    .mockResolvedValueOnce(problem3) // successor prefetch excluding p2
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      ...sessionOpts,
+      activeStages: ['pattern'],
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(filters)
+  })
+  await act(async () => {}) // flush prefetch
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(result.current.problem?.id).toBe('p2')
+  expect(result.current.problemSource).toBe('playlist')
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    2,
+    'x',
+    [],
+    [],
+    'and',
+    'p1',
+  )
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    3,
+    'x',
+    [],
+    [],
+    'and',
+    'p2',
+  )
+})
+
+test('playlist loadNext shows end-of-set instantly from a cached 404', async () => {
+  const filters = {
+    q: 'only-one',
+    difficulties: [],
+    tags: [],
+    tagMatch: 'and' as const,
+  }
+  ;(getRandomProblemFiltered as jest.Mock)
+    .mockResolvedValueOnce(problem) // startPlaylist load
+    .mockRejectedValueOnce(new ApiError('not found', 404)) // prefetch 404s
+  const { result } = await renderHook(() =>
+    usePracticeSession({
+      ...sessionOpts,
+      activeStages: ['pattern'],
+      onComplete: jest.fn(),
+    }),
+  )
+  await act(async () => {
+    await result.current.startPlaylist(filters)
+  })
+  await act(async () => {}) // flush prefetch rejection
+  ;(getRandomProblemFiltered as jest.Mock).mockClear()
+  await act(async () => {
+    await result.current.loadNext()
+  })
+  expect(result.current.exhausted).toBe(true)
+  expect(getRandomProblemFiltered).not.toHaveBeenCalled()
 })
