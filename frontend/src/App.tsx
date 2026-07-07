@@ -22,6 +22,10 @@ import { useSearch, SEARCH_PAGE_SIZE } from './hooks/useSearch'
 import { useTags } from './hooks/useTags'
 import { useSaved } from './hooks/useSaved'
 import { useSessionStack } from './hooks/useSessionStack'
+import {
+  usePrefetchedProblem,
+  type PrefetchContext,
+} from './hooks/usePrefetchedProblem'
 import { NavBar } from './components/NavBar'
 import { ProblemView } from './components/ProblemView'
 import { ChatView } from './components/ChatView'
@@ -137,6 +141,26 @@ export default function App() {
     pop: popFromStack,
     clear: clearStack,
   } = useSessionStack<PracticeSnapshot>()
+  const { prefetch, take, invalidate } = usePrefetchedProblem()
+
+  const randomCtx = (excludeId?: string): PrefetchContext => ({
+    q: '',
+    difficulties: [],
+    tags: [],
+    tagMatch: 'and',
+    excludeId,
+  })
+
+  const playlistCtx = (
+    pl: SearchPlaylist,
+    excludeId?: string,
+  ): PrefetchContext => ({
+    q: pl.q,
+    difficulties: pl.difficulties,
+    tags: pl.tags,
+    tagMatch: pl.tagMatch,
+    excludeId,
+  })
   const [searchState, setSearchState] =
     useState<SearchState>(defaultSearchState)
   const { loading: searchLoading, error: searchError } = useSearch(
@@ -172,6 +196,7 @@ export default function App() {
   const goBack = () => {
     const snap = popFromStack()
     if (!snap) return
+    invalidate()
     setProblem(snap.problem)
     setStage(snap.stage)
     setHistory(snap.history)
@@ -211,12 +236,14 @@ export default function App() {
       setProblemSource('random')
       setSearchPlaylist(null)
       resetPracticeState()
+      prefetch(randomCtx(p.id))
     } catch {
       setError('Failed to load problem. Is the backend running?')
     }
   }
 
   const loadNextSearchProblem = async () => {
+    invalidate()
     if (!searchPlaylist) {
       await loadRandomProblem()
       return
@@ -293,6 +320,18 @@ export default function App() {
     }
     // random mode: push current state, then load next
     const snap = captureSnapshot()
+    const cached = take(randomCtx(problem?.id))
+    if (cached && 'problem' in cached) {
+      setError(null)
+      setPlaylistExhausted(false)
+      if (snap) pushToStack(snap)
+      setProblem(cached.problem)
+      setProblemSource('random')
+      setSearchPlaylist(null)
+      resetPracticeState()
+      prefetch(randomCtx(cached.problem.id))
+      return
+    }
     try {
       setError(null)
       setPlaylistExhausted(false)
@@ -302,6 +341,7 @@ export default function App() {
       setProblemSource('random')
       setSearchPlaylist(null)
       resetPracticeState()
+      prefetch(randomCtx(p.id))
     } catch {
       setError('Failed to load problem. Is the backend running?')
     }
@@ -310,6 +350,21 @@ export default function App() {
   const loadRandomNextProblem = async () => {
     if (!searchPlaylist) return
     const snap = captureSnapshot()
+    const cached = take(playlistCtx(searchPlaylist, problem?.id))
+    if (cached) {
+      if ('exhausted' in cached) {
+        setPlaylistExhausted(true)
+        setError(null)
+        return
+      }
+      setError(null)
+      setPlaylistExhausted(false)
+      if (snap) pushToStack(snap)
+      setProblem(cached.problem)
+      resetPracticeState()
+      prefetch(playlistCtx(searchPlaylist, cached.problem.id))
+      return
+    }
     try {
       setError(null)
       const p = await getRandomProblemFiltered(
@@ -323,6 +378,7 @@ export default function App() {
       setProblem(p)
       resetPracticeState()
       setPlaylistExhausted(false)
+      prefetch(playlistCtx(searchPlaylist, p.id))
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) {
         // no other problem matches the filters — the set is done
@@ -337,6 +393,7 @@ export default function App() {
   }
 
   const loadSmartPracticeProblem = async () => {
+    invalidate()
     const isNextInSmartMode = problemSource === 'smart'
     const snap = captureSnapshot()
     try {
@@ -378,6 +435,7 @@ export default function App() {
         selectedIndex: -1,
       })
       resetPracticeState()
+      prefetch({ q, difficulties, tags, tagMatch, excludeId: p.id })
       setView('practice')
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) {
@@ -392,6 +450,7 @@ export default function App() {
   }
 
   const selectProblem = (p: Problem, context: SearchSelectionContext) => {
+    invalidate()
     clearStack()
     setShuffle(false)
     setProblem(p)
@@ -439,6 +498,7 @@ export default function App() {
 
   const restartSearchSet = async () => {
     if (!searchPlaylist) return
+    invalidate()
 
     try {
       setError(null)
@@ -627,7 +687,10 @@ export default function App() {
             shuffle={problemSource === 'search' ? shuffle : undefined}
             onToggleShuffle={
               problemSource === 'search'
-                ? () => setShuffle((s) => !s)
+                ? () => {
+                    invalidate()
+                    setShuffle((s) => !s)
+                  }
                 : undefined
             }
           />
