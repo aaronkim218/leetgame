@@ -265,6 +265,12 @@ test('startPlaylist without a problem fetches a filtered random one', async () =
 })
 
 test('loadNext in playlist mode excludes the current problem', async () => {
+  // Make the successor prefetch resolve a DISTINCT problem so a cache hit
+  // and a take() miss diverge observably: only consuming the cached slot
+  // can surface p-next (a miss would refetch and get the default mock's
+  // p1) and only a hit prefetches a further successor excluding p-next.
+  const nextProblem = { ...problem, id: 'p-next' }
+  ;(getRandomProblemFiltered as jest.Mock).mockResolvedValueOnce(nextProblem)
   const { result } = await renderHook(() =>
     usePracticeSession({
       activeStages: ['pattern'],
@@ -276,13 +282,13 @@ test('loadNext in playlist mode excludes the current problem', async () => {
   await act(async () => {
     await result.current.startPlaylist(FILTERS, { ...problem, id: 'p-cur' })
   })
+  await act(async () => {}) // flush the successor prefetch
   await act(async () => {
     await result.current.loadNext()
   })
-  // The request excluding the current problem is the successor prefetch
-  // fired by startPlaylist (call 1); loadNext consumes it from cache and
-  // immediately fires a further successor prefetch (call 2, excluding the
-  // newly-loaded problem instead).
+  expect(result.current.problem?.id).toBe('p-next')
+  expect(result.current.problemSource).toBe('playlist')
+  expect(getRandomProblemFiltered).toHaveBeenCalledTimes(2)
   expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
     1,
     'sum',
@@ -291,8 +297,14 @@ test('loadNext in playlist mode excludes the current problem', async () => {
     'and',
     'p-cur',
   )
-  expect(result.current.problem?.id).toBe('p1')
-  expect(result.current.problemSource).toBe('playlist')
+  expect(getRandomProblemFiltered).toHaveBeenNthCalledWith(
+    2,
+    'sum',
+    ['Easy'],
+    ['Array'],
+    'and',
+    'p-next',
+  )
 })
 
 test('a 404 on next marks the set exhausted without an error', async () => {
