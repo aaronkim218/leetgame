@@ -12,6 +12,8 @@
           # backend (go.mod requires >= 1.25)
           go
           gopls
+          gofumpt
+          golangci-lint
 
           # frontend + mobile (.nvmrc / CI pin node 24)
           nodejs_24
