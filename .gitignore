@@ -12,3 +12,4 @@ supabase/.temp/
 
 # playwright mcp artifacts
 .playwright-mcp/
+.direnv/
