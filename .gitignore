@@ -1,3 +1,6 @@
+# deps
+node_modules/
+
 # env
 .env
 .env.local
@@ -13,3 +16,7 @@ supabase/.temp/
 # playwright mcp artifacts
 .playwright-mcp/
 .direnv/
+
+# local tool state
+.claude/settings.local.json
+.serena/
