@@ -1,10 +1,7 @@
-import { useEffect, useState } from 'react'
-import type {
-  TopicProficiency,
-  ProblemTag,
-  ProficiencySnapshot,
-} from '../types'
-import { getProficiency, getProblemTags, getProficiencyHistory } from '../api'
+import { useState } from 'react'
+import type { TopicProficiency, ProficiencySnapshot } from '../types'
+import { useStats } from '../hooks/useStats'
+import { useTags } from '../hooks/useTags'
 import { cn } from '../lib/utils'
 import { Button } from './ui/button'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart'
@@ -77,12 +74,16 @@ export function StatsPage({
   activeTopics: string[]
   onTopicsChange: (topics: string[]) => void
 }) {
-  const [proficiencies, setProficiencies] = useState<TopicProficiency[]>([])
-  const [allTags, setAllTags] = useState<ProblemTag[]>([])
-  const [loading, setLoading] = useState(true)
-  const [fetchError, setFetchError] = useState(false)
+  const {
+    proficiencies,
+    history,
+    loading: statsLoading,
+    error: statsError,
+  } = useStats()
+  const { availableTags: allTags, tagsLoading, tagsError } = useTags()
+  const loading = statsLoading || tagsLoading
+  const fetchError = statsError || tagsError !== null
   const [topicPickerOpen, setTopicPickerOpen] = useState(false)
-  const [history, setHistory] = useState<ProficiencySnapshot[]>([])
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
   const [hiddenLines, setHiddenLines] = useState<Set<string>>(new Set())
 
@@ -96,30 +97,6 @@ export function StatsPage({
       }
       return next
     })
-
-  useEffect(() => {
-    const controller = new AbortController()
-    Promise.all([
-      getProficiency(controller.signal),
-      getProblemTags(controller.signal),
-      getProficiencyHistory(controller.signal),
-    ])
-      .then(([prof, tags, hist]) => {
-        if (!controller.signal.aborted) {
-          setProficiencies(prof)
-          setAllTags(tags)
-          setHistory(hist)
-          setFetchError(false)
-        }
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setFetchError(true)
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false)
-      })
-    return () => controller.abort()
-  }, [])
 
   const activeSet = new Set(activeTopics)
 
