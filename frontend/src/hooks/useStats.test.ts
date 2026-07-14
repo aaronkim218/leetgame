@@ -10,6 +10,16 @@ vi.mock('../api', () => ({
 import { getProficiency, getProficiencyHistory } from '../api'
 import { useStats, invalidateStatsCache } from './useStats'
 
+function deferred<T>() {
+  let resolve!: (v: T) => void
+  let reject!: (e: unknown) => void
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res
+    reject = rej
+  })
+  return { promise, resolve, reject }
+}
+
 const prof: TopicProficiency[] = [
   {
     user_id: 'u1',
@@ -85,5 +95,21 @@ describe('useStats', () => {
     await waitFor(() => expect(second.result.current.loading).toBe(false))
     expect(second.result.current.error).toBe(false)
     expect(second.result.current.proficiencies).toEqual(prof)
+  })
+
+  it('fetch resolving after invalidation does not repopulate the cache', async () => {
+    const d = deferred<TopicProficiency[]>()
+    vi.mocked(getProficiency).mockReturnValue(d.promise)
+    const first = renderHook(() => useStats())
+    invalidateStatsCache()
+    d.resolve(prof)
+    await waitFor(() => expect(first.result.current.loading).toBe(false))
+    first.unmount()
+
+    vi.mocked(getProficiency).mockResolvedValue(prof)
+    const second = renderHook(() => useStats())
+    expect(second.result.current.loading).toBe(true)
+    await waitFor(() => expect(second.result.current.loading).toBe(false))
+    expect(getProficiency).toHaveBeenCalledTimes(2)
   })
 })

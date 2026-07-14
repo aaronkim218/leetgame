@@ -6,8 +6,11 @@ import { getProficiency, getProficiencyHistory } from '../api'
 // mounts and clear via invalidateStatsCache() at the two invalidation sites
 let cachedProficiency: TopicProficiency[] | null = null
 let cachedHistory: ProficiencySnapshot[] | null = null
+// bumped on invalidate so an in-flight fetch can't repopulate stale data
+let cacheGeneration = 0
 
 export function invalidateStatsCache(): void {
+  cacheGeneration++
   cachedProficiency = null
   cachedHistory = null
 }
@@ -32,14 +35,17 @@ export function useStats(): {
   useEffect(() => {
     if (cachedProficiency !== null && cachedHistory !== null) return
     const controller = new AbortController()
+    const generation = cacheGeneration
     Promise.all([
       getProficiency(controller.signal),
       getProficiencyHistory(controller.signal),
     ])
       .then(([prof, hist]) => {
         if (controller.signal.aborted) return
-        cachedProficiency = prof
-        cachedHistory = hist
+        if (generation === cacheGeneration) {
+          cachedProficiency = prof
+          cachedHistory = hist
+        }
         setProficiencies(prof)
         setHistory(hist)
         setError(false)
