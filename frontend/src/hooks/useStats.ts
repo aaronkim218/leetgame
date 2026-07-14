@@ -43,7 +43,7 @@ export function useStats(window: TrendWindow): {
     const prof = cachedProficiency
     const hist = cachedHistory.get(window)
     if (prof !== null && hist !== undefined) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing state from the module cache on window change; cheap and idempotent
       setProficiencies(prof)
       setHistory(hist)
       setLoading(false)
