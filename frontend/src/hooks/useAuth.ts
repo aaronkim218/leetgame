@@ -4,6 +4,7 @@ import { DEFAULT_STAGES, NEETCODE_TOPICS } from '../types'
 import { getStreak, recordStreak, getSettings, updateSettings } from '../api'
 import { supabase } from '../lib/supabase'
 import type { Session } from '@supabase/supabase-js'
+import { invalidateStatsCache } from './useStats'
 
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null)
@@ -116,6 +117,7 @@ export function useAuth() {
           setSettingsReady(true)
         }
       } else if (event === 'SIGNED_OUT') {
+        invalidateStatsCache()
         settingsSeq++
         setStreak(null)
         setLastPracticedAt(null)

@@ -22,6 +22,7 @@ import { useSearch, SEARCH_PAGE_SIZE } from './hooks/useSearch'
 import { useTags } from './hooks/useTags'
 import { useSaved } from './hooks/useSaved'
 import { useSessionStack } from './hooks/useSessionStack'
+import { invalidateStatsCache } from './hooks/useStats'
 import {
   usePrefetchedProblem,
   type PrefetchContext,
@@ -579,6 +580,7 @@ export default function App() {
           setStage(event.stage)
           setStreamingMessage('')
           if (event.stage === 'complete' && session) {
+            invalidateStatsCache()
             recordAndUpdateStreak()
           }
         }
