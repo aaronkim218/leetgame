@@ -52,9 +52,11 @@ the updated schema.sql must be re-run against it to swap the jobs.
 `GET /api/proficiency/history?window=1m|3m|6m|1y|all`, default `1m`
 (preserves current behavior for callers that send nothing).
 
-- Query-options struct in `internal/types` with `query` tags, parsed via
-  Fiber's QueryParser in the handler.
-- Allowlist validation; anything else → `xerrors.BadRequestError`.
+- Single param read via `c.Query("window")` (Fiber v3; matches the
+  `smart_practice.go` convention for single query params — a query-options
+  struct is overkill for one field).
+- Allowlist validation in a pure `parseTrendWindow` helper; anything else →
+  `xerrors.BadRequestError`.
 - Handler maps window → days: `1m`=30, `3m`=90, `6m`=180, `1y`=365, `all`=0.
 - Storage: `GetProficiencyHistory(ctx, userID, days int)`. Single const SQL:
   `($2 = 0 OR snapshot_date >= CURRENT_DATE - make_interval(days => $2))` so
@@ -62,10 +64,11 @@ the updated schema.sql must be re-run against it to swap the jobs.
 
 ### Frontend cache (`useStats`)
 
-- `Window` type in `types.ts`: `'1m' | '3m' | '6m' | '1y' | 'all'`.
+- `TrendWindow` type in `types.ts`: `'1m' | '3m' | '6m' | '1y' | 'all'`
+  (named to avoid colliding with the DOM `Window` type).
 - Module cache becomes `cachedProficiency` (unchanged, fetched once) plus
-  `cachedHistory: Map<Window, ProficiencySnapshot[]>`.
-- `useStats(window: Window)`; the effect re-runs on window change: cached
+  `cachedHistory: Map<TrendWindow, ProficiencySnapshot[]>`.
+- `useStats(window: TrendWindow)`; the effect re-runs on window change: cached
   window → serve instantly, uncached → fetch history only (proficiency is not
   refetched).
 - Two loading flags in the return: `loading` (initial load, nothing cached —
