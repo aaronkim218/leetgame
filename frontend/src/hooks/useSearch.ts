@@ -13,10 +13,14 @@ export function useSearch(
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const searchStateRef = useRef(searchState)
-  // eslint-disable-next-line react-hooks/refs
-  searchStateRef.current = searchState
+  useEffect(() => {
+    searchStateRef.current = searchState
+  })
 
   const { q, difficulties, tags, tagMatch, page } = searchState
+  // arrays in deps by value, not reference
+  const difficultiesKey = difficulties.join(',')
+  const tagsKey = tags.join(',')
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -62,8 +66,7 @@ export function useSearch(
       if (debounceRef.current) clearTimeout(debounceRef.current)
       abortRef.current?.abort()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- difficulties.join(',') replaces array ref; others are primitives; onSearchStateChange is a stable useState setter
-  }, [q, difficulties.join(','), tags.join(','), tagMatch, page])
+  }, [q, difficultiesKey, tagsKey, tagMatch, page, onSearchStateChange])
 
   return { loading, error }
 }

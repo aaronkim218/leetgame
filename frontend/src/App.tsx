@@ -789,7 +789,6 @@ export default function App() {
       ) : view === 'mission' ? (
         <MissionPage />
       ) : (
-        // eslint-disable-next-line react-hooks/refs
         practiceView()
       )}
     </div>
