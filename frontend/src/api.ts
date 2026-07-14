@@ -7,6 +7,7 @@ import type {
   ProblemTag,
   TopicProficiency,
   ProficiencySnapshot,
+  TrendWindow,
 } from './types'
 import { supabase } from './lib/supabase'
 
@@ -277,12 +278,16 @@ interface ProficiencyHistoryResponse {
 }
 
 export async function getProficiencyHistory(
+  window: TrendWindow,
   signal?: AbortSignal,
 ): Promise<ProficiencySnapshot[]> {
-  const res = await fetch(`${API_URL}/api/proficiency/history`, {
-    headers: await authHeaders(),
-    signal,
-  })
+  const res = await fetch(
+    `${API_URL}/api/proficiency/history?window=${window}`,
+    {
+      headers: await authHeaders(),
+      signal,
+    },
+  )
   if (!res.ok)
     throw new Error(`Failed to fetch proficiency history: ${res.status}`)
   const data = (await res.json()) as ProficiencyHistoryResponse

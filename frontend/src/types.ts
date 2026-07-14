@@ -48,6 +48,8 @@ export const DEFAULT_STAGES: ActiveStage[] = ['pattern', 'algorithm', 'tc_sc']
 
 export type View = 'practice' | 'search' | 'stats' | 'mission'
 
+export type TrendWindow = '1m' | '3m' | '6m' | '1y' | 'all'
+
 export interface TopicProficiency {
   user_id: string
   topic: string

@@ -79,7 +79,7 @@ export function StatsPage({
     history,
     loading: statsLoading,
     error: statsError,
-  } = useStats()
+  } = useStats('1m')
   const { availableTags: allTags, tagsLoading, tagsError } = useTags()
   const loading = statsLoading || tagsLoading
   const fetchError = statsError || tagsError !== null
