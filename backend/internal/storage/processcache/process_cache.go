@@ -297,6 +297,6 @@ func (c *CachedStorage) GetTopicProficiencies(ctx context.Context, userID uuid.U
 	return c.inner.GetTopicProficiencies(ctx, userID)
 }
 
-func (c *CachedStorage) GetProficiencyHistory(ctx context.Context, userID uuid.UUID) ([]models.ProficiencySnapshot, error) {
-	return c.inner.GetProficiencyHistory(ctx, userID)
+func (c *CachedStorage) GetProficiencyHistory(ctx context.Context, userID uuid.UUID, days int) ([]models.ProficiencySnapshot, error) {
+	return c.inner.GetProficiencyHistory(ctx, userID, days)
 }

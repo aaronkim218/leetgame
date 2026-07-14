@@ -75,7 +75,7 @@ func (s *stubStorage) GetTopicProficiencies(_ context.Context, _ uuid.UUID) ([]m
 	panic("unexpected")
 }
 
-func (s *stubStorage) GetProficiencyHistory(_ context.Context, _ uuid.UUID) ([]models.ProficiencySnapshot, error) {
+func (s *stubStorage) GetProficiencyHistory(_ context.Context, _ uuid.UUID, _ int) ([]models.ProficiencySnapshot, error) {
 	panic("unexpected")
 }
 

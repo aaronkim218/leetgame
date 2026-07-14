@@ -50,16 +50,16 @@ func (p *Postgres) GetTopicProficiencies(ctx context.Context, userID uuid.UUID) 
 	})
 }
 
-func (p *Postgres) GetProficiencyHistory(ctx context.Context, userID uuid.UUID) ([]models.ProficiencySnapshot, error) {
+func (p *Postgres) GetProficiencyHistory(ctx context.Context, userID uuid.UUID, days int) ([]models.ProficiencySnapshot, error) {
 	const q = `
 		SELECT topic, stage, score, snapshot_date
 		FROM proficiency_score_snapshots
 		WHERE user_id = $1
-		  AND snapshot_date >= CURRENT_DATE - INTERVAL '30 days'
+		  AND ($2 = 0 OR snapshot_date >= CURRENT_DATE - make_interval(days => $2))
 		ORDER BY topic, stage, snapshot_date ASC`
 
 	return utils.Retry(ctx, func(ctx context.Context) ([]models.ProficiencySnapshot, error) {
-		rows, err := p.Pool.Query(ctx, q, userID)
+		rows, err := p.Pool.Query(ctx, q, userID, days)
 		if err != nil {
 			return nil, err
 		}
