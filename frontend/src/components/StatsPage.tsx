@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import type { TopicProficiency, ProficiencySnapshot } from '../types'
+import type {
+  TopicProficiency,
+  ProficiencySnapshot,
+  TrendWindow,
+} from '../types'
 import { useStats } from '../hooks/useStats'
 import { useTags } from '../hooks/useTags'
 import { cn } from '../lib/utils'
@@ -65,6 +69,16 @@ const stageLabel: Record<string, string> = {
   tc_sc: 'Time & Space',
 }
 
+const TREND_WINDOW_KEY = 'leetgame_trend_window'
+const TREND_WINDOWS: TrendWindow[] = ['1m', '3m', '6m', '1y', 'all']
+const trendWindowLabel: Record<TrendWindow, string> = {
+  '1m': '1M',
+  '3m': '3M',
+  '6m': '6M',
+  '1y': '1Y',
+  all: 'All',
+}
+
 export function StatsPage({
   onSmartPractice,
   activeTopics,
@@ -74,15 +88,27 @@ export function StatsPage({
   activeTopics: string[]
   onTopicsChange: (topics: string[]) => void
 }) {
+  const [trendWindow, setTrendWindow] = useState<TrendWindow>(() => {
+    const v = localStorage.getItem(TREND_WINDOW_KEY)
+    return (TREND_WINDOWS as string[]).includes(v ?? '')
+      ? (v as TrendWindow)
+      : '1m'
+  })
+  const selectTrendWindow = (w: TrendWindow) => {
+    setTrendWindow(w)
+    localStorage.setItem(TREND_WINDOW_KEY, w)
+  }
   const {
     proficiencies,
     history,
     loading: statsLoading,
+    historyLoading,
     error: statsError,
-  } = useStats('1m')
+  } = useStats(trendWindow)
   const { availableTags: allTags, tagsLoading, tagsError } = useTags()
   const loading = statsLoading || tagsLoading
-  const fetchError = statsError || tagsError !== null
+  const fetchError =
+    (statsError && proficiencies.length === 0) || tagsError !== null
   const [topicPickerOpen, setTopicPickerOpen] = useState(false)
   const [expandedTopic, setExpandedTopic] = useState<string | null>(null)
   const [hiddenLines, setHiddenLines] = useState<Set<string>>(new Set())
@@ -147,6 +173,27 @@ export function StatsPage({
     </div>
   )
 
+  const windowPicker = (
+    <div className="mb-6 flex items-center gap-3 text-xs">
+      <span className="text-muted-foreground">Trend window:</span>
+      {TREND_WINDOWS.map((w) => (
+        <button
+          key={w}
+          onClick={() => selectTrendWindow(w)}
+          aria-pressed={trendWindow === w}
+          className={cn(
+            'transition-colors',
+            trendWindow === w
+              ? 'text-foreground font-semibold'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          {trendWindowLabel[w]}
+        </button>
+      ))}
+    </div>
+  )
+
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto">
@@ -208,6 +255,9 @@ export function StatsPage({
     }))
     .sort((a, b) => a.avg - b.avg) // weakest first
 
+  const isLongWindow =
+    trendWindow === '6m' || trendWindow === '1y' || trendWindow === 'all'
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="mx-auto max-w-2xl px-6 py-8">
@@ -220,6 +270,7 @@ export function StatsPage({
           )}
         </div>
         {topicPicker}
+        {windowPicker}
         <div className="flex flex-col gap-4">
           {topics.map(({ topic, rows }) => {
             const isExpanded = expandedTopic === topic
@@ -266,9 +317,15 @@ export function StatsPage({
                 </div>
                 {isExpanded && (
                   <div className="mt-4">
-                    {chartData.length === 0 ? (
+                    {historyLoading ? (
                       <p className="text-muted-foreground text-xs">
-                        Practice more sessions to see your trend.
+                        Loading trend…
+                      </p>
+                    ) : chartData.length === 0 ? (
+                      <p className="text-muted-foreground text-xs">
+                        {statsError
+                          ? 'Failed to load trend.'
+                          : 'Practice more sessions to see your trend.'}
                       </p>
                     ) : (
                       <>
@@ -286,10 +343,17 @@ export function StatsPage({
                               tick={{ fontSize: 10 }}
                               tickFormatter={(d) => {
                                 const date = new Date(d + 'T00:00:00')
-                                return date.toLocaleDateString('en-US', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                })
+                                return isLongWindow
+                                  ? date
+                                      .toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        year: '2-digit',
+                                      })
+                                      .replace(' ', " '")
+                                  : date.toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                    })
                               }}
                             />
                             <YAxis
