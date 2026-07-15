@@ -104,12 +104,12 @@ describe('settings clobber gate', () => {
         active_stages: ['edge_cases'],
         hide_title: false,
         hide_difficulty: false,
-        concise_mode: true,
+        concise_mode: false,
         active_topics: ['Trie'],
         tour_done: false,
       }) // user A's stale payload arrives late
     })
-    expect(result.current.conciseMode).toBe(false) // stale payload NOT applied
+    expect(result.current.conciseMode).toBe(true) // stale payload NOT applied
     act(() => {
       result.current.persistStages(['pattern'])
     })
@@ -128,5 +128,26 @@ describe('settings clobber gate', () => {
     })
     expect(localStorage.getItem('leetgame_concise_mode')).toBe('true')
     expect(updateSettings).not.toHaveBeenCalled()
+  })
+})
+
+describe('concise mode default', () => {
+  it('defaults to on for anonymous users with no stored value', async () => {
+    const { result } = renderHook(() => useAuth())
+    act(() => {
+      authState.callback('INITIAL_SESSION', null)
+    })
+    await waitFor(() => expect(result.current.settingsReady).toBe(true))
+    expect(result.current.conciseMode).toBe(true)
+  })
+
+  it('respects an explicit stored opt-out', async () => {
+    localStorage.setItem('leetgame_concise_mode', 'false')
+    const { result } = renderHook(() => useAuth())
+    act(() => {
+      authState.callback('INITIAL_SESSION', null)
+    })
+    await waitFor(() => expect(result.current.settingsReady).toBe(true))
+    expect(result.current.conciseMode).toBe(false)
   })
 })

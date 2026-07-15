@@ -113,6 +113,18 @@ test('signed-in persistConciseMode PUTs merged settings', async () => {
   )
 })
 
+test('concise mode defaults to on for anonymous users', async () => {
+  const { getByTestId } = await render(
+    <AuthProvider>
+      <PersistProbe />
+    </AuthProvider>,
+  )
+  await act(async () => {
+    authState.callback('INITIAL_SESSION', null)
+  })
+  expect(getByTestId('concise').children[0]).toBe('true')
+})
+
 test('anonymous persistStages updates state without a PUT', async () => {
   ;(updateSettings as jest.Mock).mockClear()
   const { getByTestId } = await render(
@@ -177,19 +189,19 @@ test('a stale settings fetch from a previous sign-in cannot re-arm the gate', as
   await act(async () => {
     authState.callback('SIGNED_IN', { access_token: 't' }) // user B, fetch rejects
   })
-  expect(getByTestId('concise').children[0]).toBe('false')
+  expect(getByTestId('concise').children[0]).toBe('true')
 
   await act(async () => {
     resolveStale({
       active_stages: ['edge_cases'],
       hide_title: false,
       hide_difficulty: false,
-      concise_mode: true,
+      concise_mode: false,
       active_topics: ['Trie'],
       tour_done: false,
     }) // user A's stale payload arrives late
   })
-  expect(getByTestId('concise').children[0]).toBe('false') // stale payload NOT applied
+  expect(getByTestId('concise').children[0]).toBe('true') // stale payload NOT applied
 
   await act(async () => {
     fireEvent.press(getByTestId('toggle-concise'))

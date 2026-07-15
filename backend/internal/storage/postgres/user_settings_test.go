@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"leetgame/internal/models"
 )
 
@@ -44,14 +46,26 @@ func TestActiveTopicsDefault_WhenSet(t *testing.T) {
 	}
 }
 
-func TestDefaultHideDifficulty(t *testing.T) {
-	// The no-rows default must have HideDifficulty = true
-	// We test this by verifying the default struct in isolation
-	defaults := models.UserSettings{
-		HideDifficulty: true,
+func TestDefaultUserSettings(t *testing.T) {
+	uid := uuid.New()
+	defaults := defaultUserSettings(uid)
+	if defaults.UserID != uid {
+		t.Error("default settings must carry the requested user ID")
+	}
+	if !defaults.HideTitle {
+		t.Error("default HideTitle must be true")
 	}
 	if !defaults.HideDifficulty {
 		t.Error("default HideDifficulty must be true")
+	}
+	if !defaults.ConciseMode {
+		t.Error("default ConciseMode must be true")
+	}
+	if defaults.TourDone {
+		t.Error("default TourDone must be false")
+	}
+	if len(defaults.ActiveStages) == 0 || len(defaults.ActiveTopics) == 0 {
+		t.Error("default stages and topics must be non-empty")
 	}
 }
 

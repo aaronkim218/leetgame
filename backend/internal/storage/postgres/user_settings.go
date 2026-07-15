@@ -31,6 +31,19 @@ func resolveActiveTopics(stored []string) []string {
 	return defaultActiveTopics
 }
 
+// defaultUserSettings is the settings profile for users with no stored row.
+func defaultUserSettings(userID uuid.UUID) models.UserSettings {
+	return models.UserSettings{
+		UserID:         userID,
+		ActiveStages:   defaultActiveStages,
+		HideTitle:      true,
+		HideDifficulty: true,
+		ConciseMode:    true,
+		ActiveTopics:   defaultActiveTopics,
+		TourDone:       false,
+	}
+}
+
 func (p *Postgres) GetUserSettings(ctx context.Context, userID uuid.UUID) (models.UserSettings, error) {
 	const sql = `SELECT user_id, active_stages, hide_title, hide_difficulty, concise_mode, active_topics, tour_done FROM user_settings WHERE user_id = $1`
 	return utils.Retry(ctx, func(ctx context.Context) (models.UserSettings, error) {
@@ -40,15 +53,7 @@ func (p *Postgres) GetUserSettings(ctx context.Context, userID uuid.UUID) (model
 		}
 		s, err := pgx.CollectOneRow(row, pgx.RowToStructByName[models.UserSettings])
 		if errors.Is(err, pgx.ErrNoRows) {
-			return models.UserSettings{
-				UserID:         userID,
-				ActiveStages:   defaultActiveStages,
-				HideTitle:      true,
-				HideDifficulty: true,
-				ConciseMode:    false,
-				ActiveTopics:   defaultActiveTopics,
-				TourDone:       false,
-			}, nil
+			return defaultUserSettings(userID), nil
 		}
 		if err != nil {
 			return models.UserSettings{}, err

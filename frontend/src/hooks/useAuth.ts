@@ -38,7 +38,7 @@ export function useAuth() {
     useState<ActiveStage[]>(DEFAULT_STAGES)
   const [hideTitle, setHideTitle] = useState(true)
   const [hideDifficulty, setHideDifficulty] = useState(true)
-  const [conciseMode, setConciseMode] = useState(false)
+  const [conciseMode, setConciseMode] = useState(true)
   const [activeTopics, setActiveTopics] = useState<string[]>(NEETCODE_TOPICS)
   const [tourDone, setTourDone] = useState(false)
   const [settingsReady, setSettingsReady] = useState(false)
@@ -64,7 +64,9 @@ export function useAuth() {
     setHideDifficulty(
       storedHideDifficulty === null ? true : storedHideDifficulty === 'true',
     )
-    setConciseMode(storedConciseMode === 'true')
+    setConciseMode(
+      storedConciseMode === null ? true : storedConciseMode === 'true',
+    )
   }
 
   useEffect(() => {
