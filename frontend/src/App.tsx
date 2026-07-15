@@ -138,8 +138,10 @@ export default function App() {
   const [stageBannerDismissed, setStageBannerDismissed] = useState(false)
   const {
     canGoBack,
+    canGoForward,
     push: pushToStack,
     pop: popFromStack,
+    popForward: popFromForward,
     clear: clearStack,
   } = useSessionStack<PracticeSnapshot>()
   const { prefetch, take, invalidate } = usePrefetchedProblem()
@@ -194,9 +196,7 @@ export default function App() {
     }
   }
 
-  const goBack = () => {
-    const snap = popFromStack()
-    if (!snap) return
+  const restoreSnapshot = (snap: PracticeSnapshot) => {
     invalidate()
     setProblem(snap.problem)
     setStage(snap.stage)
@@ -208,6 +208,16 @@ export default function App() {
     setPlaylistExhausted(false)
     setError(null)
     setStreamingMessage('')
+  }
+
+  const goBack = () => {
+    const snap = popFromStack(captureSnapshot())
+    if (snap) restoreSnapshot(snap)
+  }
+
+  const goForward = () => {
+    const snap = popFromForward(captureSnapshot())
+    if (snap) restoreSnapshot(snap)
   }
 
   const handleStagesChange = (stages: ActiveStage[]) => {
@@ -307,6 +317,11 @@ export default function App() {
   }
 
   const loadNextProblem = async () => {
+    // after Back, Next replays forward history instead of fetching anew
+    if (canGoForward) {
+      goForward()
+      return
+    }
     if (problemSource === 'search') {
       if (shuffle) {
         await loadRandomNextProblem()

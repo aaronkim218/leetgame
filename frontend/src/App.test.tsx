@@ -80,13 +80,16 @@ vi.mock('./components/ProblemView', () => ({
   ProblemView: ({
     problem,
     onSkip,
+    onBack,
   }: {
     problem: Problem
     onSkip: () => void
+    onBack?: () => void
   }) => (
     <div>
       <h1>{problem.title}</h1>
       <button onClick={onSkip}>Skip</button>
+      {onBack && <button onClick={onBack}>Back</button>}
     </div>
   ),
 }))
@@ -174,5 +177,62 @@ describe('next-problem prefetching (random mode)', () => {
 
     await screen.findByText('Fallback Problem')
     expect(getRandomProblem).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('back/forward history', () => {
+  it('Next after Back returns to the same problem without fetching a new one', async () => {
+    const p1 = makeProblem('p1', 'Two Sum')
+    const p2 = makeProblem('p2', 'Second Problem')
+    const p3 = makeProblem('p3', 'Third Problem')
+    vi.mocked(getRandomProblem).mockResolvedValue(p1)
+    vi.mocked(getRandomProblemFiltered)
+      .mockResolvedValueOnce(p2)
+      .mockResolvedValueOnce(p3)
+
+    render(<App />)
+    await screen.findByText('Two Sum')
+    await waitFor(() =>
+      expect(getRandomProblemFiltered).toHaveBeenCalledTimes(1),
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    await screen.findByText('Second Problem')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await screen.findByText('Two Sum')
+
+    // Next must replay forward history, not fetch a fresh random problem
+    await userEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    await screen.findByText('Second Problem')
+    expect(getRandomProblem).toHaveBeenCalledTimes(1)
+    expect(getRandomProblemFiltered).toHaveBeenCalledTimes(2)
+  })
+
+  it('Back after a forward replay still works', async () => {
+    const p1 = makeProblem('p1', 'Two Sum')
+    const p2 = makeProblem('p2', 'Second Problem')
+    const p3 = makeProblem('p3', 'Third Problem')
+    vi.mocked(getRandomProblem).mockResolvedValue(p1)
+    vi.mocked(getRandomProblemFiltered)
+      .mockResolvedValueOnce(p2)
+      .mockResolvedValueOnce(p3)
+
+    render(<App />)
+    await screen.findByText('Two Sum')
+    await waitFor(() =>
+      expect(getRandomProblemFiltered).toHaveBeenCalledTimes(1),
+    )
+
+    await userEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    await screen.findByText('Second Problem')
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await screen.findByText('Two Sum')
+    await userEvent.click(screen.getByRole('button', { name: 'Skip' }))
+    await screen.findByText('Second Problem')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Back' }))
+    await screen.findByText('Two Sum')
+    expect(getRandomProblem).toHaveBeenCalledTimes(1)
   })
 })
