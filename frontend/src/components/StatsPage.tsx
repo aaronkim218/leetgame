@@ -1,9 +1,6 @@
 import { useState } from 'react'
-import type {
-  TopicProficiency,
-  ProficiencySnapshot,
-  TrendWindow,
-} from '../types'
+import type { TopicProficiency, TrendWindow } from '../types'
+import { buildChartData } from '../lib/chart-data'
 import { useStats } from '../hooks/useStats'
 import { useTags } from '../hooks/useTags'
 import { cn } from '../lib/utils'
@@ -27,39 +24,6 @@ const chartConfig = {
   tc_sc: { label: 'Time & Space', color: '#f87171' },
   overall: { label: 'Overall', color: '#e2e8f0' },
 } as const
-
-interface ChartPoint {
-  date: string
-  edge_cases?: number
-  brute_force?: number
-  pattern?: number
-  algorithm?: number
-  tc_sc?: number
-  overall: number
-}
-
-function buildChartData(
-  history: ProficiencySnapshot[],
-  topic: string,
-): ChartPoint[] {
-  const topicHistory = history.filter((s) => s.topic === topic)
-  const byDate = new Map<string, Partial<Record<string, number>>>()
-  for (const s of topicHistory) {
-    const existing = byDate.get(s.snapshot_date) ?? {}
-    existing[s.stage] = Math.round(s.score * 100)
-    byDate.set(s.snapshot_date, existing)
-  }
-  return Array.from(byDate.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, stages]) => {
-      const values = Object.values(stages) as number[]
-      const overall =
-        values.length > 0
-          ? Math.round(values.reduce((a, b) => a + b, 0) / values.length)
-          : 0
-      return { date, ...stages, overall } as ChartPoint
-    })
-}
 
 const stageLabel: Record<string, string> = {
   edge_cases: 'Edge Cases',
@@ -339,10 +303,13 @@ export function StatsPage({
                               className="stroke-border"
                             />
                             <XAxis
-                              dataKey="date"
+                              dataKey="ts"
+                              type="number"
+                              scale="time"
+                              domain={['dataMin', 'dataMax']}
                               tick={{ fontSize: 10 }}
-                              tickFormatter={(d) => {
-                                const date = new Date(d + 'T00:00:00')
+                              tickFormatter={(ts: number) => {
+                                const date = new Date(ts)
                                 return isLongWindow
                                   ? date
                                       .toLocaleDateString('en-US', {
@@ -361,7 +328,21 @@ export function StatsPage({
                               tick={{ fontSize: 10 }}
                               tickFormatter={(v) => `${v}%`}
                             />
-                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <ChartTooltip
+                              content={
+                                <ChartTooltipContent
+                                  labelFormatter={(_, payload) =>
+                                    new Date(
+                                      payload[0]?.payload?.ts as number,
+                                    ).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric',
+                                    })
+                                  }
+                                />
+                              }
+                            />
                             {STAGES.map((stage) => (
                               <Line
                                 key={stage}
