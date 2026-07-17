@@ -8,7 +8,7 @@ description: Build/launch/drive recipe for verifying leetgame web frontend chang
 ## launch
 
 - Backend: `cd backend && go run ./cmd/server` — Fiber on :42069, needs no manual env setup locally.
-- Frontend: `cd frontend && npm run dev` — Vite on :5173, proxies `/api` to the backend.
+- Frontend: `cd frontend && pnpm run dev` — Vite on :5173, proxies `/api` to the backend.
 - Browser: chrome-devtools MCP, `new_page` at `http://localhost:5173/`. Test account (leetgametest@gmail.com) is usually already signed in; if not, `?dev=1` triggers dev sign-in (creds in `frontend/.env.local`).
 
 ## driving flows

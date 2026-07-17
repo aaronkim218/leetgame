@@ -3,13 +3,13 @@
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "▶ frontend: lint"
-cd "$ROOT/frontend" && npm run lint || exit 1
+cd "$ROOT/frontend" && pnpm run lint || exit 1
 
 echo "▶ frontend: format"
-cd "$ROOT/frontend" && npm run format:check || exit 1
+cd "$ROOT/frontend" && pnpm run format:check || exit 1
 
 echo "▶ frontend: build"
-cd "$ROOT/frontend" && npm run build || exit 1
+cd "$ROOT/frontend" && pnpm run build || exit 1
 
 echo "▶ backend: gofumpt"
 unformatted=$(cd "$ROOT/backend" && gofumpt -l .)

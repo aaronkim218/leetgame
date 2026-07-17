@@ -17,6 +17,7 @@
 
           # frontend + mobile (.nvmrc / CI pin node 24)
           nodejs_24
+          pnpm
 
           # local supabase stack (replaces brew install)
           supabase-cli

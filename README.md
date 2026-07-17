@@ -79,8 +79,8 @@ go run ./cmd/server
 
 ```bash
 cd frontend
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
