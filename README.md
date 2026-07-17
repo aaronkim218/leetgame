@@ -34,8 +34,7 @@ One-time step — loads ~2,600 LeetCode problems from HuggingFace.
 
 ```bash
 cd scripts
-pip3 install -r requirements.txt
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres python3 seed.py
+DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres uv run seed.py
 ```
 
 ### 3. Configure the backend

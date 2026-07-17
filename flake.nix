@@ -19,6 +19,10 @@
           nodejs_24
           pnpm
 
+          # scripts/ (seed + backfill; uv manages scripts/.venv)
+          python313
+          uv
+
           # local supabase stack (replaces brew install)
           supabase-cli
         ];
